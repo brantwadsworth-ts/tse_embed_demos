@@ -8,6 +8,10 @@ import {
   TS_ICON_SPRITE_URL,
   TS_STRINGS,
   TS_STRING_IDS,
+  FILTER_SOURCE_ID,
+  OWNER_COLUMN,
+  CADENCE_NAME_COLUMN,
+  HIDE_FILTER_PILL_RULES,
 } from '../config';
 
 let isInitialized = false;
@@ -58,6 +62,62 @@ export function tsCustomizations(
       ? { content: { strings: TS_STRINGS, stringIDs: TS_STRING_IDS } }
       : {}),
   };
+}
+
+/**
+ * Customizations for the Analytics liveboard — the shared Salesloft styling plus
+ * the rules that hide ThoughtSpot's native filter pills/bar (we drive filters
+ * from the host-side filter controls next to the page title).
+ */
+export function liveboardCustomizations() {
+  return tsCustomizations(false, HIDE_FILTER_PILL_RULES);
+}
+
+// ---------------------------------------------------------------------------
+// Hierarchical filter data — distinct Cadence Owner → Cadence Name pairs, pulled
+// via the searchdata REST API against FILTER_SOURCE_ID. Feeds the tree filter on
+// the Analytics tab; selections are pushed to the liveboard as runtime filters.
+//   Docs: https://developers.thoughtspot.com/docs/rest-apiv2-reference
+// ---------------------------------------------------------------------------
+
+export interface HierarchyNode {
+  owner: string;
+  cadences: string[];
+}
+
+export async function fetchOwnerCadenceHierarchy(
+  username: string,
+  password: string,
+): Promise<HierarchyNode[]> {
+  await ensureRestSession(username, password);
+  const res = await fetch(`${THOUGHTSPOT_HOST}/api/rest/2.0/searchdata`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      // Bracketed column names → ThoughtSpot search tokens for the two columns.
+      query_string: `[${OWNER_COLUMN}] [${CADENCE_NAME_COLUMN}]`,
+      logical_table_identifier: FILTER_SOURCE_ID,
+      data_format: 'COMPACT',
+      record_size: 10000,
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`searchdata failed (${res.status}): ${(await res.text()).slice(0, 200)}`);
+  }
+  const data = await res.json();
+  const rows: any[] = data.contents?.[0]?.data_rows ?? [];
+  const map = new Map<string, Set<string>>();
+  for (const r of rows) {
+    const owner = String(r?.[0] ?? '').trim();
+    const cadence = String(r?.[1] ?? '').trim();
+    if (!owner) continue;
+    if (!map.has(owner)) map.set(owner, new Set());
+    if (cadence) map.get(owner)!.add(cadence);
+  }
+  return [...map.entries()]
+    .map(([owner, cadences]) => ({ owner, cadences: [...cadences].sort() }))
+    .sort((a, b) => a.owner.localeCompare(b.owner));
 }
 
 // ---------------------------------------------------------------------------

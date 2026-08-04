@@ -291,6 +291,246 @@ button {
   gap: 16px;
 }
 
+/* Title block + host-side filters sit together, left of the AI button. */
+.analytics-toolbar-left {
+  display: flex;
+  align-items: flex-end;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+.analytics-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 3px;
+}
+
+/* ---- Host-side filter controls (tree + date range) --------------------- */
+.sl-hfilter,
+.sl-datefilter {
+  position: relative;
+}
+.sl-hfilter-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 280px;
+  padding: 9px 12px;
+  background: var(--sl-white);
+  border: 1px solid var(--sl-border);
+  border-radius: 10px;
+  color: var(--sl-ink);
+  font-size: 13.5px;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(7, 59, 58, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.sl-hfilter-trigger:hover {
+  border-color: var(--sl-green-dark);
+  box-shadow: 0 2px 8px rgba(12, 91, 67, 0.12);
+}
+.sl-hfilter-trigger > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sl-hfilter-trigger svg:first-child {
+  color: var(--sl-green-dark);
+  flex-shrink: 0;
+}
+
+.sl-hfilter-panel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 320px;
+  background: var(--sl-white);
+  border: 1px solid var(--sl-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lift);
+  padding: 12px;
+}
+
+.sl-hfilter-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--sl-cream);
+  border: 1px solid var(--sl-border-soft);
+  border-radius: 9px;
+  color: var(--sl-muted);
+}
+.sl-hfilter-search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--sl-ink);
+  outline: none;
+}
+.sl-hfilter-search button {
+  display: inline-flex;
+  border: none;
+  background: transparent;
+  color: var(--sl-muted);
+}
+
+.sl-hfilter-state {
+  padding: 14px 6px;
+  font-size: 13px;
+  color: var(--sl-muted);
+  text-align: center;
+}
+.sl-hfilter-error {
+  color: var(--sl-coral);
+}
+
+.sl-tree {
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 6px;
+}
+.sl-tree-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  font-size: 13.5px;
+  color: var(--sl-ink);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.sl-tree-row:hover {
+  background: var(--sl-mint);
+}
+.sl-tree-row input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--sl-green-dark);
+  cursor: pointer;
+}
+.sl-tree-all {
+  border-bottom: 1px solid var(--sl-border-soft);
+  border-radius: 0;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.sl-tree-parent {
+  font-weight: 600;
+}
+.sl-tree-parent-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sl-tree-caret {
+  display: inline-flex;
+  border: none;
+  background: transparent;
+  color: var(--sl-muted);
+  padding: 0;
+}
+.sl-tree-child {
+  padding-left: 30px;
+  font-weight: 400;
+  color: var(--sl-muted);
+}
+.sl-tree-child span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sl-hfilter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--sl-border-soft);
+}
+.sl-hfilter-clear,
+.sl-hfilter-apply {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.sl-hfilter-clear {
+  background: transparent;
+  border-color: var(--sl-border);
+  color: var(--sl-muted);
+}
+.sl-hfilter-clear:hover {
+  color: var(--sl-ink);
+  border-color: var(--sl-green-dark);
+}
+.sl-hfilter-apply {
+  background: var(--sl-green-dark);
+  color: #fff;
+}
+.sl-hfilter-apply:hover {
+  background: var(--sl-evergreen);
+}
+
+/* ---- Date range filter ------------------------------------------------- */
+.sl-datefilter-panel {
+  width: 240px;
+}
+.sl-date-presets {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sl-date-preset {
+  text-align: left;
+  padding: 9px 11px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: var(--sl-ink);
+}
+.sl-date-preset:hover {
+  background: var(--sl-mint);
+}
+.sl-date-preset.is-active {
+  background: var(--sl-green-dark);
+  color: #fff;
+  font-weight: 600;
+}
+.sl-date-custom {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--sl-border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sl-date-custom label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--sl-muted);
+}
+.sl-date-custom input[type='date'] {
+  padding: 7px 9px;
+  border: 1px solid var(--sl-border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--sl-ink);
+}
+
 .salesloft-ai-btn {
   display: inline-flex;
   align-items: center;

@@ -195,3 +195,39 @@ export const SPOTTER_EMBED_FLAGS = {
     spotterSidebarDefaultExpanded: true,
   },
 };
+
+// ---------------------------------------------------------------------------
+// Host-side filters on the Analytics liveboard.
+//   Hierarchy: OWNER_COLUMN → CADENCE_NAME_COLUMN. Date: DATE_COLUMN.
+// Option lists are fetched from FILTER_SOURCE_ID via the searchdata REST API;
+// selections are pushed to the liveboard as runtime filters. Column names must
+// match the data source's column display names for the runtime filter to bind.
+//   Runtime filters: https://developers.thoughtspot.com/docs/runtime-filters
+// ---------------------------------------------------------------------------
+
+/** Model queried for the filter option lists (same model the liveboard uses). */
+export const FILTER_SOURCE_ID = WORKSHEET_ID;
+export const OWNER_COLUMN = 'Cadence Owner';
+export const CADENCE_NAME_COLUMN = 'Cadence Name';
+export const DATE_COLUMN = 'Cadence Create Date';
+
+/**
+ * Hide the native runtime-filter pills / filter bar ThoughtSpot renders on the
+ * liveboard header — we drive filters from the host UI instead. Injected into
+ * the liveboard iframe via rules_UNSTABLE. Class names are version-fragile;
+ * verify/adjust via right-click → Inspect if a release renames them.
+ *   Docs: https://developers.thoughtspot.com/docs/css-rules
+ */
+const PILL_HIDE = { display: 'none !important' };
+export const HIDE_FILTER_PILL_RULES: Record<string, Record<string, string>> = {
+  '[class*="filterChip" i]': PILL_HIDE,
+  '[class*="filter-chip" i]': PILL_HIDE,
+  '[class*="appliedFilter" i]': PILL_HIDE,
+  '[class*="applied-filter" i]': PILL_HIDE,
+  '[class*="pinboardFilter" i]': PILL_HIDE,
+  '[class*="pinboard-filter" i]': PILL_HIDE,
+  '[class*="filterBar" i]': PILL_HIDE,
+  '[class*="filter-bar" i]': PILL_HIDE,
+  '[data-testid*="filter-chip" i]': PILL_HIDE,
+  '[data-testid*="pinboard-filters" i]': PILL_HIDE,
+};
