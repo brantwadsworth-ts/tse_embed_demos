@@ -8,6 +8,7 @@ import {
   TS_ICON_SPRITE_URL,
   TS_STRINGS,
   TS_STRING_IDS,
+  TS_FONT_URL,
   FILTER_SOURCE_ID,
   SEGMENT_COLUMN,
   REP_COLUMN,
@@ -34,6 +35,8 @@ export function initThoughtSpot(username: string, password: string) {
     password,
     customizations: {
       style: {
+        // Load Inter + Fraunces into the iframe so embeds match the host fonts.
+        customCSSUrl: TS_FONT_URL,
         customCSS: { variables: TS_CSS_VARIABLES },
       },
       iconSpriteUrl: TS_ICON_SPRITE_URL,
@@ -63,6 +66,8 @@ export function tsCustomizations(
   const hasRules = Object.keys(rules).length > 0;
   return {
     style: {
+      // Load Inter + Fraunces into the iframe so embeds match the host fonts.
+      customCSSUrl: TS_FONT_URL,
       customCSS: {
         variables: tsVarsFor(theme),
         ...(hasRules ? { rules_UNSTABLE: rules } : {}),

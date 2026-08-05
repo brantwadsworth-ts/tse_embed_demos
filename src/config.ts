@@ -101,7 +101,7 @@ export const TS_CSS_VARIABLES: Record<string, string> = {
   '--ts-var-button--secondary--hover-background': '#DDECEC',
   '--ts-var-button--secondary--active-background': '#CFE3E2',
   '--ts-var-viz-title-color': '#073B3A',
-  '--ts-var-viz-title-font-family': '"Inter", "Avenir Next", "Segoe UI", sans-serif',
+  '--ts-var-viz-title-font-family': '"Fraunces", "Iowan Old Style", "Georgia", serif',
   '--ts-var-viz-description-color': '#1D5A59',
   '--ts-var-viz-border-radius': '14px',
   '--ts-var-viz-box-shadow': '0 1px 2px rgba(7, 59, 58, 0.06), 0 8px 24px rgba(7, 59, 58, 0.08)',
@@ -186,7 +186,7 @@ export const TS_VARS_DARK: Record<string, string> = {
   '--ts-var-button--tertiary-color': '#c2d3cb',
   '--ts-var-button--tertiary--hover-background': '#183a30',
   '--ts-var-viz-title-color': '#e8f0ec',
-  '--ts-var-viz-title-font-family': '"Inter", "Avenir Next", "Segoe UI", sans-serif',
+  '--ts-var-viz-title-font-family': '"Fraunces", "Iowan Old Style", "Georgia", serif',
   '--ts-var-viz-description-color': '#93a89f',
   '--ts-var-viz-border-radius': '14px',
   '--ts-var-viz-box-shadow': '0 1px 2px rgba(0,0,0,0.5)',
@@ -362,6 +362,13 @@ export const SPOTTER_EMBED_FLAGS = {
     spotterSidebarDefaultExpanded: false,
   },
 };
+
+/** Google-Fonts stylesheet loaded INTO embed iframes so embedded ThoughtSpot
+ * surfaces render in the same faces as the host UI (Inter for text, Fraunces
+ * for titles) — iframes can't see the host page's fonts. Passed as customCSSUrl.
+ */
+export const TS_FONT_URL =
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap';
 
 /** Sample questions shown on the custom Salesloft AI landing pane. */
 export const SALESLOFT_SAMPLE_QUESTIONS = [

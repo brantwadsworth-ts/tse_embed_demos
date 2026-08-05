@@ -21,11 +21,9 @@
   --sl-border: #e4e2d8;
   --sl-border-soft: #edebe2;
 
-  /* Both faces resolve to the SAME stack as the embeds' --ts-var-root-font-family.
-     No web font is loaded (see index.html), so this falls back to the system
-     sans — Avenir Next on macOS / Segoe UI on Windows — exactly what the embedded
-     ThoughtSpot components render, so host UI and embeds share one typeface. */
-  --font-serif: 'Inter', 'Avenir Next', 'Segoe UI', sans-serif;
+  --font-serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  /* Matches the embeds' --ts-var-root-font-family exactly so host UI, chatbot,
+     and embedded ThoughtSpot content share the same typeface + fallbacks. */
   --font-sans: 'Inter', 'Avenir Next', 'Segoe UI', sans-serif;
 
   --topbar-h: 66px;
