@@ -150,6 +150,156 @@ export const TS_CSS_VARIABLES: Record<string, string> = {
   '--ts-var-kpi-negative-change-color': '#C84B3A',
 };
 
+export type ThemeName = 'light' | 'dark';
+
+/**
+ * Dark counterpart to TS_CSS_VARIABLES — a deep-evergreen dark theme that keeps
+ * Salesloft's green/coral accents. Passed per-embed for the active theme so the
+ * embedded Liveboard / Search / Spotter track the host app's light/dark toggle.
+ *   CSS variables: https://developers.thoughtspot.com/docs/css-variables-reference
+ */
+export const TS_VARS_DARK: Record<string, string> = {
+  '--ts-var-root-background': '#0c1f1a',
+  '--ts-var-root-color': '#e8f0ec',
+  '--ts-var-root-secondary-color': '#93a89f',
+  '--ts-var-root-font-family': '"Inter", "Avenir Next", "Segoe UI", sans-serif',
+  '--ts-var-application-color': '#e8f0ec',
+  '--ts-var-nav-background': '#0a1a15',
+  '--ts-var-nav-color': '#e8f0ec',
+  '--ts-var-search-data-button-background': '#1bb978',
+  '--ts-var-search-data-button-font-color': '#06120e',
+  '--ts-var-search-bar-background': '#102a23',
+  '--ts-var-search-bar-text-font-color': '#e8f0ec',
+  '--ts-var-search-auto-complete-background': '#102a23',
+  '--ts-var-search-auto-complete-font-color': '#e8f0ec',
+  '--ts-var-button-border-radius': '10px',
+  '--ts-var-button--icon-border-radius': '8px',
+  '--ts-var-button--primary-background': '#1bb978',
+  '--ts-var-button--primary-color': '#06120e',
+  '--ts-var-button--primary--hover-background': '#15ae6e',
+  '--ts-var-button--primary--active-background': '#0c9c5f',
+  '--ts-var-button--secondary-background': '#183a30',
+  '--ts-var-button--secondary-color': '#e8f0ec',
+  '--ts-var-button--secondary--hover-background': '#204438',
+  '--ts-var-button--secondary--active-background': '#274f42',
+  '--ts-var-button--tertiary-background': 'transparent',
+  '--ts-var-button--tertiary-color': '#c2d3cb',
+  '--ts-var-button--tertiary--hover-background': '#183a30',
+  '--ts-var-viz-title-color': '#e8f0ec',
+  '--ts-var-viz-title-font-family': '"Fraunces", "Iowan Old Style", "Georgia", serif',
+  '--ts-var-viz-description-color': '#93a89f',
+  '--ts-var-viz-border-radius': '14px',
+  '--ts-var-viz-box-shadow': '0 1px 2px rgba(0,0,0,0.5)',
+  '--ts-var-viz-background': '#102a23',
+  '--ts-var-viz-legend-hover-background': '#183a30',
+  '--ts-var-chip-border-radius': '999px',
+  '--ts-var-chip-background': '#183a30',
+  '--ts-var-chip-color': '#c2d3cb',
+  '--ts-var-chip--hover-background': '#204438',
+  '--ts-var-chip--hover-color': '#e8f0ec',
+  '--ts-var-chip--active-background': '#1bb978',
+  '--ts-var-chip--active-color': '#06120e',
+  '--ts-var-menu-background': '#102a23',
+  '--ts-var-menu-color': '#e8f0ec',
+  '--ts-var-menu--hover-background': '#183a30',
+  '--ts-var-menu-selected-text-color': '#1bb978',
+  '--ts-var-menu-separator-background': '#204438',
+  '--ts-var-dialog-body-background': '#102a23',
+  '--ts-var-dialog-body-color': '#e8f0ec',
+  '--ts-var-dialog-header-background': '#102a23',
+  '--ts-var-dialog-header-color': '#e8f0ec',
+  '--ts-var-dialog-footer-background': '#102a23',
+  '--ts-var-list-hover-background': '#183a30',
+  '--ts-var-list-selected-background': '#204438',
+  '--ts-var-liveboard-layout-background': '#0a1a15',
+  '--ts-var-liveboard-header-background': '#0c1f1a',
+  '--ts-var-liveboard-header-font-color': '#e8f0ec',
+  '--ts-var-liveboard-edit-bar-background': '#102a23',
+  '--ts-var-liveboard-cross-filter-layout-background': '#102a23',
+  '--ts-var-liveboard-tile-background': '#102a23',
+  '--ts-var-liveboard-tile-border-color': '#204438',
+  '--ts-var-liveboard-tile-border-radius': '14px',
+  '--ts-var-liveboard-tile-padding': '12px',
+  '--ts-var-liveboard-tile-table-header-background': '#143329',
+  '--ts-var-liveboard-tab-active-border-color': '#f26b5e',
+  '--ts-var-liveboard-tab-hover-color': '#1bb978',
+  '--ts-var-liveboard-header-action-button-background': '#183a30',
+  '--ts-var-liveboard-header-action-button-font-color': '#e8f0ec',
+  '--ts-var-liveboard-header-action-button-hover-color': '#ffffff',
+  '--ts-var-liveboard-header-action-button-active-color': '#ffffff',
+  // Masterpieces grouping/styling (active because isLiveboardMasterpiecesEnabled)
+  '--ts-var-liveboard-group-background': '#0a1a15',
+  '--ts-var-liveboard-group-title-font-color': '#e8f0ec',
+  '--ts-var-liveboard-group-border-color': '#204438',
+  '--ts-var-liveboard-group-description-font-color': '#93a89f',
+  '--ts-var-liveboard-group-tile-title-font-color': '#e8f0ec',
+  '--ts-var-liveboard-group-tile-description-font-color': '#93a89f',
+  '--ts-var-parameter-chip-background': '#183a30',
+  '--ts-var-parameter-chip-text-color': '#e8f0ec',
+  '--ts-var-parameter-chip-hover-background': '#204438',
+  '--ts-var-parameter-chip-hover-text-color': '#ffffff',
+  '--ts-var-parameter-chip-active-background': '#1bb978',
+  '--ts-var-parameter-chip-active-text-color': '#06120e',
+  '--ts-var-axis-title-color': '#93a89f',
+  '--ts-var-axis-data-label-color': '#a9bdb4',
+  '--ts-var-answer-data-panel-background-color': '#0a1a15',
+  '--ts-var-answer-edit-panel-background-color': '#0a1a15',
+  '--ts-var-kpi-hero-color': '#e8f0ec',
+  '--ts-var-kpi-comparison-color': '#93a89f',
+  '--ts-var-kpi-positive-change-color': '#35c98a',
+  '--ts-var-kpi-negative-change-color': '#ff7a6b',
+  // Spotter / Sage conversational surfaces
+  '--ts-var-spotter-input-background': '#102a23',
+  '--ts-var-spotter-prompt-background': '#183a30',
+  '--ts-var-sage-embed-background-color': '#0c1f1a',
+  '--ts-var-sage-bar-header-background-color': '#0c1f1a',
+  '--ts-var-sage-search-box-background-color': '#102a23',
+  '--ts-var-sage-search-box-font-color': '#e8f0ec',
+  '--ts-var-source-selector-background-color': '#102a23',
+  '--ts-var-sage-seed-questions-background': '#102a23',
+  '--ts-var-sage-seed-questions-font-color': '#c2d3cb',
+  '--ts-var-sage-seed-questions-hover-background': '#183a30',
+};
+
+/** Return the CSS-variable set for the active theme. */
+export function tsVarsFor(theme: ThemeName): Record<string, string> {
+  return theme === 'dark' ? TS_VARS_DARK : TS_CSS_VARIABLES;
+}
+
+/**
+ * Dark-only color overrides for surfaces with no dedicated CSS variable (answer
+ * cards, floating chrome), plus the KPI headline in the Salesloft green. Applied
+ * via rules_UNSTABLE only in dark mode.
+ *   Docs: https://developers.thoughtspot.com/docs/css-rules
+ */
+const DARK_SURFACE = '#102a23';
+const DARK_INK = '#e8f0ec';
+export const TS_RULES_DARK: Record<string, Record<string, string>> = {
+  [[
+    'input:not([type="checkbox"]):not([type="radio"])',
+    'textarea',
+    '[class*="input" i]',
+    '[class*="field" i]',
+    '[class*="searchbox" i]',
+  ].join(',')]: { 'background-color': '#102a23 !important', color: `${DARK_INK} !important` },
+  [[
+    '[class*="answer" i]',
+    '[class*="conversation" i]',
+    '[class*="message" i]',
+    '[class*="spotter" i]',
+    '[class*="sage" i]',
+  ].join(',')]: { 'background-color': `${DARK_SURFACE} !important`, color: `${DARK_INK} !important` },
+  [[
+    '[class*="modal" i]',
+    '[class*="dialog" i]',
+    '[class*="popover" i]',
+    '[class*="flyout" i]',
+    '[class*="drawer" i]',
+    '[class*="data-panel" i]',
+    '[class*="dataPanel" i]',
+  ].join(',')]: { 'background-color': `${DARK_SURFACE} !important`, color: `${DARK_INK} !important` },
+};
+
 /**
  * Welcome message for the host-owned Salesloft AI chatbot
  * (from salesloft_fin.json > appConfig.chatbot.welcomeMessage, lightly adapted).

@@ -33,6 +33,52 @@
     0 18px 40px rgba(7, 59, 58, 0.12);
 }
 
+/* ===========================  Dark theme  =============================== */
+/* Deep-evergreen dark palette. Tokens used purely as background/text flip
+   here; the few places where evergreen/green-dark were a branded *background*
+   get targeted overrides below so their light text stays readable. The
+   embedded ThoughtSpot surfaces are themed separately via per-embed
+   customizations (config TS_VARS_DARK). */
+:root[data-theme='dark'] {
+  --sl-cream: #0c1f1a;
+  --sl-cream-2: #0a1a15;
+  --sl-white: #102a23;
+  --sl-evergreen: #e8f0ec;
+  --sl-evergreen-2: #cfe0d8;
+  --sl-green: #1bb978;
+  --sl-green-dark: #16a06a;
+  --sl-mint: #183a30;
+  --sl-mint-2: #204438;
+  --sl-coral: #f47a6d;
+  --sl-ink: #e8f0ec;
+  --sl-muted: #93a89f;
+  --sl-border: #204438;
+  --sl-border-soft: #1a352c;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lift: 0 6px 14px rgba(0, 0, 0, 0.5), 0 18px 40px rgba(0, 0, 0, 0.55);
+}
+/* Branded-background surfaces where evergreen was the fill (now a light token). */
+:root[data-theme='dark'] .spotter-modal-header,
+:root[data-theme='dark'] .winback-header {
+  background: #0a1a15;
+  color: #e8f0ec;
+}
+:root[data-theme='dark'] .login-left {
+  background: linear-gradient(155deg, #0e3a2c, #06120e);
+  color: #e8f0ec;
+}
+/* Green host buttons read best with dark text on the brighter dark-mode green. */
+:root[data-theme='dark'] .sl-hfilter-apply,
+:root[data-theme='dark'] .report-pin-btn,
+:root[data-theme='dark'] .sl-date-preset.is-active {
+  color: #06120e;
+}
+:root[data-theme='dark'] .sl-hfilter-apply:hover,
+:root[data-theme='dark'] .report-pin-btn:hover {
+  background: #22c98a;
+  color: #06120e;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -177,6 +223,24 @@ button {
 .topbar-right {
   display: flex;
   align-items: center;
+  gap: 6px;
+}
+.topbar-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--sl-border);
+  background: var(--sl-white);
+  color: var(--sl-evergreen);
+  border-radius: 10px;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.topbar-theme-toggle:hover {
+  background: var(--sl-mint);
+  border-color: var(--sl-green-dark);
+  color: var(--sl-green-dark);
 }
 .topbar-user {
   display: flex;
@@ -569,6 +633,153 @@ button {
   width: 100% !important;
   border: none;
   border-radius: 10px;
+}
+
+/* ---- Toolbar actions (Add Report + Salesloft AI) ----------------------- */
+.analytics-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.analytics-addmenu {
+  position: relative;
+}
+.analytics-addreport-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 16px;
+  border: 1px solid var(--sl-border);
+  background: var(--sl-white);
+  color: var(--sl-evergreen);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(7, 59, 58, 0.05);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.analytics-addreport-btn:hover {
+  border-color: var(--sl-green-dark);
+  box-shadow: 0 3px 10px rgba(12, 91, 67, 0.14);
+}
+.analytics-addmenu-panel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 210px;
+  background: var(--sl-white);
+  border: 1px solid var(--sl-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lift);
+  padding: 6px;
+}
+.analytics-addmenu-panel button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--sl-ink);
+  text-align: left;
+}
+.analytics-addmenu-panel button:hover {
+  background: var(--sl-mint);
+  color: var(--sl-evergreen);
+}
+.analytics-addmenu-panel svg {
+  color: var(--sl-green-dark);
+}
+
+/* ---- Add Report split (liveboard 40% / report panel 60%) --------------- */
+.analytics-split {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+.analytics-board-col {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+.analytics-split.is-split .analytics-board-col {
+  flex: 0 0 40%;
+  max-width: 40%;
+  overflow-y: auto;
+  max-height: calc(100vh - var(--topbar-h) - 150px);
+}
+.analytics-report-col {
+  flex: 1 1 60%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--topbar-h) - 150px);
+  background: var(--sl-white);
+  border: 1px solid var(--sl-border-soft);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.report-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--sl-border-soft);
+}
+.report-title {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--sl-evergreen);
+}
+.report-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.report-pin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 15px;
+  border: none;
+  border-radius: 10px;
+  background: var(--sl-green-dark);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.report-pin-btn:hover {
+  background: var(--sl-evergreen);
+}
+.report-close-btn {
+  display: inline-flex;
+  border: none;
+  background: transparent;
+  color: var(--sl-muted);
+  padding: 6px;
+  border-radius: 8px;
+}
+.report-close-btn:hover {
+  background: var(--sl-mint);
+  color: var(--sl-ink);
+}
+.report-embed-fill {
+  flex: 1;
+  min-height: 0;
+}
+.report-embed-fill > div,
+.report-embed-fill iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: none;
 }
 
 /* ===========================  My Analytics tab  ========================= */

@@ -11,6 +11,7 @@ import {
   REENGAGE_ACTION_NAME,
 } from '../config';
 import { tsCustomizations } from '../lib/thoughtspot';
+import { useTheme } from '../context/ThemeContext';
 import { buildSignalContext, SignalContext } from '../lib/signalContext';
 import WinBackModal from '../components/WinBackModal';
 
@@ -82,6 +83,7 @@ const HIDE_CHROME_RULES: Record<string, Record<string, string>> = {
 };
 
 export default function Signals() {
+  const { theme } = useTheme();
   const [ctx, setCtx] = useState<SignalContext | null>(null);
 
   // ThoughtSpot fires this when the rep clicks "Re-engage cadence" on a row.
@@ -108,13 +110,14 @@ export default function Signals() {
 
       <div className="signals-embed">
         <Search
+          key={theme}
           answerId={SIGNALS_ANSWER_ID}
           hideSearchBar
           hideDataSources
           forceTable
           hiddenActions={HIDDEN_ACTIONS}
           frameParams={{ width: '100%', height: '100%' }}
-          customizations={tsCustomizations(false, HIDE_CHROME_RULES)}
+          customizations={tsCustomizations(theme, false, HIDE_CHROME_RULES)}
           customActions={[
             {
               id: REENGAGE_ACTION_ID,

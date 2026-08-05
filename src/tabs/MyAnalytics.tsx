@@ -18,6 +18,7 @@ import {
   LiveboardSummary,
 } from '../lib/thoughtspot';
 import { LIVEBOARD_EMBED_FLAGS } from '../config';
+import { useTheme } from '../context/ThemeContext';
 import CreateDashboardModal from '../components/CreateDashboardModal';
 
 const Liveboard = LiveboardEmbed as any;
@@ -38,6 +39,7 @@ function formatDate(ms: number): string {
 
 export default function MyAnalytics() {
   const { username, password } = useAuth();
+  const { theme } = useTheme();
   const [state, setState] = useState<State>({ status: 'loading' });
   const [selected, setSelected] = useState<LiveboardSummary | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -113,10 +115,11 @@ export default function MyAnalytics() {
         </div>
         <div className="liveboard-wrapper">
           <Liveboard
+            key={theme}
             ref={embedRef}
             liveboardId={selected.id}
             isLiveboardMasterpiecesEnabled
-            customizations={tsCustomizations(false)}
+            customizations={tsCustomizations(theme)}
             {...LIVEBOARD_EMBED_FLAGS}
             onLoad={handleLoad}
           />

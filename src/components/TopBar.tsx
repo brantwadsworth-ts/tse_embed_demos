@@ -6,9 +6,12 @@ import {
   Activity,
   ChevronDown,
   LogOut,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import SalesloftLogo from './SalesloftLogo';
 
 export type TabId = 'my-analytics' | 'analytics' | 'cadences' | 'signals' | 'ask';
@@ -31,6 +34,7 @@ interface Props {
 
 export default function TopBar({ active, onChange }: Props) {
   const { username, logout } = useAuth();
+  const { theme, toggle } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const initials = (username || 'U').slice(0, 2).toUpperCase();
 
@@ -64,6 +68,14 @@ export default function TopBar({ active, onChange }: Props) {
       </nav>
 
       <div className="topbar-right">
+        <button
+          className="topbar-theme-toggle"
+          onClick={toggle}
+          title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
         <div className="topbar-user" onClick={() => setMenuOpen((o) => !o)}>
           <span className="topbar-avatar">{initials}</span>
           <span className="topbar-username">{username || 'User'}</span>

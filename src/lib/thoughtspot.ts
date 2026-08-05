@@ -12,6 +12,9 @@ import {
   OWNER_COLUMN,
   CADENCE_NAME_COLUMN,
   HIDE_FILTER_PILL_RULES,
+  TS_RULES_DARK,
+  tsVarsFor,
+  ThemeName,
 } from '../config';
 
 let isInitialized = false;
@@ -47,14 +50,21 @@ export function initThoughtSpot(username: string, password: string) {
 
 /** Shared `customizations` block for every embedded ThoughtSpot component. */
 export function tsCustomizations(
-  withStringReplacements: boolean,
+  theme: ThemeName,
+  withStringReplacements = false,
   extraRules?: Record<string, Record<string, string>>,
 ) {
+  // Merge the dark-only surface rules with any per-embed extra rules.
+  const rules = {
+    ...(theme === 'dark' ? TS_RULES_DARK : {}),
+    ...(extraRules ?? {}),
+  };
+  const hasRules = Object.keys(rules).length > 0;
   return {
     style: {
       customCSS: {
-        variables: TS_CSS_VARIABLES,
-        ...(extraRules ? { rules_UNSTABLE: extraRules } : {}),
+        variables: tsVarsFor(theme),
+        ...(hasRules ? { rules_UNSTABLE: rules } : {}),
       },
     },
     iconSpriteUrl: TS_ICON_SPRITE_URL,
@@ -65,12 +75,12 @@ export function tsCustomizations(
 }
 
 /**
- * Customizations for the Analytics liveboard — the shared Salesloft styling plus
- * the rules that hide ThoughtSpot's native filter pills/bar (we drive filters
- * from the host-side filter controls next to the page title).
+ * Customizations for the Analytics liveboard — the active-theme Salesloft
+ * styling plus the rules that hide ThoughtSpot's native filter pills/bar (we
+ * drive filters from the host-side filter controls next to the page title).
  */
-export function liveboardCustomizations() {
-  return tsCustomizations(false, HIDE_FILTER_PILL_RULES);
+export function liveboardCustomizations(theme: ThemeName) {
+  return tsCustomizations(theme, false, HIDE_FILTER_PILL_RULES);
 }
 
 // ---------------------------------------------------------------------------

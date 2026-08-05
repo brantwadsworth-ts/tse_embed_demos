@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchCadences, tsCustomizations, CadenceData } from '../lib/thoughtspot';
+import { useTheme } from '../context/ThemeContext';
 import { INLINE_INSIGHTS_LIVEBOARD_ID } from '../config';
 
 const Liveboard = LiveboardEmbed as unknown as (props: any) => JSX.Element;
@@ -20,6 +21,7 @@ type State =
 
 export default function Cadences() {
   const { username, password } = useAuth();
+  const { theme } = useTheme();
   const [state, setState] = useState<State>({ status: 'loading' });
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -118,7 +120,7 @@ export default function Cadences() {
                 {isOpen && (
                   <div className="cadence-row-board">
                     <Liveboard
-                      key={name}
+                      key={`${name}-${theme}`}
                       liveboardId={INLINE_INSIGHTS_LIVEBOARD_ID}
                       fullHeight
                       minimumHeight={140}
@@ -132,7 +134,7 @@ export default function Cadences() {
                           values: [name],
                         },
                       ]}
-                      customizations={tsCustomizations(false)}
+                      customizations={tsCustomizations(theme)}
                     />
                   </div>
                 )}
