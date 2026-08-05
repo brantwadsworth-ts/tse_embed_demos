@@ -8,8 +8,10 @@ import {
   TS_ICON_SPRITE_URL,
   TS_STRINGS,
   TS_STRING_IDS,
+  TS_FONT_URL,
   FILTER_SOURCE_ID,
-  OWNER_COLUMN,
+  SEGMENT_COLUMN,
+  REP_COLUMN,
   CADENCE_NAME_COLUMN,
   HIDE_FILTER_PILL_RULES,
   TS_RULES_DARK,
@@ -33,6 +35,8 @@ export function initThoughtSpot(username: string, password: string) {
     password,
     customizations: {
       style: {
+        // Load Inter + Fraunces into the iframe so embeds match the host fonts.
+        customCSSUrl: TS_FONT_URL,
         customCSS: { variables: TS_CSS_VARIABLES },
       },
       iconSpriteUrl: TS_ICON_SPRITE_URL,
@@ -62,6 +66,8 @@ export function tsCustomizations(
   const hasRules = Object.keys(rules).length > 0;
   return {
     style: {
+      // Load Inter + Fraunces into the iframe so embeds match the host fonts.
+      customCSSUrl: TS_FONT_URL,
       customCSS: {
         variables: tsVarsFor(theme),
         ...(hasRules ? { rules_UNSTABLE: rules } : {}),
@@ -84,32 +90,37 @@ export function liveboardCustomizations(theme: ThemeName) {
 }
 
 // ---------------------------------------------------------------------------
-// Hierarchical filter data — distinct Cadence Owner → Cadence Name pairs, pulled
-// via the searchdata REST API against FILTER_SOURCE_ID. Feeds the tree filter on
-// the Analytics tab; selections are pushed to the liveboard as runtime filters.
+// Hierarchical filter data — distinct Rep Segment → Rep Name → Cadence Name
+// tuples, pulled via the searchdata REST API against FILTER_SOURCE_ID. Feeds the
+// tree filter on the Analytics tab; selections are pushed to the liveboard as
+// runtime filters.
 //   Docs: https://developers.thoughtspot.com/docs/rest-apiv2-reference
 // ---------------------------------------------------------------------------
 
-export interface HierarchyNode {
-  owner: string;
+export interface RepNode {
+  rep: string;
   cadences: string[];
 }
+export interface SegmentNode {
+  segment: string;
+  reps: RepNode[];
+}
 
-export async function fetchOwnerCadenceHierarchy(
+export async function fetchSegmentRepHierarchy(
   username: string,
   password: string,
-): Promise<HierarchyNode[]> {
+): Promise<SegmentNode[]> {
   await ensureRestSession(username, password);
   const res = await fetch(`${THOUGHTSPOT_HOST}/api/rest/2.0/searchdata`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({
-      // Bracketed column names → ThoughtSpot search tokens for the two columns.
-      query_string: `[${OWNER_COLUMN}] [${CADENCE_NAME_COLUMN}]`,
+      // Bracketed column names → ThoughtSpot search tokens for the three columns.
+      query_string: `[${SEGMENT_COLUMN}] [${REP_COLUMN}] [${CADENCE_NAME_COLUMN}]`,
       logical_table_identifier: FILTER_SOURCE_ID,
       data_format: 'COMPACT',
-      record_size: 10000,
+      record_size: 50000,
     }),
   });
   if (!res.ok) {
@@ -117,17 +128,27 @@ export async function fetchOwnerCadenceHierarchy(
   }
   const data = await res.json();
   const rows: any[] = data.contents?.[0]?.data_rows ?? [];
-  const map = new Map<string, Set<string>>();
+  // segment -> rep -> set(cadence)
+  const tree = new Map<string, Map<string, Set<string>>>();
   for (const r of rows) {
-    const owner = String(r?.[0] ?? '').trim();
-    const cadence = String(r?.[1] ?? '').trim();
-    if (!owner) continue;
-    if (!map.has(owner)) map.set(owner, new Set());
-    if (cadence) map.get(owner)!.add(cadence);
+    const segment = String(r?.[0] ?? '').trim();
+    const rep = String(r?.[1] ?? '').trim();
+    const cadence = String(r?.[2] ?? '').trim();
+    if (!segment) continue;
+    if (!tree.has(segment)) tree.set(segment, new Map());
+    const repMap = tree.get(segment)!;
+    if (!rep) continue;
+    if (!repMap.has(rep)) repMap.set(rep, new Set());
+    if (cadence) repMap.get(rep)!.add(cadence);
   }
-  return [...map.entries()]
-    .map(([owner, cadences]) => ({ owner, cadences: [...cadences].sort() }))
-    .sort((a, b) => a.owner.localeCompare(b.owner));
+  return [...tree.entries()]
+    .map(([segment, repMap]) => ({
+      segment,
+      reps: [...repMap.entries()]
+        .map(([rep, cadences]) => ({ rep, cadences: [...cadences].sort() }))
+        .sort((a, b) => a.rep.localeCompare(b.rep)),
+    }))
+    .sort((a, b) => a.segment.localeCompare(b.segment));
 }
 
 // ---------------------------------------------------------------------------

@@ -12,14 +12,17 @@ import {
   WORKSHEET_ID,
   LIVEBOARD_EMBED_FLAGS,
   SPOTTER_EMBED_FLAGS,
+  SEGMENT_COLUMN,
+  REP_COLUMN,
   CADENCE_NAME_COLUMN,
   DATE_COLUMN,
 } from '../config';
 import { liveboardCustomizations, tsCustomizations } from '../lib/thoughtspot';
 import { useTheme } from '../context/ThemeContext';
 import SpotterModal from '../components/SpotterModal';
-import OwnerCadenceFilter from '../components/OwnerCadenceFilter';
+import RepHierarchyFilter, { HierarchySelection } from '../components/RepHierarchyFilter';
 import DateRangeFilter, { DateSelection } from '../components/DateRangeFilter';
+import PinModal from '../components/PinModal';
 
 const Liveboard = LiveboardEmbed as unknown as (props: any) => JSX.Element;
 const Search = SearchEmbed as unknown as (props: any) => JSX.Element;
@@ -32,6 +35,7 @@ export default function Analytics() {
   const [spotterOpen, setSpotterOpen] = useState(false);
   const [panel, setPanel] = useState<PanelKind>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [pinOpen, setPinOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const boardColRef = useRef<HTMLDivElement>(null);
 
@@ -40,14 +44,19 @@ export default function Analytics() {
   const spotterRef = useEmbedRef<typeof SpotterEmbed>();
 
   // ---- host-side filter selections (refs so applyFilters reads latest) ------
-  const cadencesRef = useRef<string[]>([]);
+  const hierRef = useRef<HierarchySelection>({ segments: [], reps: [], cadences: [] });
   const dateRef = useRef<DateSelection | null>(null);
   const filtersRef = useRef<any[]>([]);
 
   function buildFilters(): any[] {
     const f: any[] = [];
-    if (cadencesRef.current.length)
-      f.push({ columnName: CADENCE_NAME_COLUMN, operator: RuntimeFilterOp.IN, values: cadencesRef.current });
+    const h = hierRef.current;
+    if (h.segments.length)
+      f.push({ columnName: SEGMENT_COLUMN, operator: RuntimeFilterOp.IN, values: h.segments });
+    if (h.reps.length)
+      f.push({ columnName: REP_COLUMN, operator: RuntimeFilterOp.IN, values: h.reps });
+    if (h.cadences.length)
+      f.push({ columnName: CADENCE_NAME_COLUMN, operator: RuntimeFilterOp.IN, values: h.cadences });
     const d = dateRef.current;
     if (d) {
       if (d.start != null && d.end != null)
@@ -67,8 +76,8 @@ export default function Analytics() {
       /* readiness effect re-applies */
     }
   }
-  const onCadenceApply = useCallback((cadences: string[]) => {
-    cadencesRef.current = cadences;
+  const onHierApply = useCallback((sel: HierarchySelection) => {
+    hierRef.current = sel;
     applyFilters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -143,9 +152,10 @@ export default function Analytics() {
   }, [menuOpen]);
 
   // Pin the current answer (Search or Spotter) straight to THIS liveboard.
-  function pinToDashboard() {
-    const name = window.prompt('Name this report before pinning to the dashboard:', 'New report');
-    if (!name) return;
+  // The name is collected via an in-app modal (browser prompts are invisible in
+  // screen shares), then this runs the actual HostEvent.Pin.
+  function pinToDashboard(name: string) {
+    setPinOpen(false);
     const ref = panel === 'spotter' ? spotterRef : searchRef;
     const ctx = panel === 'spotter' ? ContextType.Spotter : ContextType.Search;
     const params: any = { liveboardId: ANALYTICS_LIVEBOARD_ID, newVizName: name };
@@ -174,7 +184,7 @@ export default function Analytics() {
             <p className="page-subtitle">Your live revenue performance dashboard</p>
           </div>
           <div className="analytics-filters">
-            <OwnerCadenceFilter onApply={onCadenceApply} />
+            <RepHierarchyFilter onApply={onHierApply} />
             <DateRangeFilter onApply={onDateApply} />
           </div>
         </div>
@@ -225,7 +235,7 @@ export default function Analytics() {
                 {panel === 'spotter' ? 'Salesloft AI' : 'Report Builder'}
               </span>
               <div className="report-head-actions">
-                <button className="report-pin-btn" onClick={pinToDashboard}>
+                <button className="report-pin-btn" onClick={() => setPinOpen(true)}>
                   <Pin size={15} /> Pin to dashboard
                 </button>
                 <button className="report-close-btn" onClick={() => setPanel(null)} aria-label="Close">
@@ -261,6 +271,11 @@ export default function Analytics() {
       </div>
 
       <SpotterModal open={spotterOpen} onClose={() => setSpotterOpen(false)} />
+      <PinModal
+        open={pinOpen}
+        onCancel={() => setPinOpen(false)}
+        onConfirm={pinToDashboard}
+      />
     </div>
   );
 }
