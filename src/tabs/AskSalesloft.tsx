@@ -2,12 +2,16 @@
 // Analytics "SALESLOFT AI" modal). Left: the Spotter answer canvas with a
 // branded empty-state landing (logo + worksheet sample questions) and its own
 // input bar hidden. Right: a "Salesloft AI" expert pane that tracks the
-// question history and takes follow-ups. After the 2nd question a pervasive
-// trial/upgrade modal appears. Questions drive Spotter via HostEvent.SpotterSearch.
+// question history and takes follow-ups.
+//
+// Each question is routed (via routeMessage): general Salesloft questions
+// (what/how/docs/business) are answered as text with documentation links here
+// in the pane; data/analytics questions drive the Spotter canvas via
+// HostEvent.SpotterSearch. After the 2nd question a pervasive trial modal appears.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SpotterEmbed, useEmbedRef } from '@thoughtspot/visual-embed-sdk/react';
 import { HostEvent } from '@thoughtspot/visual-embed-sdk';
-import { Wand2, ArrowUp, PlayCircle, Sparkles } from 'lucide-react';
+import { Wand2, ArrowUp, PlayCircle, Sparkles, ExternalLink } from 'lucide-react';
 import {
   WORKSHEET_ID,
   SPOTTER_EMBED_FLAGS,
@@ -17,6 +21,7 @@ import {
   HIDE_SPOTTER_INPUT_RULES,
 } from '../config';
 import { tsCustomizations } from '../lib/thoughtspot';
+import { routeMessage, ChatTurn, DocLink } from '../lib/chatbot';
 import { useTheme } from '../context/ThemeContext';
 import SalesloftLogo from '../components/SalesloftLogo';
 import TrialModal from '../components/TrialModal';
@@ -26,12 +31,28 @@ const Spotter = SpotterEmbed as unknown as (props: any) => JSX.Element;
 interface Turn {
   role: 'user' | 'assistant';
   text: string;
+  links?: DocLink[];
 }
 
 const WELCOME: Turn = {
   role: 'assistant',
-  text: 'Ask me about your revenue, cadences, meetings, and rep performance — I answer straight from your live Salesloft data with an interactive chart you can drill into.',
+  text: 'Ask me anything about Salesloft — what it does, cadences, docs, best practices — or ask about your own data (“revenue by week”, “top cadences by influenced pipeline”) and I’ll chart it live.',
 };
+
+/** Render assistant text with any raw URLs turned into clickable links. */
+function renderText(text: string) {
+  // Split on URLs, keeping them as their own parts (capturing group).
+  const parts = text.split(/(https?:\/\/[^\s)]+)/g);
+  return parts.map((part, i) =>
+    /^https?:\/\//.test(part) ? (
+      <a key={i} href={part} target="_blank" rel="noopener noreferrer">
+        {part.replace(/^https?:\/\//, '')}
+      </a>
+    ) : (
+      <span key={i}>{part}</span>
+    ),
+  );
+}
 
 export default function AskSalesloft() {
   const { theme } = useTheme();
@@ -41,6 +62,7 @@ export default function AskSalesloft() {
   const [currentQuery, setCurrentQuery] = useState('');
   const [narrative, setNarrative] = useState<Turn[]>([WELCOME]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
   const [trialOpen, setTrialOpen] = useState(false);
 
   // Stable no-op onData so keystrokes in the input don't re-init the embed.
@@ -48,19 +70,38 @@ export default function AskSalesloft() {
 
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: 'smooth' });
-  }, [narrative]);
+  }, [narrative, loading]);
 
-  function send(preset?: string) {
+  async function send(preset?: string) {
     const q = (preset ?? input).trim();
-    if (!q) return;
+    if (!q || loading) return;
+    const history: ChatTurn[] = narrative.map((t) => ({ role: t.role, content: t.text }));
     const nextCount = narrative.filter((t) => t.role === 'user').length + 1;
     setInput('');
     setNarrative((n) => [...n, { role: 'user', text: q }]);
-    setCurrentQuery(q);
+    setLoading(true);
     try {
-      spotterRef.current?.trigger(HostEvent.SpotterSearch, { query: q, executeSearch: true });
-    } catch (e) {
-      console.warn('[salesloft-ai] SpotterSearch failed:', e);
+      const result = await routeMessage(history, q);
+      if (result.kind === 'analytics') {
+        // Data question → drive the Spotter canvas, note the preamble in the pane.
+        setCurrentQuery(result.query);
+        try {
+          spotterRef.current?.trigger(HostEvent.SpotterSearch, {
+            query: result.query,
+            executeSearch: true,
+          });
+        } catch (e) {
+          console.warn('[salesloft-ai] SpotterSearch failed:', e);
+        }
+        if (result.preamble.trim()) {
+          setNarrative((n) => [...n, { role: 'assistant', text: result.preamble }]);
+        }
+      } else {
+        // General Salesloft question → answer as text (with doc links) in the pane.
+        setNarrative((n) => [...n, { role: 'assistant', text: result.text, links: result.links }]);
+      }
+    } finally {
+      setLoading(false);
     }
     // Pervasive trial prompt from the 2nd question onward.
     if (nextCount >= 2) setTrialOpen(true);
@@ -131,7 +172,26 @@ export default function AskSalesloft() {
 
             {narrative.map((t, i) => {
               if (t.role === 'assistant') {
-                return <p key={i} className="sl-ai-narrative">{t.text}</p>;
+                return (
+                  <div key={i} className="sl-ai-narrative">
+                    <p>{renderText(t.text)}</p>
+                    {t.links && t.links.length > 0 && (
+                      <div className="sl-ai-doclinks">
+                        {t.links.map((l) => (
+                          <a
+                            key={l.url}
+                            className="sl-ai-doclink"
+                            href={l.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {l.label} <ExternalLink size={12} />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
               }
               const version = narrative.slice(0, i + 1).filter((x) => x.role === 'user').length;
               return (
@@ -145,6 +205,12 @@ export default function AskSalesloft() {
                 </div>
               );
             })}
+
+            {loading && (
+              <span className="sl-ai-typing" aria-label="Thinking">
+                <i /> <i /> <i />
+              </span>
+            )}
           </div>
 
           <div className="sl-ai-pane-input">
@@ -154,7 +220,7 @@ export default function AskSalesloft() {
               onKeyDown={(e) => e.key === 'Enter' && send()}
               placeholder="Ask a follow up…"
             />
-            <button onClick={() => send()} disabled={!input.trim()} aria-label="Send">
+            <button onClick={() => send()} disabled={!input.trim() || loading} aria-label="Send">
               <ArrowUp size={17} />
             </button>
           </div>
