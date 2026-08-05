@@ -22,9 +22,10 @@
   --sl-border-soft: #edebe2;
 
   --font-serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
-  /* Matches the embeds' --ts-var-root-font-family exactly so host UI, chatbot,
-     and embedded ThoughtSpot content share the same typeface + fallbacks. */
-  --font-sans: 'Inter', 'Avenir Next', 'Segoe UI', sans-serif;
+  /* Body face — Plus Jakarta Sans (distinctive but professional). Matches the
+     embeds' --ts-var-root-font-family exactly so host UI, chatbot, and embedded
+     ThoughtSpot content share the same typeface + fallbacks. */
+  --font-sans: 'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif;
 
   --topbar-h: 66px;
   --shadow-card: 0 1px 2px rgba(7, 59, 58, 0.05),
@@ -2160,22 +2161,50 @@ button {
   position: absolute;
   inset: 0;
   z-index: 5;
-  background: var(--sl-white);
+  /* Colourful, layered wash so the landing pops rather than reading as a blank
+     white card: green glow top-left, coral glow bottom-right, lime hint. */
+  background:
+    radial-gradient(680px 360px at 18% -8%, rgba(21, 174, 110, 0.20), transparent 62%),
+    radial-gradient(620px 420px at 108% 112%, rgba(242, 107, 94, 0.16), transparent 58%),
+    radial-gradient(520px 340px at 92% 4%, rgba(164, 201, 58, 0.16), transparent 60%),
+    linear-gradient(180deg, #ffffff 0%, var(--sl-mint) 130%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   padding: 32px;
-  gap: 14px;
+  gap: 12px;
+}
+:root[data-theme='dark'] .sl-ai-empty {
+  background:
+    radial-gradient(680px 360px at 18% -8%, rgba(27, 185, 120, 0.24), transparent 62%),
+    radial-gradient(620px 420px at 108% 112%, rgba(244, 122, 109, 0.18), transparent 58%),
+    radial-gradient(520px 340px at 92% 4%, rgba(164, 201, 58, 0.16), transparent 60%),
+    linear-gradient(180deg, #0f2a22 0%, #0a1a15 130%);
 }
 .sl-ai-empty-logo {
-  transform: scale(1.35);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
+  filter: drop-shadow(0 8px 20px rgba(12, 91, 67, 0.35));
+  border-radius: 20px;
+}
+.sl-ai-empty-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--sl-green), var(--sl-green-dark));
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 14px rgba(12, 91, 67, 0.3);
 }
 .sl-ai-empty-title {
   font-family: var(--font-serif);
-  font-size: 30px;
+  font-size: 38px;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--sl-evergreen);
@@ -2183,30 +2212,34 @@ button {
 .sl-ai-empty-sub {
   max-width: 520px;
   font-size: 15px;
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--sl-muted);
 }
 .sl-ai-empty-chips {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 11px;
+  margin-top: 14px;
 }
 .sl-ai-empty-chip {
-  padding: 10px 16px;
-  border: 1px solid var(--sl-border);
-  background: var(--sl-cream);
+  padding: 11px 18px;
+  border: 1.5px solid var(--sl-mint-2);
+  background: var(--sl-white);
   border-radius: 999px;
   font-size: 13.5px;
-  font-weight: 500;
-  color: var(--sl-evergreen);
-  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+  font-weight: 600;
+  color: var(--sl-green-dark);
+  box-shadow: 0 2px 10px rgba(12, 91, 67, 0.1);
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease,
+    box-shadow 0.15s ease, color 0.15s ease;
 }
 .sl-ai-empty-chip:hover {
-  border-color: var(--sl-green-dark);
-  background: var(--sl-mint);
-  transform: translateY(-1px);
+  border-color: var(--sl-green);
+  background: linear-gradient(135deg, var(--sl-mint), var(--sl-white));
+  color: var(--sl-evergreen);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(12, 91, 67, 0.2);
 }
 /* Right pane */
 .sl-ai-pane {
@@ -2254,6 +2287,26 @@ button {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+.sl-ai-watch-video {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--sl-mint-2);
+  background: linear-gradient(135deg, var(--sl-mint), var(--sl-white));
+  color: var(--sl-green-dark);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.sl-ai-watch-video:hover {
+  border-color: var(--sl-green);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(12, 91, 67, 0.18);
 }
 .sl-ai-narrative {
   font-size: 14px;

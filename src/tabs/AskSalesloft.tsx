@@ -7,12 +7,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SpotterEmbed, useEmbedRef } from '@thoughtspot/visual-embed-sdk/react';
 import { HostEvent } from '@thoughtspot/visual-embed-sdk';
-import { Wand2, ArrowUp } from 'lucide-react';
+import { Wand2, ArrowUp, PlayCircle, Sparkles } from 'lucide-react';
 import {
   WORKSHEET_ID,
   SPOTTER_EMBED_FLAGS,
   SALESLOFT_SAMPLE_QUESTIONS,
   SALESLOFT_TRIAL_QUESTIONS,
+  SALESLOFT_VIDEO_URL,
   HIDE_SPOTTER_INPUT_RULES,
 } from '../config';
 import { tsCustomizations } from '../lib/thoughtspot';
@@ -77,7 +78,10 @@ export default function AskSalesloft() {
           <div className="sl-ai-canvas">
             {!currentQuery && (
               <div className="sl-ai-empty">
-                <SalesloftLogo className="sl-ai-empty-logo" size={54} wordmark={false} />
+                <SalesloftLogo className="sl-ai-empty-logo" size={58} wordmark={false} />
+                <span className="sl-ai-empty-eyebrow">
+                  <Sparkles size={14} /> Powered by Salesloft AI
+                </span>
                 <h2 className="sl-ai-empty-title">Ask Salesloft AI</h2>
                 <p className="sl-ai-empty-sub">
                   Ask any analytical question about your revenue, cadences, meetings, and
@@ -116,6 +120,15 @@ export default function AskSalesloft() {
           </div>
 
           <div className="sl-ai-pane-body" ref={bodyRef}>
+            <a
+              className="sl-ai-watch-video"
+              href={SALESLOFT_VIDEO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <PlayCircle size={16} /> Watch video
+            </a>
+
             {narrative.map((t, i) => {
               if (t.role === 'assistant') {
                 return <p key={i} className="sl-ai-narrative">{t.text}</p>;

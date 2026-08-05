@@ -82,7 +82,7 @@ export const WORKSHEET_ID = '06f92f41-00e5-4d81-8213-8a6616f83f49';
 export const TS_CSS_VARIABLES: Record<string, string> = {
   '--ts-var-root-background': '#FDFEFE',
   '--ts-var-root-color': '#073B3A',
-  '--ts-var-root-font-family': '"Inter", "Avenir Next", "Segoe UI", sans-serif',
+  '--ts-var-root-font-family': '"Plus Jakarta Sans", "Avenir Next", "Segoe UI", sans-serif',
   '--ts-var-application-color': '#0A4A4A',
   '--ts-var-nav-background': '#FFFFFF',
   '--ts-var-nav-color': '#0A4A4A',
@@ -162,7 +162,7 @@ export const TS_VARS_DARK: Record<string, string> = {
   '--ts-var-root-background': '#0c1f1a',
   '--ts-var-root-color': '#e8f0ec',
   '--ts-var-root-secondary-color': '#93a89f',
-  '--ts-var-root-font-family': '"Inter", "Avenir Next", "Segoe UI", sans-serif',
+  '--ts-var-root-font-family': '"Plus Jakarta Sans", "Avenir Next", "Segoe UI", sans-serif',
   '--ts-var-application-color': '#e8f0ec',
   '--ts-var-nav-background': '#0a1a15',
   '--ts-var-nav-color': '#e8f0ec',
@@ -364,11 +364,14 @@ export const SPOTTER_EMBED_FLAGS = {
 };
 
 /** Google-Fonts stylesheet loaded INTO embed iframes so embedded ThoughtSpot
- * surfaces render in the same faces as the host UI (Inter for text, Fraunces
- * for titles) — iframes can't see the host page's fonts. Passed as customCSSUrl.
+ * surfaces render in the same faces as the host UI (Plus Jakarta Sans for text,
+ * Fraunces for titles) — iframes can't see the host page's fonts. customCSSUrl.
  */
 export const TS_FONT_URL =
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap';
+  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap';
+
+/** "Watch video" link shown in the Salesloft AI pane. */
+export const SALESLOFT_VIDEO_URL = 'https://www.salesloft.com/platform/conversations';
 
 /** Sample questions shown on the custom Salesloft AI landing pane. */
 export const SALESLOFT_SAMPLE_QUESTIONS = [
