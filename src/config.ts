@@ -378,9 +378,33 @@ export const SALESLOFT_SAMPLE_QUESTIONS = [
   'Reply rate by cadence',
 ];
 
-/** Trial / upgrade banner shown in the Salesloft AI pane after the first query. */
+/** Trial / upgrade prompt shown in the Salesloft AI pane after the 2nd query. */
 export const SALESLOFT_TRIAL_QUESTIONS = 20;
 export const SALESLOFT_UPGRADE_URL = 'https://www.salesloft.com/pricing';
+
+/**
+ * Hide the Spotter embed's own composer / input bar on the Salesloft AI screen
+ * — questions are driven from the host-side pane on the right, so the in-embed
+ * "Enter your question" box (and its Quick/Deep toggle) is redundant. Injected
+ * via rules_UNSTABLE. Class names are version-fragile; verify via Inspect if a
+ * release renames them.
+ */
+const HIDE = { display: 'none !important' };
+export const HIDE_SPOTTER_INPUT_RULES: Record<string, Record<string, string>> = {
+  '[class*="composer" i]': HIDE,
+  '[class*="promptInput" i]': HIDE,
+  '[class*="prompt-input" i]': HIDE,
+  '[class*="chatInput" i]': HIDE,
+  '[class*="chat-input" i]': HIDE,
+  '[class*="conversationInput" i]': HIDE,
+  '[class*="conversation-input" i]': HIDE,
+  '[class*="conversationFooter" i]': HIDE,
+  '[class*="conversation-footer" i]': HIDE,
+  '[class*="bottomBar" i]': HIDE,
+  '[class*="searchInputContainer" i]': HIDE,
+  '[data-testid*="conversation-input" i]': HIDE,
+  '[data-testid*="spotter-input" i]': HIDE,
+};
 
 // ---------------------------------------------------------------------------
 // Host-side filters on the Analytics liveboard.

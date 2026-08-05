@@ -19,7 +19,6 @@ import {
 } from '../config';
 import { liveboardCustomizations, tsCustomizations } from '../lib/thoughtspot';
 import { useTheme } from '../context/ThemeContext';
-import SpotterModal from '../components/SpotterModal';
 import RepHierarchyFilter, { HierarchySelection } from '../components/RepHierarchyFilter';
 import DateRangeFilter, { DateSelection } from '../components/DateRangeFilter';
 import PinModal from '../components/PinModal';
@@ -32,7 +31,6 @@ type PanelKind = 'search' | 'spotter' | null;
 
 export default function Analytics() {
   const { theme } = useTheme();
-  const [spotterOpen, setSpotterOpen] = useState(false);
   const [panel, setPanel] = useState<PanelKind>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [pinOpen, setPinOpen] = useState(false);
@@ -205,10 +203,6 @@ export default function Analytics() {
               </div>
             )}
           </div>
-          <button className="salesloft-ai-btn" onClick={() => setSpotterOpen(true)}>
-            <Wand2 size={18} strokeWidth={2.2} />
-            <span>SALESLOFT AI</span>
-          </button>
         </div>
       </div>
 
@@ -270,7 +264,6 @@ export default function Analytics() {
         )}
       </div>
 
-      <SpotterModal open={spotterOpen} onClose={() => setSpotterOpen(false)} />
       <PinModal
         open={pinOpen}
         onCancel={() => setPinOpen(false)}

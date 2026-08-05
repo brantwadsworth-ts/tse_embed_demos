@@ -2387,3 +2387,120 @@ button {
     display: none;
   }
 }
+
+/* Ask Salesloft tab — the Salesloft AI experience as a full-height page. */
+.tab-ask {
+  max-width: none;
+}
+.sl-ai-page {
+  display: flex;
+  height: calc(100vh - var(--topbar-h) - 64px);
+  min-height: 520px;
+  background: var(--sl-white);
+  border: 1px solid var(--sl-border);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.sl-ai-page .sl-ai-empty-logo {
+  transform: none;
+}
+
+/* =====================  Trial / upgrade modal  ========================== */
+.sl-trial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 210;
+  background: rgba(7, 30, 24, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.sl-trial-modal {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  background: var(--sl-white);
+  border: 1px solid var(--sl-border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lift);
+  padding: 30px 28px 24px;
+  text-align: center;
+}
+.sl-trial-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  border: none;
+  background: transparent;
+  color: var(--sl-muted);
+  padding: 6px;
+  border-radius: 8px;
+}
+.sl-trial-close:hover {
+  background: var(--sl-mint);
+  color: var(--sl-ink);
+}
+.sl-trial-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--sl-green), var(--sl-green-dark));
+  color: #fff;
+}
+.sl-trial-title {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--sl-evergreen);
+  margin-bottom: 10px;
+}
+.sl-trial-sub {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--sl-muted);
+  margin-bottom: 22px;
+}
+.sl-trial-sub strong {
+  color: var(--sl-ink);
+}
+.sl-trial-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1bb978, var(--sl-green-dark));
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(12, 91, 67, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.sl-trial-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(12, 91, 67, 0.45);
+}
+.sl-trial-dismiss {
+  margin-top: 12px;
+  border: none;
+  background: transparent;
+  color: var(--sl-muted);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.sl-trial-dismiss:hover {
+  color: var(--sl-ink);
+  text-decoration: underline;
+}
