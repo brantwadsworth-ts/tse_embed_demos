@@ -451,38 +451,3 @@ export const HIDE_FILTER_PILL_RULES: Record<string, Record<string, string>> = {
   '[data-testid*="pinboard-filters" i]': PILL_HIDE,
 };
 
-/**
- * Cosmetic "glossy / futuristic" polish for the Analytics liveboard tiles —
- * rounder corners, a deep soft drop-shadow, a faint sheen, and a smooth hover
- * lift. Only border-radius / box-shadow / transform (no layout/display) so it
- * can't break chart rendering. Class names are version-fragile; if a release
- * renames tile containers the vars still provide the base radius/shadow.
- *   Docs: https://developers.thoughtspot.com/docs/css-rules
- */
-export const LIVEBOARD_GLOSS_RULES: Record<string, Record<string, string>> = {
-  [[
-    '[class*="pinboard-tile" i]',
-    '[class*="pinboardTile" i]',
-    '[class*="viz-tile" i]',
-    '[class*="vizTile" i]',
-    '[class*="tile-container" i]',
-    '[class*="tileContainer" i]',
-  ].join(',')]: {
-    'border-radius': '18px !important',
-    'box-shadow':
-      '0 1px 0 rgba(255,255,255,0.05) inset, 0 14px 40px rgba(0,0,0,0.30), 0 2px 8px rgba(0,0,0,0.14) !important',
-    transition: 'transform 0.22s ease, box-shadow 0.22s ease !important',
-  },
-  [[
-    '[class*="pinboard-tile" i]:hover',
-    '[class*="pinboardTile" i]:hover',
-    '[class*="viz-tile" i]:hover',
-    '[class*="vizTile" i]:hover',
-    '[class*="tile-container" i]:hover',
-    '[class*="tileContainer" i]:hover',
-  ].join(',')]: {
-    transform: 'translateY(-4px) !important',
-    'box-shadow':
-      '0 1px 0 rgba(255,255,255,0.06) inset, 0 24px 60px rgba(0,0,0,0.40), 0 6px 14px rgba(0,0,0,0.18) !important',
-  },
-};
