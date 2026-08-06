@@ -181,8 +181,9 @@ export const TS_VARS_DARK: Record<string, string> = {
   '--ts-var-button--primary--active-background': '#0a744a',
   '--ts-var-button--secondary-background': '#183a30',
   '--ts-var-button--secondary-color': '#e8f0ec',
-  '--ts-var-button--secondary--hover-background': '#204438',
-  '--ts-var-button--secondary--active-background': '#274f42',
+  // Dark hover fill so the light secondary label stays readable (was flipping light).
+  '--ts-var-button--secondary--hover-background': '#0f9a63',
+  '--ts-var-button--secondary--active-background': '#0c8554',
   '--ts-var-button--tertiary-background': 'transparent',
   '--ts-var-button--tertiary-color': '#c2d3cb',
   '--ts-var-button--tertiary--hover-background': '#183a30',
@@ -449,29 +450,5 @@ export const HIDE_FILTER_PILL_RULES: Record<string, Record<string, string>> = {
   '[class*="filter-bar" i]': PILL_HIDE,
   '[data-testid*="filter-chip" i]': PILL_HIDE,
   '[data-testid*="pinboard-filters" i]': PILL_HIDE,
-};
-
-/**
- * Keep the on-tile "Salesloft AI" (Spotter) button readable: its default hover
- * flips to a low-contrast background (white in dark mode, dark-green with faint
- * text in light) that hides the label. Force a consistent deep-green fill with
- * white text in both themes. COLOR-ONLY (background/color) so it can't affect
- * layout. Scoped to the liveboard via liveboardCustomizations.
- */
-const AI_BTN_SEL = [
-  'button[data-testid*="spotter" i]',
-  'button[class*="spotter" i]',
-  '[data-testid*="spotter-button" i]',
-  '[class*="spotterLaunch" i]',
-  '[class*="spotter-launch" i]',
-  '[class*="askSpotter" i]',
-];
-export const AI_BUTTON_FIX_RULES: Record<string, Record<string, string>> = {
-  [AI_BTN_SEL.join(',')]: { 'background-color': '#0f9a63 !important', color: '#ffffff !important' },
-  [AI_BTN_SEL.map((s) => `${s}:hover`).join(',')]: {
-    'background-color': '#0c8554 !important',
-    color: '#ffffff !important',
-  },
-  [AI_BTN_SEL.map((s) => `${s} span`).join(',')]: { color: '#ffffff !important' },
 };
 
