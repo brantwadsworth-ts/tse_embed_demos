@@ -17,7 +17,7 @@ import SalesloftLogo from './SalesloftLogo';
 export type TabId = 'my-analytics' | 'analytics' | 'cadences' | 'signals' | 'ask';
 
 const TABS: { id: TabId; label: string; icon: typeof BarChart3 }[] = [
-  { id: 'my-analytics', label: 'My Analytics', icon: LayoutGrid },
+  { id: 'my-analytics', label: 'My Reports', icon: LayoutGrid },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   { id: 'cadences', label: 'Cadences', icon: Workflow },
   { id: 'signals', label: 'Signals', icon: Activity },

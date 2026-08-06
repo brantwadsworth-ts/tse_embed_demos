@@ -109,7 +109,7 @@ export default function MyAnalytics() {
         <div className="my-analytics-toolbar">
           <button className="back-btn" onClick={() => setSelected(null)}>
             <ArrowLeft size={16} />
-            Back to My Analytics
+            Back to My Reports
           </button>
           <h1 className="page-title-inline">{selected.name}</h1>
         </div>
@@ -132,7 +132,7 @@ export default function MyAnalytics() {
     <div className="tab-my-analytics">
       <div className="my-analytics-header">
         <div>
-          <h1 className="page-title">My Analytics</h1>
+          <h1 className="page-title">My Reports</h1>
           <p className="page-subtitle">
             {state.status === 'ready'
               ? `${state.items.length} liveboard${

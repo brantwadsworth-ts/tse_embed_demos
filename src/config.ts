@@ -103,8 +103,8 @@ export const TS_CSS_VARIABLES: Record<string, string> = {
   '--ts-var-viz-title-color': '#073B3A',
   '--ts-var-viz-title-font-family': '"Fraunces", "Iowan Old Style", "Georgia", serif',
   '--ts-var-viz-description-color': '#1D5A59',
-  '--ts-var-viz-border-radius': '14px',
-  '--ts-var-viz-box-shadow': '0 1px 2px rgba(7, 59, 58, 0.06), 0 8px 24px rgba(7, 59, 58, 0.08)',
+  '--ts-var-viz-border-radius': '18px',
+  '--ts-var-viz-box-shadow': '0 1px 2px rgba(7, 59, 58, 0.06), 0 16px 44px rgba(7, 59, 58, 0.16)',
   '--ts-var-viz-background': '#FFFFFF',
   '--ts-var-chip-border-radius': '999px',
   '--ts-var-chip-background': '#E8F4F3',
@@ -127,7 +127,7 @@ export const TS_CSS_VARIABLES: Record<string, string> = {
   '--ts-var-liveboard-header-font-color': '#073B3A',
   '--ts-var-liveboard-tile-background': '#FFFFFF',
   '--ts-var-liveboard-tile-border-color': '#D7E7E6',
-  '--ts-var-liveboard-tile-border-radius': '14px',
+  '--ts-var-liveboard-tile-border-radius': '18px',
   '--ts-var-liveboard-tile-padding': '12px',
   '--ts-var-liveboard-tile-table-header-background': '#F4FAF9',
   '--ts-var-liveboard-tab-active-border-color': '#F26B5E',
@@ -174,10 +174,11 @@ export const TS_VARS_DARK: Record<string, string> = {
   '--ts-var-search-auto-complete-font-color': '#e8f0ec',
   '--ts-var-button-border-radius': '10px',
   '--ts-var-button--icon-border-radius': '8px',
-  '--ts-var-button--primary-background': '#1bb978',
-  '--ts-var-button--primary-color': '#06120e',
-  '--ts-var-button--primary--hover-background': '#15ae6e',
-  '--ts-var-button--primary--active-background': '#0c9c5f',
+  // Deeper green + white text so labels stay readable (incl. on hover).
+  '--ts-var-button--primary-background': '#0f9a63',
+  '--ts-var-button--primary-color': '#ffffff',
+  '--ts-var-button--primary--hover-background': '#0c8554',
+  '--ts-var-button--primary--active-background': '#0a744a',
   '--ts-var-button--secondary-background': '#183a30',
   '--ts-var-button--secondary-color': '#e8f0ec',
   '--ts-var-button--secondary--hover-background': '#204438',
@@ -188,8 +189,9 @@ export const TS_VARS_DARK: Record<string, string> = {
   '--ts-var-viz-title-color': '#e8f0ec',
   '--ts-var-viz-title-font-family': '"Fraunces", "Iowan Old Style", "Georgia", serif',
   '--ts-var-viz-description-color': '#93a89f',
-  '--ts-var-viz-border-radius': '14px',
-  '--ts-var-viz-box-shadow': '0 1px 2px rgba(0,0,0,0.5)',
+  '--ts-var-viz-border-radius': '18px',
+  '--ts-var-viz-box-shadow':
+    '0 1px 0 rgba(255,255,255,0.05) inset, 0 14px 44px rgba(0,0,0,0.55), 0 0 0 1px rgba(27,185,120,0.10)',
   '--ts-var-viz-background': '#102a23',
   '--ts-var-viz-legend-hover-background': '#183a30',
   '--ts-var-chip-border-radius': '999px',
@@ -218,7 +220,7 @@ export const TS_VARS_DARK: Record<string, string> = {
   '--ts-var-liveboard-cross-filter-layout-background': '#102a23',
   '--ts-var-liveboard-tile-background': '#102a23',
   '--ts-var-liveboard-tile-border-color': '#204438',
-  '--ts-var-liveboard-tile-border-radius': '14px',
+  '--ts-var-liveboard-tile-border-radius': '18px',
   '--ts-var-liveboard-tile-padding': '12px',
   '--ts-var-liveboard-tile-table-header-background': '#143329',
   '--ts-var-liveboard-tab-active-border-color': '#f26b5e',
@@ -447,4 +449,40 @@ export const HIDE_FILTER_PILL_RULES: Record<string, Record<string, string>> = {
   '[class*="filter-bar" i]': PILL_HIDE,
   '[data-testid*="filter-chip" i]': PILL_HIDE,
   '[data-testid*="pinboard-filters" i]': PILL_HIDE,
+};
+
+/**
+ * Cosmetic "glossy / futuristic" polish for the Analytics liveboard tiles —
+ * rounder corners, a deep soft drop-shadow, a faint sheen, and a smooth hover
+ * lift. Only border-radius / box-shadow / transform (no layout/display) so it
+ * can't break chart rendering. Class names are version-fragile; if a release
+ * renames tile containers the vars still provide the base radius/shadow.
+ *   Docs: https://developers.thoughtspot.com/docs/css-rules
+ */
+export const LIVEBOARD_GLOSS_RULES: Record<string, Record<string, string>> = {
+  [[
+    '[class*="pinboard-tile" i]',
+    '[class*="pinboardTile" i]',
+    '[class*="viz-tile" i]',
+    '[class*="vizTile" i]',
+    '[class*="tile-container" i]',
+    '[class*="tileContainer" i]',
+  ].join(',')]: {
+    'border-radius': '18px !important',
+    'box-shadow':
+      '0 1px 0 rgba(255,255,255,0.05) inset, 0 14px 40px rgba(0,0,0,0.30), 0 2px 8px rgba(0,0,0,0.14) !important',
+    transition: 'transform 0.22s ease, box-shadow 0.22s ease !important',
+  },
+  [[
+    '[class*="pinboard-tile" i]:hover',
+    '[class*="pinboardTile" i]:hover',
+    '[class*="viz-tile" i]:hover',
+    '[class*="vizTile" i]:hover',
+    '[class*="tile-container" i]:hover',
+    '[class*="tileContainer" i]:hover',
+  ].join(',')]: {
+    transform: 'translateY(-4px) !important',
+    'box-shadow':
+      '0 1px 0 rgba(255,255,255,0.06) inset, 0 24px 60px rgba(0,0,0,0.40), 0 6px 14px rgba(0,0,0,0.18) !important',
+  },
 };

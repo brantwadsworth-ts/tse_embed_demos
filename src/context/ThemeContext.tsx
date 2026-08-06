@@ -12,7 +12,8 @@ const STORAGE_KEY = 'salesloft-theme';
 
 function initialTheme(): ThemeName {
   const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-  return saved === 'light' || saved === 'dark' ? saved : 'light';
+  // Default to dark; only honor an explicit prior choice of light.
+  return saved === 'light' || saved === 'dark' ? saved : 'dark';
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
