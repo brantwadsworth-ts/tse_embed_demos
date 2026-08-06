@@ -98,7 +98,9 @@ export const TS_CSS_VARIABLES: Record<string, string> = {
   '--ts-var-button--primary--active-background': '#084B49',
   '--ts-var-button--secondary-background': '#E9F3F2',
   '--ts-var-button--secondary-color': '#0A4A4A',
+  // See dark-theme note: the SDK reads the typo'd "--hovers-background".
   '--ts-var-button--secondary--hover-background': '#DDECEC',
+  '--ts-var-button--secondary--hovers-background': '#DDECEC',
   '--ts-var-button--secondary--active-background': '#CFE3E2',
   '--ts-var-viz-title-color': '#073B3A',
   '--ts-var-viz-title-font-family': '"Fraunces", "Iowan Old Style", "Georgia", serif',
@@ -181,8 +183,11 @@ export const TS_VARS_DARK: Record<string, string> = {
   '--ts-var-button--primary--active-background': '#0a744a',
   '--ts-var-button--secondary-background': '#183a30',
   '--ts-var-button--secondary-color': '#e8f0ec',
-  // Dark hover fill so the light secondary label stays readable (was flipping light).
+  // NOTE: the SDK's *effective* var name is the typo'd "--hovers-background"
+  // (default #aac2f8, a light blue) — the clean "--hover-background" is only in
+  // the docs. Set both so the label stays readable on hover.
   '--ts-var-button--secondary--hover-background': '#0f9a63',
+  '--ts-var-button--secondary--hovers-background': '#0f9a63',
   '--ts-var-button--secondary--active-background': '#0c8554',
   '--ts-var-button--tertiary-background': 'transparent',
   '--ts-var-button--tertiary-color': '#c2d3cb',
