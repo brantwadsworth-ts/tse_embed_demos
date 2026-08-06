@@ -82,11 +82,29 @@ export function tsCustomizations(
 
 /**
  * Customizations for the Analytics liveboard — the active-theme Salesloft
- * styling plus the rules that hide ThoughtSpot's native filter pills/bar (we
- * drive filters from the host-side filter controls next to the page title).
+ * styling, the rules that hide ThoughtSpot's native filter pills/bar, and a
+ * direct override for the on-viz action buttons' hover background.
+ *
+ * The viz action buttons (bell / "Salesloft AI" / …) read their hover bg from
+ * `--ts-var-liveboard-header-action-button-hover-color`, but overriding that
+ * variable had no effect (the button falls back to a near-white translucent
+ * grey). So we target the exact ThoughtSpot rule seen in DevTools —
+ * `…vizStyling …buttonWrapper button:hover` — with a color-only !important
+ * override that contrasts with the (theme-dependent) label. Background-color
+ * only, so it can't affect layout.
  */
 export function liveboardCustomizations(theme: ThemeName) {
-  return tsCustomizations(theme, false, HIDE_FILTER_PILL_RULES);
+  const hoverBg = theme === 'dark' ? '#0f9a63' : '#d9ecea';
+  const activeBg = theme === 'dark' ? '#0c8554' : '#cfe3e2';
+  const btnHoverRules: Record<string, Record<string, string>> = {
+    '[class*="vizStyling" i] [class*="buttonWrapper" i] button:hover': {
+      'background-color': `${hoverBg} !important`,
+    },
+    '[class*="vizStyling" i] [class*="buttonWrapper" i] button:active': {
+      'background-color': `${activeBg} !important`,
+    },
+  };
+  return tsCustomizations(theme, false, { ...HIDE_FILTER_PILL_RULES, ...btnHoverRules });
 }
 
 // ---------------------------------------------------------------------------
