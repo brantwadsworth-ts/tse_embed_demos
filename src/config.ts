@@ -136,8 +136,10 @@ export const TS_CSS_VARIABLES: Record<string, string> = {
   '--ts-var-liveboard-tab-hover-color': '#0C6E6C',
   '--ts-var-liveboard-header-action-button-background': '#E8F4F3',
   '--ts-var-liveboard-header-action-button-font-color': '#0A4A4A',
-  '--ts-var-liveboard-header-action-button-hover-color': '#073B3A',
-  '--ts-var-liveboard-header-action-button-active-color': '#073B3A',
+  // NOTE: despite "-color", these are the button's hover/active BACKGROUND.
+  // Label is dark here, so keep the hover background LIGHT for contrast.
+  '--ts-var-liveboard-header-action-button-hover-color': '#D9ECEA',
+  '--ts-var-liveboard-header-action-button-active-color': '#CFE3E2',
   '--ts-var-parameter-chip-background': '#E8F4F3',
   '--ts-var-parameter-chip-text-color': '#0A4A4A',
   '--ts-var-parameter-chip-hover-background': '#D9ECEA',
@@ -233,8 +235,10 @@ export const TS_VARS_DARK: Record<string, string> = {
   '--ts-var-liveboard-tab-hover-color': '#1bb978',
   '--ts-var-liveboard-header-action-button-background': '#183a30',
   '--ts-var-liveboard-header-action-button-font-color': '#e8f0ec',
-  '--ts-var-liveboard-header-action-button-hover-color': '#ffffff',
-  '--ts-var-liveboard-header-action-button-active-color': '#ffffff',
+  // NOTE: despite "-color", these are the button's hover/active BACKGROUND.
+  // Label is light here, so keep the hover background DARK green for contrast.
+  '--ts-var-liveboard-header-action-button-hover-color': '#0f9a63',
+  '--ts-var-liveboard-header-action-button-active-color': '#0c8554',
   // Masterpieces grouping/styling (active because isLiveboardMasterpiecesEnabled)
   '--ts-var-liveboard-group-background': '#0a1a15',
   '--ts-var-liveboard-group-title-font-color': '#e8f0ec',
