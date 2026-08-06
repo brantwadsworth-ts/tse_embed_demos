@@ -451,3 +451,27 @@ export const HIDE_FILTER_PILL_RULES: Record<string, Record<string, string>> = {
   '[data-testid*="pinboard-filters" i]': PILL_HIDE,
 };
 
+/**
+ * Keep the on-tile "Salesloft AI" (Spotter) button readable: its default hover
+ * flips to a low-contrast background (white in dark mode, dark-green with faint
+ * text in light) that hides the label. Force a consistent deep-green fill with
+ * white text in both themes. COLOR-ONLY (background/color) so it can't affect
+ * layout. Scoped to the liveboard via liveboardCustomizations.
+ */
+const AI_BTN_SEL = [
+  'button[data-testid*="spotter" i]',
+  'button[class*="spotter" i]',
+  '[data-testid*="spotter-button" i]',
+  '[class*="spotterLaunch" i]',
+  '[class*="spotter-launch" i]',
+  '[class*="askSpotter" i]',
+];
+export const AI_BUTTON_FIX_RULES: Record<string, Record<string, string>> = {
+  [AI_BTN_SEL.join(',')]: { 'background-color': '#0f9a63 !important', color: '#ffffff !important' },
+  [AI_BTN_SEL.map((s) => `${s}:hover`).join(',')]: {
+    'background-color': '#0c8554 !important',
+    color: '#ffffff !important',
+  },
+  [AI_BTN_SEL.map((s) => `${s} span`).join(',')]: { color: '#ffffff !important' },
+};
+

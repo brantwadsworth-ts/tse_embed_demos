@@ -14,6 +14,7 @@ import {
   REP_COLUMN,
   CADENCE_NAME_COLUMN,
   HIDE_FILTER_PILL_RULES,
+  AI_BUTTON_FIX_RULES,
   TS_RULES_DARK,
   tsVarsFor,
   ThemeName,
@@ -86,7 +87,7 @@ export function tsCustomizations(
  * drive filters from the host-side filter controls next to the page title).
  */
 export function liveboardCustomizations(theme: ThemeName) {
-  return tsCustomizations(theme, false, HIDE_FILTER_PILL_RULES);
+  return tsCustomizations(theme, false, { ...HIDE_FILTER_PILL_RULES, ...AI_BUTTON_FIX_RULES });
 }
 
 // ---------------------------------------------------------------------------
