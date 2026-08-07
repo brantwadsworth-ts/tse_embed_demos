@@ -127,10 +127,29 @@ export function liveboardCustomizations(theme: ThemeName) {
         'border-color': `${tabGreen} !important`,
       },
   };
+  // Custom-JS charts (funnel, gauges) render their HTML/SVG labels using
+  // ThoughtSpot's internal `--font-family` var (optimo-plain…), which overrides
+  // the chart's own `#chart { font-family }` and ignores --ts-var-root-font-family.
+  // Override `--font-family` and force the chart label elements to the app font.
+  const APP_FONT = "'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif";
+  const chartFontRules: Record<string, Record<string, string>> = {
+    ':root': { '--font-family': `${APP_FONT} !important` },
+    [[
+      '#chart',
+      '#chart *',
+      '[class*="kpi-card" i]',
+      '[class*="kpi-card" i] *',
+      '[class*="gauge" i]',
+      '[class*="gauge" i] *',
+      '[class*="funnel" i]',
+      '[class*="funnel" i] *',
+    ].join(',')]: { 'font-family': `${APP_FONT} !important` },
+  };
   return tsCustomizations(theme, false, {
     ...HIDE_FILTER_PILL_RULES,
     ...btnHoverRules,
     ...tabRules,
+    ...chartFontRules,
   });
 }
 
