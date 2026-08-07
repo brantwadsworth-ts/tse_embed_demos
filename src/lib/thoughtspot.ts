@@ -104,7 +104,34 @@ export function liveboardCustomizations(theme: ThemeName) {
       'background-color': `${activeBg} !important`,
     },
   };
-  return tsCustomizations(theme, false, { ...HIDE_FILTER_PILL_RULES, ...btnHoverRules });
+  // Active liveboard tab → brand green (the CSS variable had no effect, so
+  // drive it directly). Semantic role/aria selectors first, then class-based
+  // fallbacks for the label + the underline indicator. Colour/background only.
+  const tabGreen = theme === 'dark' ? '#1bb978' : '#15ae6e';
+  const tabRules: Record<string, Record<string, string>> = {
+    '[role="tab"][aria-selected="true"]': {
+      color: `${tabGreen} !important`,
+      'border-bottom-color': `${tabGreen} !important`,
+    },
+    '[role="tab"][aria-selected="true"] *': {
+      color: `${tabGreen} !important`,
+    },
+    '[class*="pinboard-tab" i][class*="active" i], [class*="pinboardTab" i][class*="active" i], [class*="pinboard-tab" i][class*="selected" i], [class*="pinboardTab" i][class*="selected" i]':
+      {
+        color: `${tabGreen} !important`,
+        'border-bottom-color': `${tabGreen} !important`,
+      },
+    '[class*="tab" i][class*="indicator" i], [class*="tab" i][class*="underline" i], [class*="tab" i][class*="activeBar" i]':
+      {
+        'background-color': `${tabGreen} !important`,
+        'border-color': `${tabGreen} !important`,
+      },
+  };
+  return tsCustomizations(theme, false, {
+    ...HIDE_FILTER_PILL_RULES,
+    ...btnHoverRules,
+    ...tabRules,
+  });
 }
 
 // ---------------------------------------------------------------------------
