@@ -349,7 +349,7 @@ button {
    and a tighter top padding so less vertical space is wasted above the title. */
 .tab-analytics {
   max-width: none;
-  padding-top: 2px;
+  padding-top: 7px;
 }
 .tab-analytics .analytics-toolbar {
   margin-bottom: 8px;
