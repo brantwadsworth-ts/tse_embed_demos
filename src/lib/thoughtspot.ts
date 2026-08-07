@@ -215,6 +215,33 @@ export async function fetchSegmentRepHierarchy(
     .sort((a, b) => a.segment.localeCompare(b.segment));
 }
 
+/** Distinct Rep Name values, for the standalone Rep dropdown filter. */
+export async function fetchRepNames(username: string, password: string): Promise<string[]> {
+  await ensureRestSession(username, password);
+  const res = await fetch(`${THOUGHTSPOT_HOST}/api/rest/2.0/searchdata`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      query_string: `[${REP_COLUMN}]`,
+      logical_table_identifier: FILTER_SOURCE_ID,
+      data_format: 'COMPACT',
+      record_size: 50000,
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`searchdata failed (${res.status}): ${(await res.text()).slice(0, 200)}`);
+  }
+  const data = await res.json();
+  const rows: any[] = data.contents?.[0]?.data_rows ?? [];
+  const set = new Set<string>();
+  for (const r of rows) {
+    const rep = String(r?.[0] ?? '').trim();
+    if (rep) set.add(rep);
+  }
+  return [...set].sort((a, b) => a.localeCompare(b));
+}
+
 // ---------------------------------------------------------------------------
 // REST API v2 helpers (used by the "My Analytics" tab)
 // ---------------------------------------------------------------------------

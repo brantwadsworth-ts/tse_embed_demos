@@ -20,6 +20,7 @@ import {
 import { liveboardCustomizations, tsCustomizations } from '../lib/thoughtspot';
 import { useTheme } from '../context/ThemeContext';
 import RepHierarchyFilter, { HierarchySelection } from '../components/RepHierarchyFilter';
+import RepFilter from '../components/RepFilter';
 import DateRangeFilter, { DateSelection } from '../components/DateRangeFilter';
 import PinModal from '../components/PinModal';
 
@@ -43,6 +44,7 @@ export default function Analytics() {
 
   // ---- host-side filter selections (refs so applyFilters reads latest) ------
   const hierRef = useRef<HierarchySelection>({ segments: [], reps: [], cadences: [] });
+  const repRef = useRef<string[]>([]);
   const dateRef = useRef<DateSelection | null>(null);
   const filtersRef = useRef<any[]>([]);
 
@@ -51,8 +53,11 @@ export default function Analytics() {
     const h = hierRef.current;
     if (h.segments.length)
       f.push({ columnName: SEGMENT_COLUMN, operator: RuntimeFilterOp.IN, values: h.segments });
-    if (h.reps.length)
-      f.push({ columnName: REP_COLUMN, operator: RuntimeFilterOp.IN, values: h.reps });
+    // Rep Name column is driven by BOTH the hierarchy tree and the standalone
+    // Rep dropdown; union them into a single IN filter (one filter per column).
+    const repValues = Array.from(new Set([...h.reps, ...repRef.current]));
+    if (repValues.length)
+      f.push({ columnName: REP_COLUMN, operator: RuntimeFilterOp.IN, values: repValues });
     if (h.cadences.length)
       f.push({ columnName: CADENCE_NAME_COLUMN, operator: RuntimeFilterOp.IN, values: h.cadences });
     const d = dateRef.current;
@@ -76,6 +81,11 @@ export default function Analytics() {
   }
   const onHierApply = useCallback((sel: HierarchySelection) => {
     hierRef.current = sel;
+    applyFilters();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const onRepApply = useCallback((reps: string[]) => {
+    repRef.current = reps;
     applyFilters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -183,6 +193,7 @@ export default function Analytics() {
           </div>
           <div className="analytics-filters">
             <RepHierarchyFilter onApply={onHierApply} />
+            <RepFilter onApply={onRepApply} />
             <DateRangeFilter onApply={onDateApply} />
           </div>
         </div>
