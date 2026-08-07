@@ -32,7 +32,7 @@ export default function Login() {
   return (
     <div className="login-page">
       <div className="login-left">
-        <SalesloftLogo className="login-logo" />
+        <SalesloftLogo className="login-logo" size={34} />
         <div className="login-hero-content">
           <h1 className="login-hero-title">
             A new story<br />about sales.

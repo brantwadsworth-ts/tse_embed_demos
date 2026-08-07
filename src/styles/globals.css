@@ -111,9 +111,20 @@ button {
 /* ===========================  Logo  ====================================== */
 
 .sl-logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 9px;
+  /* Drives the inlined logo's `currentColor` ink: dark on light surfaces,
+     light on dark. The lime accent in the SVG is fixed and unaffected. */
+  color: var(--sl-evergreen);
+}
+.sl-logo svg {
+  height: 100%;
+  width: auto;
+  display: block;
+}
+/* Login hero panel is always dark — force a light logo ink there. */
+.login-left .sl-logo {
+  color: #ffffff;
 }
 .sl-logo-mark {
   display: inline-flex;
