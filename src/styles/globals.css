@@ -345,9 +345,14 @@ button {
 
 /* ===========================  Analytics tab  ============================= */
 
-/* Full-page width for the Analytics liveboard (overrides the shared 1320px). */
+/* Full-page width for the Analytics liveboard (overrides the shared 1320px),
+   and a tighter top padding so less vertical space is wasted above the title. */
 .tab-analytics {
   max-width: none;
+  padding-top: 12px;
+}
+.tab-analytics .analytics-toolbar {
+  margin-bottom: 14px;
 }
 
 .analytics-toolbar,
