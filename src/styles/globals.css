@@ -2191,6 +2191,33 @@ button {
   flex: 1;
   min-height: 0;
 }
+/* Spotter-active glow: a pulsing green frame drawn OVER the Spotter iframe
+   (an inset shadow would hide behind it). Shown only while a data question is
+   running through Spotter. pointer-events:none so it never blocks the embed. */
+.sl-ai-canvas.is-spotter-active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  border: 2px solid var(--sl-green);
+  border-radius: 12px;
+  box-shadow: 0 0 24px rgba(27, 185, 120, 0.5), inset 0 0 24px rgba(27, 185, 120, 0.3);
+  animation: sl-spotter-glow 1.4s ease-in-out infinite;
+}
+@keyframes sl-spotter-glow {
+  0%, 100% {
+    border-color: rgba(27, 185, 120, 0.65);
+    box-shadow: 0 0 16px rgba(27, 185, 120, 0.35), inset 0 0 16px rgba(27, 185, 120, 0.22);
+  }
+  50% {
+    border-color: rgba(27, 185, 120, 1);
+    box-shadow: 0 0 34px rgba(27, 185, 120, 0.6), inset 0 0 30px rgba(27, 185, 120, 0.45);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sl-ai-canvas.is-spotter-active::after { animation: none; }
+}
 .sl-ai-canvas > div:last-child,
 .sl-ai-canvas iframe {
   width: 100% !important;

@@ -64,9 +64,19 @@ export default function AskSalesloft() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [trialOpen, setTrialOpen] = useState(false);
+  // Glow the Spotter canvas ONLY while a data question is actually running
+  // through Spotter (the analytics route). Not for FAQ/text answers, where
+  // Spotter is never invoked. Cleared when the answer renders (onData) or by a
+  // safety timeout if the embed never reports back.
+  const [spotterActive, setSpotterActive] = useState(false);
+  const glowTimer = useRef<number | undefined>(undefined);
 
-  // Stable no-op onData so keystrokes in the input don't re-init the embed.
-  const onData = useCallback(() => {}, []);
+  // onData fires when Spotter has rendered an answer -> stop the glow. Stable
+  // identity so keystrokes in the input don't re-init the embed.
+  const onData = useCallback(() => {
+    if (glowTimer.current) window.clearTimeout(glowTimer.current);
+    setSpotterActive(false);
+  }, []);
 
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: 'smooth' });
@@ -85,6 +95,10 @@ export default function AskSalesloft() {
       if (result.kind === 'analytics') {
         // Data question → drive the Spotter canvas, note the preamble in the pane.
         setCurrentQuery(result.query);
+        // Spotter is genuinely being invoked -> glow the canvas until it answers.
+        setSpotterActive(true);
+        if (glowTimer.current) window.clearTimeout(glowTimer.current);
+        glowTimer.current = window.setTimeout(() => setSpotterActive(false), 9000);
         try {
           spotterRef.current?.trigger(HostEvent.SpotterSearch, {
             query: result.query,
@@ -92,12 +106,15 @@ export default function AskSalesloft() {
           });
         } catch (e) {
           console.warn('[salesloft-ai] SpotterSearch failed:', e);
+          setSpotterActive(false);
         }
         if (result.preamble.trim()) {
           setNarrative((n) => [...n, { role: 'assistant', text: result.preamble }]);
         }
       } else {
-        // General Salesloft question → answer as text (with doc links) in the pane.
+        // General Salesloft question → answered from the knowledge base; Spotter
+        // is NOT invoked, so no glow.
+        setSpotterActive(false);
         setNarrative((n) => [...n, { role: 'assistant', text: result.text, links: result.links }]);
       }
     } finally {
@@ -116,7 +133,7 @@ export default function AskSalesloft() {
       <div className="sl-ai-page">
         {/* ---- Left: Spotter answer canvas + branded empty state ---- */}
         <div className="sl-ai-left">
-          <div className="sl-ai-canvas">
+          <div className={`sl-ai-canvas${spotterActive ? ' is-spotter-active' : ''}`}>
             {!currentQuery && (
               <div className="sl-ai-empty">
                 <SalesloftLogo className="sl-ai-empty-logo" size={58} wordmark={false} />
