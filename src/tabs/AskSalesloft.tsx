@@ -103,8 +103,8 @@ export default function AskSalesloft() {
     } finally {
       setLoading(false);
     }
-    // Show the trial prompt exactly once — on the 2nd question, never again.
-    if (nextCount === 2) setTrialOpen(true);
+    // Show the trial prompt exactly once — on the 3rd question, never again.
+    if (nextCount === 3) setTrialOpen(true);
   }
 
   const askedCount = narrative.filter((t) => t.role === 'user').length;
