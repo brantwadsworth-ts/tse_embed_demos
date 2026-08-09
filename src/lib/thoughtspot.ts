@@ -15,6 +15,7 @@ import {
   CADENCE_NAME_COLUMN,
   HIDE_FILTER_PILL_RULES,
   TS_RULES_DARK,
+  TS_VARS_AMAZON,
   tsVarsFor,
   ThemeName,
 } from '../config';
@@ -93,6 +94,16 @@ export function tsCustomizations(
  * override that contrasts with the (theme-dependent) label. Background-color
  * only, so it can't affect layout.
  */
+/**
+ * Fixed Amazon theme for the Analytics Plus tab — self-contained, ignores the
+ * app's light/dark toggle. No Salesloft icon sprite or string overrides here.
+ */
+export function amazonCustomizations() {
+  return {
+    style: { customCSS: { variables: TS_VARS_AMAZON } },
+  };
+}
+
 export function liveboardCustomizations(theme: ThemeName) {
   const hoverBg = theme === 'dark' ? '#0f9a63' : '#d9ecea';
   const activeBg = theme === 'dark' ? '#0c8554' : '#cfe3e2';

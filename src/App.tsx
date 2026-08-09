@@ -6,6 +6,7 @@ import TopBar, { TabId } from './components/TopBar';
 import ChatBot from './components/ChatBot';
 import MyAnalytics from './tabs/MyAnalytics';
 import Analytics from './tabs/Analytics';
+import AnalyticsPlus from './tabs/AnalyticsPlus';
 import Cadences from './tabs/Cadences';
 import Signals from './tabs/Signals';
 import AskSalesloft from './tabs/AskSalesloft';
@@ -30,6 +31,7 @@ export default function App() {
       <main className="app-main">
         {tab === 'my-analytics' && <MyAnalytics />}
         {tab === 'analytics' && <Analytics />}
+        {tab === 'analytics-plus' && <AnalyticsPlus />}
         {tab === 'cadences' && <Cadences />}
         {tab === 'signals' && <Signals />}
         {tab === 'ask' && <AskSalesloft />}

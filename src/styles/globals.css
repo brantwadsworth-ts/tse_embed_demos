@@ -2684,3 +2684,69 @@ button {
   color: var(--sl-ink);
   text-decoration: underline;
 }
+
+/* =====================  Analytics Plus (Amazon theme)  ================== */
+/* Self-contained Amazon look, independent of the app's --sl-* theme tokens. */
+.tab-analytics-plus {
+  min-height: calc(100vh - var(--topbar-h));
+  background: #f2f3f3;
+  font-family: 'Amazon Ember', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+.apx-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 30px;
+  background: #232f3e;
+  color: #ffffff;
+}
+.apx-brandmark {
+  display: inline-flex;
+  filter: drop-shadow(0 2px 6px rgba(255, 153, 0, 0.4));
+}
+.apx-brandtext {
+  display: flex;
+  flex-direction: column;
+}
+.apx-title {
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  line-height: 1.1;
+}
+.apx-title .apx-plus {
+  color: #ff9900;
+}
+.apx-sub {
+  font-size: 13px;
+  color: #c8cdd2;
+  margin-top: 2px;
+}
+.apx-badge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #232f3e;
+  background: #ff9900;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+.apx-liveboard-wrapper {
+  margin: 18px 30px 30px;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid #d5d9d9;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 17, 17, 0.06), 0 12px 34px rgba(35, 47, 62, 0.12);
+  min-height: 72vh;
+  overflow: hidden;
+}
+.apx-liveboard-wrapper > div,
+.apx-liveboard-wrapper iframe {
+  width: 100% !important;
+  border: none;
+  border-radius: 8px;
+}

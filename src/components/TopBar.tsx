@@ -8,17 +8,25 @@ import {
   LogOut,
   Sun,
   Moon,
+  Boxes,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import SalesloftLogo from './SalesloftLogo';
 
-export type TabId = 'my-analytics' | 'analytics' | 'cadences' | 'signals' | 'ask';
+export type TabId =
+  | 'my-analytics'
+  | 'analytics'
+  | 'analytics-plus'
+  | 'cadences'
+  | 'signals'
+  | 'ask';
 
 const TABS: { id: TabId; label: string; icon: typeof BarChart3 }[] = [
   { id: 'my-analytics', label: 'My Reports', icon: LayoutGrid },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+  { id: 'analytics-plus', label: 'Analytics Plus', icon: Boxes },
   { id: 'cadences', label: 'Cadences', icon: Workflow },
   { id: 'signals', label: 'Signals', icon: Activity },
   { id: 'ask', label: 'Ask Salesloft', icon: Sparkles },
