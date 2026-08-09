@@ -10,11 +10,6 @@ export const THOUGHTSPOT_HOST = 'https://salesloft-clari.thoughtspot.cloud';
 /** The Analytics liveboard embedded in Tab 2 (Analytics). */
 export const ANALYTICS_LIVEBOARD_ID = '431cb7d1-7551-48ca-ab04-2261bb40a6e8';
 
-/** Liveboard embedded in the Amazon-themed "Analytics Plus" tab.
- * NOTE: the provided GUID is not a valid ThoughtSpot GUID (contains non-hex
- * chars) — replace with a real liveboard GUID for the board to load. */
-export const ANALYTICS_PLUS_LIVEBOARD_ID = '12338942eg46819fg';
-
 /** Liveboard shown inline (per-cadence) on the Inline Insights tab. */
 export const INLINE_INSIGHTS_LIVEBOARD_ID =
   'd57c9aeb-2c50-4afe-857a-327fad94c7cc';
@@ -282,76 +277,6 @@ export const TS_VARS_DARK: Record<string, string> = {
 export function tsVarsFor(theme: ThemeName): Record<string, string> {
   return theme === 'dark' ? TS_VARS_DARK : TS_CSS_VARIABLES;
 }
-
-/**
- * Amazon-branded theme for the "Analytics Plus" tab — a fixed, self-contained
- * look (light surfaces, Squid-Ink navy #232F3E, Amazon orange #FF9900) that
- * ignores the app's green light/dark toggle. Amazon Ember is proprietary, so
- * the font stack falls back to Arial/Helvetica (which reads as Amazon anyway).
- */
-const AMZ_FONT = '"Amazon Ember", "Inter", "Helvetica Neue", Arial, sans-serif';
-export const TS_VARS_AMAZON: Record<string, string> = {
-  '--ts-var-root-background': '#ffffff',
-  '--ts-var-root-color': '#0f1111',
-  '--ts-var-root-secondary-color': '#565959',
-  '--ts-var-root-font-family': AMZ_FONT,
-  '--ts-var-application-color': '#232f3e',
-  '--ts-var-nav-background': '#232f3e',
-  '--ts-var-nav-color': '#ffffff',
-  '--ts-var-button-border-radius': '8px',
-  '--ts-var-button--icon-border-radius': '8px',
-  '--ts-var-button--primary-background': '#ff9900',
-  '--ts-var-button--primary-color': '#0f1111',
-  '--ts-var-button--primary--hover-background': '#e88a00',
-  '--ts-var-button--primary--hovers-background': '#e88a00',
-  '--ts-var-button--primary--active-background': '#d17f00',
-  '--ts-var-button--secondary-background': '#f0f2f2',
-  '--ts-var-button--secondary-color': '#0f1111',
-  '--ts-var-button--secondary--hover-background': '#e3e6e6',
-  '--ts-var-button--secondary--hovers-background': '#e3e6e6',
-  '--ts-var-viz-title-color': '#232f3e',
-  '--ts-var-viz-title-font-family': AMZ_FONT,
-  '--ts-var-viz-description-color': '#565959',
-  '--ts-var-viz-background': '#ffffff',
-  '--ts-var-viz-border-radius': '10px',
-  '--ts-var-viz-box-shadow': '0 1px 2px rgba(15,17,17,0.08), 0 8px 20px rgba(35,47,62,0.10)',
-  '--ts-var-liveboard-layout-background': '#f2f3f3',
-  '--ts-var-liveboard-header-background': '#ffffff',
-  '--ts-var-liveboard-header-font-color': '#0f1111',
-  '--ts-var-liveboard-tile-background': '#ffffff',
-  '--ts-var-liveboard-tile-border-color': '#d5d9d9',
-  '--ts-var-liveboard-tile-border-radius': '10px',
-  '--ts-var-liveboard-tab-active-border-color': '#ff9900',
-  '--ts-var-liveboard-tab-hover-color': '#146eb4',
-  '--ts-var-liveboard-header-action-button-background': '#f0f2f2',
-  '--ts-var-liveboard-header-action-button-font-color': '#0f1111',
-  '--ts-var-liveboard-header-action-button-hover-color': '#e3e6e6',
-  '--ts-var-chip-background': '#f0f2f2',
-  '--ts-var-chip-color': '#0f1111',
-  '--ts-var-chip-border-radius': '8px',
-  '--ts-var-chip--hover-background': '#e3e6e6',
-  '--ts-var-chip--active-background': '#ff9900',
-  '--ts-var-chip--active-color': '#0f1111',
-  '--ts-var-menu-background': '#ffffff',
-  '--ts-var-menu-color': '#0f1111',
-  '--ts-var-menu--hover-background': '#f0f2f2',
-  '--ts-var-dialog-body-background': '#ffffff',
-  '--ts-var-dialog-body-color': '#0f1111',
-  '--ts-var-dialog-header-background': '#232f3e',
-  '--ts-var-dialog-header-color': '#ffffff',
-  '--ts-var-list-hover-background': '#f0f2f2',
-  '--ts-var-list-selected-background': '#fef3e6',
-  '--ts-var-search-bar-background': '#f7fafa',
-  '--ts-var-search-bar-text-font-color': '#0f1111',
-  '--ts-var-search-data-button-background': '#ff9900',
-  '--ts-var-search-data-button-font-color': '#0f1111',
-  '--ts-var-axis-title-color': '#565959',
-  '--ts-var-axis-data-label-color': '#565959',
-  '--ts-var-kpi-hero-color': '#232f3e',
-  '--ts-var-kpi-comparison-color': '#565959',
-  '--ts-var-kpi-positive-change-color': '#067d62',
-  '--ts-var-kpi-negative-change-color': '#b12704',
-};
 
 /**
  * Dark-only color overrides for surfaces with no dedicated CSS variable (answer
