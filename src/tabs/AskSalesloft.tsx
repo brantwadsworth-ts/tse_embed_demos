@@ -70,65 +70,17 @@ export default function AskSalesloft() {
   // safety timeout if the embed never reports back.
   const [spotterActive, setSpotterActive] = useState(false);
   const glowTimer = useRef<number | undefined>(undefined);
-  // Last data query not yet answered. A SpotterSearch triggered before the embed
-  // has registered its handler is silently dropped (leaving a blank canvas), so
-  // we keep it here and (re)fire it the moment the embed signals ready.
-  const pendingQuery = useRef<string | null>(null);
 
-  // onData fires when Spotter has rendered an answer -> stop the glow and clear
-  // the pending query. Stable identity so keystrokes don't re-init the embed.
+  // onData fires when Spotter has rendered an answer -> stop the glow. Stable
+  // identity so keystrokes in the input don't re-init the embed.
   const onData = useCallback(() => {
     if (glowTimer.current) window.clearTimeout(glowTimer.current);
-    pendingQuery.current = null;
     setSpotterActive(false);
   }, []);
-
-  // Fire a Spotter query now, but also buffer it: if the trigger lands before
-  // the embed is ready it is dropped, and the readiness effect below re-fires it.
-  const fireSpotter = useCallback(
-    (query: string) => {
-      pendingQuery.current = query;
-      try {
-        spotterRef.current?.trigger(HostEvent.SpotterSearch, { query, executeSearch: true });
-      } catch (e) {
-        console.warn('[salesloft-ai] SpotterSearch failed:', e);
-      }
-    },
-    [spotterRef],
-  );
 
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: 'smooth' });
   }, [narrative, loading]);
-
-  // Readiness: when the (re-mounting on theme change) Spotter is ready to accept
-  // host events, fire any query that was requested before it loaded.
-  useEffect(() => {
-    const embed = spotterRef.current as any;
-    if (!embed) return;
-    let sub: any;
-    try {
-      sub = embed.subscribedEvent(HostEvent.SpotterSearch);
-    } catch {
-      return;
-    }
-    const onReady = () => {
-      if (pendingQuery.current) {
-        try {
-          embed.trigger(HostEvent.SpotterSearch, {
-            query: pendingQuery.current,
-            executeSearch: true,
-          });
-        } catch {
-          /* ignore */
-        }
-      }
-    };
-    embed.on(sub, onReady);
-    return () => {
-      try { embed.off(sub, onReady); } catch { /* ignore */ }
-    };
-  }, [theme, spotterRef]);
 
   async function send(preset?: string) {
     const q = (preset ?? input).trim();
@@ -147,7 +99,15 @@ export default function AskSalesloft() {
         setSpotterActive(true);
         if (glowTimer.current) window.clearTimeout(glowTimer.current);
         glowTimer.current = window.setTimeout(() => setSpotterActive(false), 9000);
-        fireSpotter(result.query);
+        try {
+          spotterRef.current?.trigger(HostEvent.SpotterSearch, {
+            query: result.query,
+            executeSearch: true,
+          });
+        } catch (e) {
+          console.warn('[salesloft-ai] SpotterSearch failed:', e);
+          setSpotterActive(false);
+        }
         if (result.preamble.trim()) {
           setNarrative((n) => [...n, { role: 'assistant', text: result.preamble }]);
         }
