@@ -70,10 +70,6 @@ export default function AskSalesloft() {
   // safety timeout if the embed never reports back.
   const [spotterActive, setSpotterActive] = useState(false);
   const glowTimer = useRef<number | undefined>(undefined);
-  // Whether Spotter has already answered once — subsequent data questions reset
-  // the conversation first so the new answer renders at the top (in view) rather
-  // than appended below the fold where the panel does not auto-scroll.
-  const hasRunSpotter = useRef(false);
 
   // onData fires when Spotter has rendered an answer -> stop the glow. Stable
   // identity so keystrokes in the input don't re-init the embed.
@@ -103,25 +99,15 @@ export default function AskSalesloft() {
         setSpotterActive(true);
         if (glowTimer.current) window.clearTimeout(glowTimer.current);
         glowTimer.current = window.setTimeout(() => setSpotterActive(false), 9000);
-        const runSpotter = () => {
-          try {
-            spotterRef.current?.trigger(HostEvent.SpotterSearch, {
-              query: result.query,
-              executeSearch: true,
-            });
-          } catch (e) {
-            console.warn('[salesloft-ai] SpotterSearch failed:', e);
-            setSpotterActive(false);
-          }
-        };
-        if (hasRunSpotter.current) {
-          // Clear the prior answer so the new one lands at the top, in view.
-          try { spotterRef.current?.trigger(HostEvent.ResetSpotterConversation); } catch (e) {}
-          window.setTimeout(runSpotter, 350);
-        } else {
-          runSpotter();
+        try {
+          spotterRef.current?.trigger(HostEvent.SpotterSearch, {
+            query: result.query,
+            executeSearch: true,
+          });
+        } catch (e) {
+          console.warn('[salesloft-ai] SpotterSearch failed:', e);
+          setSpotterActive(false);
         }
-        hasRunSpotter.current = true;
         if (result.preamble.trim()) {
           setNarrative((n) => [...n, { role: 'assistant', text: result.preamble }]);
         }
