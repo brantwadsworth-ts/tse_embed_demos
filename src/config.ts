@@ -17,8 +17,14 @@ export const INLINE_INSIGHTS_LIVEBOARD_ID =
 /** Worksheet/model the Inline Insights tab queries for cadence names. */
 export const CADENCE_WORKSHEET_ID = '06f92f41-00e5-4d81-8213-8a6616f83f49';
 
-/** Saved Answer embedded on the Signals tab. */
+/** Saved Answer previously embedded on the Signals tab (kept for reference). */
 export const SIGNALS_ANSWER_ID = 'cd7bd15c-a207-4bde-aef1-ed0a6e3dad06';
+
+/**
+ * Signals tab now embeds a single VISUALIZATION from the Analytics liveboard
+ * (LiveboardEmbed + liveboardId + vizId), not a saved Answer.
+ */
+export const SIGNALS_VIZ_ID = 'ab68d5d8-6cf0-43bc-bccd-4f5caca665a2';
 
 /** Code-based custom action ("Re-engage cadence") on the Signals answer. */
 export const REENGAGE_ACTION_ID = 'reengage-cadence';

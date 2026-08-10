@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { SearchEmbed } from '@thoughtspot/visual-embed-sdk/react';
+import { LiveboardEmbed } from '@thoughtspot/visual-embed-sdk/react';
 import {
   Action,
   CustomActionsPosition,
   CustomActionTarget,
 } from '@thoughtspot/visual-embed-sdk';
 import {
-  SIGNALS_ANSWER_ID,
+  ANALYTICS_LIVEBOARD_ID,
+  SIGNALS_VIZ_ID,
+  LIVEBOARD_EMBED_FLAGS,
   REENGAGE_ACTION_ID,
   REENGAGE_ACTION_NAME,
 } from '../config';
@@ -15,7 +17,7 @@ import { useTheme } from '../context/ThemeContext';
 import { buildSignalContext, SignalContext } from '../lib/signalContext';
 import WinBackModal from '../components/WinBackModal';
 
-const Search = SearchEmbed as unknown as (props: any) => JSX.Element;
+const Liveboard = LiveboardEmbed as unknown as (props: any) => JSX.Element;
 
 // Strip the answer chrome so only the table shows. forceTable + hideDataSources
 // remove the chart/data panels; hiddenActions removes the toolbar + context-menu
@@ -109,12 +111,11 @@ export default function Signals() {
       </div>
 
       <div className="signals-embed">
-        <Search
+        <Liveboard
           key={theme}
-          answerId={SIGNALS_ANSWER_ID}
-          hideSearchBar
-          hideDataSources
-          forceTable
+          liveboardId={ANALYTICS_LIVEBOARD_ID}
+          vizId={SIGNALS_VIZ_ID}
+          hideLiveboardHeader
           hiddenActions={HIDDEN_ACTIONS}
           frameParams={{ width: '100%', height: '100%' }}
           customizations={tsCustomizations(theme, false, HIDE_CHROME_RULES)}
@@ -123,10 +124,16 @@ export default function Signals() {
               id: REENGAGE_ACTION_ID,
               name: REENGAGE_ACTION_NAME,
               position: CustomActionsPosition.CONTEXTMENU,
-              target: CustomActionTarget.ANSWER,
+              // Now a viz-level action, scoped to this one visualization.
+              target: CustomActionTarget.VIZ,
+              metadataIds: {
+                liveboardIds: [ANALYTICS_LIVEBOARD_ID],
+                vizIds: [SIGNALS_VIZ_ID],
+              },
             },
           ]}
           onCustomAction={onCustomAction}
+          {...LIVEBOARD_EMBED_FLAGS}
         />
       </div>
 
