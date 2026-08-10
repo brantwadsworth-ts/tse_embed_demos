@@ -70,6 +70,29 @@ export default function AskSalesloft() {
   // safety timeout if the embed never reports back.
   const [spotterActive, setSpotterActive] = useState(false);
   const glowTimer = useRef<number | undefined>(undefined);
+  // The Spotter iframe loads asynchronously. Firing HostEvent.SpotterSearch
+  // before the container has loaded silently drops it — which is why the very
+  // first data question used to leave the canvas blank. Track load state and
+  // hold the first query until the embed reports ready (onLoad).
+  const loadedRef = useRef(false);
+  const pendingQueryRef = useRef<string | null>(null);
+
+  // Actually drives the Spotter canvas. Stable identity so it can be called
+  // from both send() and the onLoad flush below.
+  const runSpotterQuery = useCallback(
+    (query: string) => {
+      try {
+        spotterRef.current?.trigger(HostEvent.SpotterSearch, {
+          query,
+          executeSearch: true,
+        });
+      } catch (e) {
+        console.warn('[salesloft-ai] SpotterSearch failed:', e);
+        setSpotterActive(false);
+      }
+    },
+    [spotterRef],
+  );
 
   // onData fires when Spotter has rendered an answer -> stop the glow. Stable
   // identity so keystrokes in the input don't re-init the embed.
@@ -77,6 +100,23 @@ export default function AskSalesloft() {
     if (glowTimer.current) window.clearTimeout(glowTimer.current);
     setSpotterActive(false);
   }, []);
+
+  // onLoad fires when the Spotter container is ready to receive host events.
+  // Flush any query that was asked before the embed finished loading.
+  const onLoad = useCallback(() => {
+    loadedRef.current = true;
+    if (pendingQueryRef.current) {
+      const q = pendingQueryRef.current;
+      pendingQueryRef.current = null;
+      runSpotterQuery(q);
+    }
+  }, [runSpotterQuery]);
+
+  // The embed remounts on theme change (key={theme}); a fresh iframe is not
+  // ready until it loads again, so reset the flag and let onLoad re-arm it.
+  useEffect(() => {
+    loadedRef.current = false;
+  }, [theme]);
 
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: 'smooth' });
@@ -99,14 +139,12 @@ export default function AskSalesloft() {
         setSpotterActive(true);
         if (glowTimer.current) window.clearTimeout(glowTimer.current);
         glowTimer.current = window.setTimeout(() => setSpotterActive(false), 9000);
-        try {
-          spotterRef.current?.trigger(HostEvent.SpotterSearch, {
-            query: result.query,
-            executeSearch: true,
-          });
-        } catch (e) {
-          console.warn('[salesloft-ai] SpotterSearch failed:', e);
-          setSpotterActive(false);
+        if (loadedRef.current) {
+          runSpotterQuery(result.query);
+        } else {
+          // Embed still loading (typically only on the very first question) —
+          // queue it and fire the moment onLoad reports the container is ready.
+          pendingQueryRef.current = result.query;
         }
         if (result.preamble.trim()) {
           setNarrative((n) => [...n, { role: 'assistant', text: result.preamble }]);
@@ -161,6 +199,7 @@ export default function AskSalesloft() {
               worksheetId={WORKSHEET_ID}
               hideSampleQuestions
               onData={onData}
+              onLoad={onLoad}
               frameParams={{ width: '100%', height: '100%' }}
               customizations={tsCustomizations(theme, true, HIDE_SPOTTER_INPUT_RULES)}
               {...SPOTTER_EMBED_FLAGS}
