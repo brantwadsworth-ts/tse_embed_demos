@@ -4,7 +4,7 @@
 // is a clearly clickable button.
 import { useEffect, useState } from 'react';
 import { X, CreditCard, Rocket, Clock, Star } from 'lucide-react';
-import { SALESLOFT_UPGRADE_URL, SALESLOFT_TRIAL_QUESTIONS } from '../config';
+import { SALESLOFT_UPGRADE_URL } from '../config';
 
 interface Props {
   open: boolean;
@@ -35,8 +35,6 @@ export default function TrialModal({ open, remaining, onClose }: Props) {
 
   if (!open) return null;
 
-  const askedSoFar = Math.max(3, SALESLOFT_TRIAL_QUESTIONS - remaining);
-
   return (
     <div className="sl-trial-overlay" onClick={onClose}>
       <div className="sl-trial-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
@@ -56,7 +54,7 @@ export default function TrialModal({ open, remaining, onClose }: Props) {
           </div>
           <div className="sl-trial-eyebrow">A personal message from Salesloft AI</div>
           <h2 className="sl-trial-title">
-            You&rsquo;ve asked {askedSoFar} questions. Frankly, that&rsquo;s PhD-level curiosity. &#127891;
+            {remaining} questions left in your free trial! &#127891;
           </h2>
           <p className="sl-trial-pitch">
             Look &mdash; we weren&rsquo;t going to say anything, but you are{' '}
