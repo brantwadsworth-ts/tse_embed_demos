@@ -70,15 +70,17 @@ export default function AskSalesloft() {
   // safety timeout if the embed never reports back.
   const [spotterActive, setSpotterActive] = useState(false);
   const glowTimer = useRef<number | undefined>(undefined);
-  // The Spotter iframe loads asynchronously. Firing HostEvent.SpotterSearch
-  // before the container has loaded silently drops it — which is why the very
-  // first data question used to leave the canvas blank. Track load state and
-  // hold the first query until the embed reports ready (onLoad).
-  const loadedRef = useRef(false);
+  // Firing HostEvent.SpotterSearch before Spotter has registered its handler
+  // silently drops it — which is why the very FIRST data question used to leave
+  // the canvas blank (EmbedEvent.Load fires when the container loads, but that
+  // is too early). We gate on embed.subscribedEvent(SpotterSearch), which fires
+  // the moment the embedded app registers the SpotterSearch handler, and hold
+  // the first query until then.
+  const spotterReadyRef = useRef(false);
   const pendingQueryRef = useRef<string | null>(null);
 
   // Actually drives the Spotter canvas. Stable identity so it can be called
-  // from both send() and the onLoad flush below.
+  // from both send() and the readiness flush below.
   const runSpotterQuery = useCallback(
     (query: string) => {
       try {
@@ -101,22 +103,26 @@ export default function AskSalesloft() {
     setSpotterActive(false);
   }, []);
 
-  // onLoad fires when the Spotter container is ready to receive host events.
-  // Flush any query that was asked before the embed finished loading.
-  const onLoad = useCallback(() => {
-    loadedRef.current = true;
-    if (pendingQueryRef.current) {
-      const q = pendingQueryRef.current;
-      pendingQueryRef.current = null;
-      runSpotterQuery(q);
-    }
-  }, [runSpotterQuery]);
-
-  // The embed remounts on theme change (key={theme}); a fresh iframe is not
-  // ready until it loads again, so reset the flag and let onLoad re-arm it.
+  // Readiness gate. subscribedEvent(SpotterSearch) fires once the embedded app
+  // has registered the SpotterSearch handler — the earliest point a trigger is
+  // guaranteed to land. Flush a query queued before that. Re-armed on theme
+  // change, since key={theme} remounts the embed into a fresh (not-ready) iframe.
   useEffect(() => {
-    loadedRef.current = false;
-  }, [theme]);
+    const embed = spotterRef.current as any;
+    if (!embed?.subscribedEvent) return;
+    spotterReadyRef.current = false;
+    const readyEvent = embed.subscribedEvent(HostEvent.SpotterSearch);
+    const onReady = () => {
+      spotterReadyRef.current = true;
+      if (pendingQueryRef.current) {
+        const q = pendingQueryRef.current;
+        pendingQueryRef.current = null;
+        runSpotterQuery(q);
+      }
+    };
+    embed.on(readyEvent, onReady);
+    return () => embed.off?.(readyEvent, onReady);
+  }, [theme, spotterRef, runSpotterQuery]);
 
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: 'smooth' });
@@ -139,11 +145,11 @@ export default function AskSalesloft() {
         setSpotterActive(true);
         if (glowTimer.current) window.clearTimeout(glowTimer.current);
         glowTimer.current = window.setTimeout(() => setSpotterActive(false), 9000);
-        if (loadedRef.current) {
+        if (spotterReadyRef.current) {
           runSpotterQuery(result.query);
         } else {
-          // Embed still loading (typically only on the very first question) —
-          // queue it and fire the moment onLoad reports the container is ready.
+          // Embed not ready yet (typically only on the very first question) —
+          // queue it and fire the moment the SpotterSearch handler subscribes.
           pendingQueryRef.current = result.query;
         }
         if (result.preamble.trim()) {
@@ -199,7 +205,6 @@ export default function AskSalesloft() {
               worksheetId={WORKSHEET_ID}
               hideSampleQuestions
               onData={onData}
-              onLoad={onLoad}
               frameParams={{ width: '100%', height: '100%' }}
               customizations={tsCustomizations(theme, true, HIDE_SPOTTER_INPUT_RULES)}
               {...SPOTTER_EMBED_FLAGS}
