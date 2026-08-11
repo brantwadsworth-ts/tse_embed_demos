@@ -105,6 +105,61 @@ CORS allowlist** (Develop → Security settings), or every embed iframe is
 blocked. `AuthType.Basic` is fine for a demo but sends credentials from the
 browser — switch to trusted auth / SSO for anything production.
 
+## Build your own with Claude Code + SpotterCode
+
+The fastest path is to open this repo in [Claude Code](https://claude.com/claude-code)
+and let it do the repointing and rebranding for you. **SpotterCode** is an MCP
+server that gives Claude the authoritative Visual Embed SDK reference (exact
+enums, props, events, version support) so it writes correct embed code instead
+of hallucinating APIs.
+
+**1. Clone + install:**
+
+```bash
+git clone https://github.com/koushik426/tse_demos.git
+cd tse_demos && npm install
+```
+
+**2. Wire up the SpotterCode MCP.** This repo ships a project [`.mcp.json`](.mcp.json)
+pointing at the public SpotterCode server:
+
+```json
+{ "mcpServers": { "spottercode": { "type": "http", "url": "https://spottercode.thoughtspot.app/mcp" } } }
+```
+
+Open the project with `claude` in this folder — Claude Code will ask to approve
+the project MCP server; approve it, then run `/mcp` to confirm `spottercode` is
+connected. (Or add it yourself:
+`claude mcp add --transport http spottercode https://spottercode.thoughtspot.app/mcp`.)
+
+**3. Repoint it at your cluster — just ask.** Instead of hand-editing, prompt
+Claude with your details, e.g.:
+
+> Repoint `THOUGHTSPOT_HOST` to `https://my-co.thoughtspot.cloud`, set
+> `ANALYTICS_LIVEBOARD_ID` to `<guid>` and `WORKSHEET_ID` to `<guid>`, and change
+> the Analytics runtime-filter columns (`REP_COLUMN`, `SEGMENT_COLUMN`,
+> `DATE_COLUMN`) to match my model's column names. Use SpotterCode to confirm the
+> SDK props before editing.
+
+**4. Rebrand from a screenshot.** Attach a screenshot of the target brand's
+website and ask:
+
+> Rebrand this app as `<Company>`: derive the palette and fonts from this
+> screenshot, update the `--sl-*` tokens in `globals.css` and the `--ts-var-*`
+> embed variables in `config.ts`, swap the logo (`src/assets/…svg`) and favicon,
+> and rename the AI assistant to `<Company> AI`.
+
+(That's exactly how the `acme-tse/` twin in this repo was produced.)
+
+**5. Add or change embeds safely.** Whenever you add a `LiveboardEmbed`,
+`SpotterEmbed`, custom action, or host event, tell Claude to **"use SpotterCode
+to confirm the enums/props first"** — it will look up the real SDK definitions
+(e.g. `CustomActionTarget`, `HostEvent.SpotterSearch`, `subscribedEvent`) for
+your cluster version before writing code.
+
+**6. Iterate + ship:** `npm run dev` to preview, then `npm run build` and deploy
+(see below).
+
 ## Deploy
 
 Configured for Vercel ([`vercel.json`](vercel.json)) — framework `vite`,
