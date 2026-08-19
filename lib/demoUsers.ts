@@ -47,7 +47,10 @@ const SEED_USERS: Record<string, DemoUser> = {
 // filesystem is the one thing every worker shares. Seeds itself from
 // SEED_USERS on first read; mutated by the User Onboarding admin flow (see
 // app/api/admin/onboard-user and app/api/admin/delete-user).
-const DATA_FILE = path.join(process.cwd(), "data", "demo-users.json");
+// Vercel serverless: /var/task is read-only; /tmp is the writable scratch area
+const DATA_FILE = process.env.VERCEL
+  ? "/tmp/demo-users.json"
+  : path.join(process.cwd(), "data", "demo-users.json");
 
 async function readStore(): Promise<Record<string, DemoUser>> {
   try {
