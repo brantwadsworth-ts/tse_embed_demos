@@ -1,0 +1,24 @@
+[
+  {
+    "id": "doordash",
+    "companyName": "DoorDash",
+    "website": "https://www.doordash.com",
+    "useCase": "Brand partner analytics portal giving restaurant and CPG brands row-level-secured visibility into their DoorDash sales performance, category trends, and AI-powered insights. Each brand sees only their own data, scoped by country via ThoughtSpot RLS formula variables.",
+    "sampleQuestions": [
+      "What are my top-selling items this quarter?",
+      "How does my country performance compare month over month?",
+      "Which regions are showing the most growth?"
+    ],
+    "screenshotUrls": [],
+    "sampleDataUrl": null,
+    "rlsRequired": true,
+    "rlsRules": "dd_Country formula variable scopes data by country. Each user is assigned one or more country values; the liveboard and search queries filter to exactly those countries at query time.",
+    "useSpotter": true,
+    "spotterName": "DD Insights",
+    "reportDesigner": false,
+    "tsInstance": "",
+    "branch": "doordash",
+    "status": "live",
+    "createdAt": "2025-05-01"
+  }
+]

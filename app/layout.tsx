@@ -1,29 +1,18 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "DoorDash Brand Portal",
-  description: "DoorDash Brand Portal — row-level secured brand analytics",
+  title: "ThoughtSpot Demo Builder",
+  description: "Internal tool for creating and managing ThoughtSpot embed demos",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${dmSans.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-dd-gray-light">{children}</body>
+    <html lang="en" className={`${inter.variable} h-full`}>
+      <body className="h-full bg-gray-50 font-sans antialiased">{children}</body>
     </html>
   );
 }

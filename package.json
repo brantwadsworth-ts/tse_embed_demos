@@ -1,5 +1,5 @@
 {
-  "name": "tse-doordash-rls",
+  "name": "ts-demo-builder",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@thoughtspot/visual-embed-sdk": "^1.50.1",
+    "@vercel/blob": "^0.27.0",
     "next": "16.2.11",
     "react": "19.2.4",
     "react-dom": "19.2.4"
@@ -21,7 +21,6 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.11",
-    "playwright": "^1.61.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -37,8 +37,8 @@ yarn-error.log*
 # vercel
 .vercel
 
-# runtime demo-user store (see lib/demoUsers.ts) -- regenerated from seed data
-/data/
+# runtime stores -- regenerated at startup, not committed
+/data/submissions.json
 
 # typescript
 *.tsbuildinfo
