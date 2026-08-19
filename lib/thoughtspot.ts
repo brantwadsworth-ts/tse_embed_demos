@@ -1,34 +1,32 @@
 const TS_HOST = process.env.TS_HOST;
-const TS_SECRET_KEY = process.env.TS_SECRET_KEY;
-const TS_ORG_IDENTIFIER = process.env.TS_ORG_IDENTIFIER;
-const TS_TOKEN_VALIDITY_SEC = parseInt(process.env.TS_TOKEN_VALIDITY_SEC ?? "300", 10);
 const TS_COUNTRY_WORKSHEET_ID = process.env.TS_COUNTRY_WORKSHEET_ID;
+const TOKEN_SERVICE_URL = process.env.TOKEN_SERVICE_URL;
+const DEMO_API_KEY = process.env.DEMO_API_KEY;
 
 // Must match the actual column name on the worksheet referenced by
 // TS_COUNTRY_WORKSHEET_ID, and the runtime filter column used when
 // embedding the liveboard (see components/LiveboardEmbedView.tsx).
 const COUNTRY_COLUMN = "Country Name";
 
+// Delegates token generation to the central token microservice so the
+// ThoughtSpot secret key never needs to live in this deployment.
 export async function getAccessTokenForUser(username: string): Promise<string> {
-  if (!TS_HOST || !TS_SECRET_KEY) {
-    throw new Error("TS_HOST / TS_SECRET_KEY are not configured on the server.");
+  if (!TOKEN_SERVICE_URL || !DEMO_API_KEY) {
+    throw new Error("TOKEN_SERVICE_URL / DEMO_API_KEY are not configured on the server.");
   }
 
-  const response = await fetch(`${TS_HOST}/api/rest/2.0/auth/token/custom`, {
+  const response = await fetch(`${TOKEN_SERVICE_URL}/api/token`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({
-      username,
-      secret_key: TS_SECRET_KEY,
-      org_identifier: TS_ORG_IDENTIFIER,
-      persist_option: "NONE",
-      validity_time_in_sec: TS_TOKEN_VALIDITY_SEC,
-    }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${DEMO_API_KEY}`,
+    },
+    body: JSON.stringify({ username }),
   });
 
   if (!response.ok) {
     const detail = await response.text();
-    throw new Error(`Failed to generate ThoughtSpot token: ${detail}`);
+    throw new Error(`Token service error: ${detail}`);
   }
 
   const data = await response.json();
@@ -147,11 +145,8 @@ export interface OnboardUserParams {
 }
 
 // Creates (or updates the RLS variable values of, if already existing) a
-// user in one call to /auth/token/custom -- auto_create handles just-in-time
-// user provisioning + group assignment, and persist_option: "REPLACE" with
-// variable_values persists the RLS formula-variable values onto the user's
-// profile. The returned token itself is discarded; this call is used purely
-// for its side effects.
+// user via the token microservice's /api/token/onboard endpoint so the
+// secret key stays out of this deployment.
 export async function onboardUser({
   username,
   displayName,
@@ -159,30 +154,28 @@ export async function onboardUser({
   groupIdentifiers,
   variableValues,
 }: OnboardUserParams): Promise<void> {
-  if (!TS_HOST || !TS_SECRET_KEY) {
-    throw new Error("TS_HOST / TS_SECRET_KEY are not configured on the server.");
+  if (!TOKEN_SERVICE_URL || !DEMO_API_KEY) {
+    throw new Error("TOKEN_SERVICE_URL / DEMO_API_KEY are not configured on the server.");
   }
 
-  const response = await fetch(`${TS_HOST}/api/rest/2.0/auth/token/custom`, {
+  const response = await fetch(`${TOKEN_SERVICE_URL}/api/token/onboard`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${DEMO_API_KEY}`,
+    },
     body: JSON.stringify({
       username,
-      secret_key: TS_SECRET_KEY,
-      org_identifier: TS_ORG_IDENTIFIER,
-      persist_option: "REPLACE",
-      auto_create: true,
       display_name: displayName,
       email,
-      groups: groupIdentifiers.map((identifier) => ({ identifier })),
+      group_identifiers: groupIdentifiers,
       variable_values: variableValues,
-      validity_time_in_sec: TS_TOKEN_VALIDITY_SEC,
     }),
   });
 
   if (!response.ok) {
     const detail = await response.text();
-    throw new Error(`Failed to onboard user: ${detail}`);
+    throw new Error(`Token service onboard error: ${detail}`);
   }
 }
 
