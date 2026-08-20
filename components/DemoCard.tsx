@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Demo } from "@/lib/demos";
 
 function Initials({ name }: { name: string }) {
@@ -20,13 +24,30 @@ function Initials({ name }: { name: string }) {
 }
 
 const STATUS_STYLES: Record<Demo["status"], { dot: string; label: string; bg: string }> = {
-  live:    { dot: "bg-emerald-400", label: "Live",    bg: "bg-emerald-50 text-emerald-700" },
-  pending: { dot: "bg-amber-400",   label: "Pending", bg: "bg-amber-50 text-amber-700" },
-  draft:   { dot: "bg-gray-300",    label: "Draft",   bg: "bg-gray-50 text-gray-500" },
+  live:     { dot: "bg-emerald-400", label: "Live",     bg: "bg-emerald-50 text-emerald-700" },
+  pending:  { dot: "bg-amber-400",   label: "Pending",  bg: "bg-amber-50 text-amber-700" },
+  building: { dot: "bg-blue-400 animate-pulse", label: "Building…", bg: "bg-blue-50 text-blue-700" },
+  draft:    { dot: "bg-gray-300",    label: "Draft",    bg: "bg-gray-50 text-gray-500" },
 };
 
 export default function DemoCard({ demo }: { demo: Demo }) {
+  const router = useRouter();
+  const [building, setBuilding] = useState(false);
+  const [buildError, setBuildError] = useState("");
   const status = STATUS_STYLES[demo.status];
+
+  async function triggerBuild() {
+    setBuilding(true);
+    setBuildError("");
+    const res = await fetch(`/api/demos/${demo.id}/build`, { method: "POST" });
+    if (res.ok) {
+      router.refresh();
+    } else {
+      const body = await res.json().catch(() => ({}));
+      setBuildError(body.error ?? "Build trigger failed.");
+      setBuilding(false);
+    }
+  }
 
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
@@ -92,6 +113,28 @@ export default function DemoCard({ demo }: { demo: Demo }) {
           )}
           <p>Created: {demo.createdAt}</p>
         </div>
+
+        {/* Build button — only for pending demos */}
+        {(demo.status === "pending" || demo.status === "draft") && (
+          <div className="mt-4">
+            {buildError && (
+              <p className="mb-2 text-xs text-red-500">{buildError}</p>
+            )}
+            <button
+              onClick={triggerBuild}
+              disabled={building}
+              className="w-full rounded-xl bg-[#2770ef] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a56c4] disabled:opacity-50 transition-colors"
+            >
+              {building ? "Triggering build…" : "Build Demo →"}
+            </button>
+          </div>
+        )}
+
+        {demo.status === "building" && (
+          <div className="mt-4 rounded-xl bg-blue-50 px-4 py-2.5 text-center text-xs text-blue-600">
+            GitHub Actions workflow running — check the Actions tab for progress
+          </div>
+        )}
       </div>
     </div>
   );

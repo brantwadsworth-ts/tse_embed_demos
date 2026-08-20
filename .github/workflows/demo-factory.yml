@@ -1,0 +1,42 @@
+name: Demo Factory
+
+on:
+  workflow_dispatch:
+    inputs:
+      submission_json_b64:
+        description: "Base64-encoded demo submission JSON"
+        required: true
+
+jobs:
+  build-demo:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to push the new branch
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0            # need full history to branch from origin/doordash
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install "snowflake-connector-python[secure-local-storage]" cryptography requests
+
+      - name: Run Demo Factory
+        env:
+          SUBMISSION_JSON_B64:                ${{ inputs.submission_json_b64 }}
+          SNOWFLAKE_ACCOUNT:                  ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER:                     ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PRIVATE_KEY:              ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+          SNOWFLAKE_PRIVATE_KEY_PASSPHRASE:   ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
+          SNOWFLAKE_WAREHOUSE:                ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_ROLE:                     ${{ secrets.SNOWFLAKE_ROLE }}
+          TS_HOST:                            ${{ secrets.TS_HOST }}
+          TS_ADMIN_USER:                      ${{ secrets.TS_ADMIN_USER }}
+          TOKEN_SERVICE_URL:                  ${{ secrets.TOKEN_SERVICE_URL }}
+          TOKEN_SERVICE_API_KEY:              ${{ secrets.TOKEN_SERVICE_API_KEY }}
+        run: python scripts/build_demo.py

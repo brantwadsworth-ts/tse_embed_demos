@@ -16,7 +16,7 @@ export interface Demo {
   reportDesigner: boolean;
   tsInstance: string;
   branch?: string;
-  status: "live" | "pending" | "draft";
+  status: "live" | "pending" | "building" | "draft";
   createdAt: string;
 }
 
@@ -46,6 +46,19 @@ export async function getSubmissions(): Promise<Demo[]> {
 export async function getAllDemos(): Promise<Demo[]> {
   const [seeds, submissions] = await Promise.all([getSeedDemos(), getSubmissions()]);
   return [...seeds, ...submissions];
+}
+
+export async function updateDemoStatus(
+  id: string,
+  status: Demo["status"],
+): Promise<void> {
+  const submissions = await getSubmissions();
+  const idx = submissions.findIndex((d) => d.id === id);
+  if (idx !== -1) {
+    submissions[idx].status = status;
+    await fs.mkdir(path.dirname(SUBMISSIONS_FILE), { recursive: true });
+    await fs.writeFile(SUBMISSIONS_FILE, JSON.stringify(submissions, null, 2));
+  }
 }
 
 export async function saveSubmission(demo: Demo): Promise<void> {
