@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE, checkPassword } from "@/lib/auth";
+import { SESSION_COOKIE, checkPassword, checkEmail } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
-  const { password } = await request.json();
+  const { email, password } = await request.json();
+
+  if (!checkEmail(email)) {
+    return NextResponse.json({ error: "A @thoughtspot.com email is required." }, { status: 401 });
+  }
 
   if (!checkPassword(password)) {
     return NextResponse.json({ error: "Incorrect password." }, { status: 401 });
