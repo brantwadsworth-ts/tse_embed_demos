@@ -16,6 +16,7 @@ export interface Demo {
   reportDesigner: boolean;
   tsInstance: string;
   branch?: string;
+  liveUrl?: string;
   status: "live" | "pending" | "building" | "draft";
   createdAt: string;
 }

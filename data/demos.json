@@ -1,5 +1,27 @@
 [
   {
+    "id": "salesloft",
+    "companyName": "Salesloft",
+    "website": "https://www.salesloft.com",
+    "useCase": "Sales intelligence portal embedding ThoughtSpot liveboards and Spotter AI into a Salesloft-branded experience. Demonstrates cadence analytics, rep performance, and AI-driven sales insights with a trial gating flow.",
+    "sampleQuestions": [
+      "Which reps have the highest connect rates this quarter?",
+      "What cadences are driving the most meetings booked?",
+      "Show me pipeline coverage by stage."
+    ],
+    "screenshotUrls": [],
+    "sampleDataUrl": null,
+    "rlsRequired": false,
+    "useSpotter": true,
+    "spotterName": "Ask Salesloft",
+    "reportDesigner": false,
+    "tsInstance": "https://se-thoughtspot-cloud.thoughtspot.cloud",
+    "branch": "main",
+    "liveUrl": "https://salesloft.ts-embed.vercel.app",
+    "status": "live",
+    "createdAt": "2025-04-01"
+  },
+  {
     "id": "doordash",
     "companyName": "DoorDash",
     "website": "https://www.doordash.com",
@@ -16,9 +38,33 @@
     "useSpotter": true,
     "spotterName": "DD Insights",
     "reportDesigner": false,
-    "tsInstance": "",
+    "tsInstance": "https://embed-1-do-not-delete.thoughtspotstaging.cloud",
     "branch": "doordash",
+    "liveUrl": "https://doordash.ts-embed.vercel.app",
     "status": "live",
     "createdAt": "2025-05-01"
+  },
+  {
+    "id": "montana",
+    "companyName": "Montana DPHHS",
+    "website": "https://dphhs.mt.gov",
+    "useCase": "Montana Department of Public Health & Human Services MIDIS Reconciliation Portal — disease surveillance data quality, case reconciliation, and Annual Case Review (ACR) reporting with county-level RLS and AI-powered data exploration.",
+    "sampleQuestions": [
+      "What is the % completeness for DOB fields across all jurisdictions?",
+      "Show me case counts by jurisdiction for the current MMWR year.",
+      "Which counties are below the 95% completeness target?"
+    ],
+    "screenshotUrls": [],
+    "sampleDataUrl": null,
+    "rlsRequired": true,
+    "rlsRules": "JURISDICTION_NAME column filtered by ts_groups() — each user is in one county group, admins bypass RLS.",
+    "useSpotter": true,
+    "spotterName": "Ask Clarity",
+    "reportDesigner": false,
+    "tsInstance": "https://se-thoughtspot-cloud.thoughtspot.cloud",
+    "branch": "montana",
+    "liveUrl": "https://montana.ts-embed.vercel.app",
+    "status": "live",
+    "createdAt": "2025-05-15"
   }
 ]

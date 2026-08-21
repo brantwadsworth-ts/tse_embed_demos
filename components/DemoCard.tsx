@@ -135,6 +135,19 @@ export default function DemoCard({ demo }: { demo: Demo }) {
             GitHub Actions workflow running — check the Actions tab for progress
           </div>
         )}
+
+        {demo.status === "live" && demo.liveUrl && (
+          <div className="mt-4">
+            <a
+              href={demo.liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#2770ef] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a56c4] transition-colors"
+            >
+              Launch demo ↗
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
