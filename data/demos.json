@@ -16,7 +16,7 @@
     "spotterName": "Ask Salesloft",
     "reportDesigner": false,
     "tsInstance": "https://se-thoughtspot-cloud.thoughtspot.cloud",
-    "branch": "main",
+    "branch": "salesloft",
     "liveUrl": "https://salesloft.ts-embed.vercel.app",
     "status": "live",
     "createdAt": "2025-04-01"
