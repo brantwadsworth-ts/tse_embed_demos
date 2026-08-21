@@ -27,7 +27,7 @@
      ThoughtSpot content share the same typeface + fallbacks. */
   --font-sans: 'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif;
 
-  --topbar-h: 66px;
+  --topbar-h: 82px;
   --shadow-card: 0 1px 2px rgba(7, 59, 58, 0.05),
     0 8px 24px rgba(7, 59, 58, 0.07);
   --shadow-lift: 0 6px 14px rgba(7, 59, 58, 0.08),
@@ -2765,3 +2765,222 @@ button {
 @media (prefers-reduced-motion: reduce) {
   .sl-trial-modal, .sl-trial-icon, .sl-trial-cta { animation: none; }
 }
+
+/* =========================================================================
+   Montana DPHHS MIDIS Portal — specific styles
+   ========================================================================= */
+
+/* Override topbar height for two-row DPHHS header */
+.dphhs-topbar {
+  height: auto !important;
+  display: flex;
+  flex-direction: column;
+  background: #003865;
+  border-bottom: 3px solid #DAAA00;
+}
+
+/* Utility strip — thin state/agency identity bar */
+.dphhs-utility-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 24px;
+  background: #002a4e;
+  font-size: 11px;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.02em;
+}
+.dphhs-state-label { font-weight: 600; color: #DAAA00; }
+.dphhs-divider { color: rgba(255,255,255,0.35); }
+.dphhs-agency-label {}
+
+/* Main nav row */
+.dphhs-nav-row {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  min-height: 52px;
+  gap: 12px;
+}
+
+/* Brand block */
+.dphhs-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+.dphhs-brand-icon { color: #DAAA00; }
+.dphhs-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.dphhs-portal-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.04em;
+}
+.dphhs-portal-sub {
+  font-size: 10px;
+  color: rgba(255,255,255,0.6);
+  font-weight: 400;
+}
+
+/* Override tab colors for dark topbar */
+.dphhs-topbar .topbar-tabs { margin: 0; }
+.dphhs-topbar .topbar-tab {
+  color: rgba(255,255,255,0.75);
+  border-bottom-color: transparent;
+}
+.dphhs-topbar .topbar-tab:hover {
+  color: #ffffff;
+  background: rgba(255,255,255,0.08);
+}
+.dphhs-topbar .topbar-tab.is-active {
+  color: #DAAA00;
+  border-bottom-color: #DAAA00;
+}
+.dphhs-topbar .topbar-tab.is-active svg { color: #DAAA00; }
+.dphhs-topbar .topbar-right { margin-left: auto; }
+.dphhs-topbar .topbar-username { color: rgba(255,255,255,0.85); }
+.dphhs-topbar .topbar-user:hover { background: rgba(255,255,255,0.1); }
+.dphhs-avatar { background: #DAAA00 !important; color: #003865 !important; }
+
+/* Dropdown */
+.topbar-dropdown-wrapper {
+  position: relative;
+}
+.topbar-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 180px;
+  background: #ffffff;
+  border: 1px solid #CBD5E0;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,56,101,0.15);
+  z-index: 100;
+  overflow: hidden;
+}
+.topbar-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a2533;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.topbar-dropdown-item:hover { background: #EEF2F7; }
+.topbar-dropdown-item.is-active { background: #E6EDF5; color: #003865; font-weight: 600; }
+
+/* =========================================================================
+   ACR Report tab
+   ========================================================================= */
+
+.acr-report {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--topbar-h));
+  overflow: hidden;
+}
+.acr-header {
+  padding: 20px 28px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+  flex-shrink: 0;
+}
+.acr-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #003865;
+  margin: 0 0 2px;
+}
+.acr-subtitle {
+  font-size: 13px;
+  color: #718096;
+  margin: 0;
+}
+.acr-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 24px;
+  background: #fff;
+  border-bottom: 2px solid #e2e8f0;
+  flex-shrink: 0;
+}
+.acr-tab {
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #718096;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+.acr-tab:hover { color: #003865; }
+.acr-tab.is-active { color: #003865; border-bottom-color: #003865; font-weight: 600; }
+.acr-body {
+  flex: 1;
+  overflow: hidden;
+  padding: 0;
+}
+.acr-body > div { height: 100%; }
+
+/* =========================================================================
+   Deliverable Gauges
+   ========================================================================= */
+
+.deliverable-gauges {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px 28px;
+  background: #f7f8fa;
+  overflow-y: auto;
+}
+.gauge-subtabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #e2e8f0;
+}
+.gauge-subtab {
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #718096;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+.gauge-subtab:hover { color: #003865; }
+.gauge-subtab.is-active { color: #003865; border-bottom-color: #003865; font-weight: 600; }
+.gauge-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: flex-start;
+}
+.gauge-loading,
+.gauge-error {
+  padding: 40px;
+  text-align: center;
+  font-size: 14px;
+  color: #718096;
+}
+.gauge-error { color: #c0392b; }

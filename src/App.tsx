@@ -9,6 +9,7 @@ import Analytics from './tabs/Analytics';
 import Cadences from './tabs/Cadences';
 import Signals from './tabs/Signals';
 import AskSalesloft from './tabs/AskSalesloft';
+import AcrReport from './tabs/AcrReport';
 import {
   WORKSHEET_ID,
   CADENCE_WORKSHEET_ID,
@@ -33,6 +34,7 @@ export default function App() {
         {tab === 'cadences' && <Cadences />}
         {tab === 'signals' && <Signals />}
         {tab === 'ask' && <AskSalesloft />}
+        {tab === 'acr-report' && <AcrReport />}
       </main>
       <ChatBot
         worksheetId={tab === 'cadences' ? CADENCE_WORKSHEET_ID : WORKSHEET_ID}

@@ -1,21 +1,24 @@
 // ---------------------------------------------------------------------------
-// Central configuration for the Salesloft Analytics mockup.
-// IDs + ThoughtSpot styling are sourced from salesloft_fin.json so that every
-// embedded ThoughtSpot component shares the exact same look & feel.
+// Central configuration for the Montana DPHHS MIDIS Disease Surveillance Portal.
 // ---------------------------------------------------------------------------
 
-/** ThoughtSpot cluster (from appConfig.thoughtspotUrl) */
-export const THOUGHTSPOT_HOST = 'https://salesloft-clari.thoughtspot.cloud';
+/** ThoughtSpot cluster for Montana DPHHS / MIDIS. */
+export const THOUGHTSPOT_HOST = 'https://se-thoughtspot-cloud.thoughtspot.cloud';
 
-/** The Analytics liveboard embedded in Tab 2 (Analytics). */
-export const ANALYTICS_LIVEBOARD_ID = '431cb7d1-7551-48ca-ab04-2261bb40a6e8';
+/** ACR (Annual Case Report) liveboard — main liveboard for this portal. */
+export const ACR_LIVEBOARD_ID = '403cdd3c-8f81-4a51-80ce-5666a1c35e40';
 
-/** Liveboard shown inline (per-cadence) on the Inline Insights tab. */
-export const INLINE_INSIGHTS_LIVEBOARD_ID =
-  'd57c9aeb-2c50-4afe-857a-327fad94c7cc';
+/** MIDIS Reconciliation Data model — used for search, gauges, and Spotter. */
+export const WORKSHEET_ID = '1480ab38-5900-4b6b-9a50-b3131595c2d6';
 
-/** Worksheet/model the Inline Insights tab queries for cadence names. */
-export const CADENCE_WORKSHEET_ID = '06f92f41-00e5-4d81-8213-8a6616f83f49';
+/** Alias kept for compatibility — points to the same MIDIS model. */
+export const CADENCE_WORKSHEET_ID = WORKSHEET_ID;
+
+/** Analytics liveboard (reuses ACR liveboard for Montana demo). */
+export const ANALYTICS_LIVEBOARD_ID = ACR_LIVEBOARD_ID;
+
+/** Inline insights liveboard. */
+export const INLINE_INSIGHTS_LIVEBOARD_ID = ACR_LIVEBOARD_ID;
 
 /** Saved Answer previously embedded on the Signals tab (kept for reference). */
 export const SIGNALS_ANSWER_ID = 'cd7bd15c-a207-4bde-aef1-ed0a6e3dad06';
@@ -73,91 +76,82 @@ export const CADENCE_DETAIL_COLUMNS: Record<
   },
 };
 
-/**
- * Worksheet / model used everywhere Spotter runs — the "Salesloft AI" Spotter
- * modal (Analytics tab), the Ask Salesloft Spotter embed, and the host chatbot.
- */
-export const WORKSHEET_ID = '06f92f41-00e5-4d81-8213-8a6616f83f49';
-
 // ---------------------------------------------------------------------------
-// ThoughtSpot embed styling — taken verbatim from
-// salesloft_fin.json > stylingConfig.embeddedContent
+// ThoughtSpot embed styling — Montana navy/gold theme
+// salesloft_fin.json structure preserved for SDK compatibility
 // ---------------------------------------------------------------------------
 
-/** CSS variables applied to every embedded ThoughtSpot surface. */
+/** CSS variables applied to every embedded ThoughtSpot surface — Montana navy/gold theme. */
 export const TS_CSS_VARIABLES: Record<string, string> = {
-  '--ts-var-root-background': '#FDFEFE',
-  '--ts-var-root-color': '#073B3A',
-  '--ts-var-root-font-family': '"Plus Jakarta Sans", "Avenir Next", "Segoe UI", sans-serif',
-  '--ts-var-application-color': '#0A4A4A',
+  '--ts-var-root-background': '#F7F8FA',
+  '--ts-var-root-color': '#1a2533',
+  '--ts-var-root-font-family': '"Inter", "Segoe UI", Arial, sans-serif',
+  '--ts-var-application-color': '#003865',
   '--ts-var-nav-background': '#FFFFFF',
-  '--ts-var-nav-color': '#0A4A4A',
-  '--ts-var-search-data-button-background': '#0C6E6C',
+  '--ts-var-nav-color': '#003865',
+  '--ts-var-search-data-button-background': '#003865',
   '--ts-var-search-data-button-font-color': '#FFFFFF',
-  '--ts-var-search-bar-background': '#F6FAFA',
-  '--ts-var-search-bar-text-font-color': '#0A4A4A',
-  '--ts-var-button-border-radius': '10px',
-  '--ts-var-button--icon-border-radius': '8px',
-  '--ts-var-button--primary-background': '#0C6E6C',
+  '--ts-var-search-bar-background': '#EEF2F7',
+  '--ts-var-search-bar-text-font-color': '#003865',
+  '--ts-var-button-border-radius': '6px',
+  '--ts-var-button--icon-border-radius': '4px',
+  '--ts-var-button--primary-background': '#003865',
   '--ts-var-button--primary-color': '#FFFFFF',
-  '--ts-var-button--primary--hover-background': '#0A5C5A',
-  '--ts-var-button--primary--active-background': '#084B49',
-  '--ts-var-button--secondary-background': '#E9F3F2',
-  '--ts-var-button--secondary-color': '#0A4A4A',
-  // See dark-theme note: the SDK reads the typo'd "--hovers-background".
-  '--ts-var-button--secondary--hover-background': '#DDECEC',
-  '--ts-var-button--secondary--hovers-background': '#DDECEC',
-  '--ts-var-button--secondary--active-background': '#CFE3E2',
-  '--ts-var-viz-title-color': '#073B3A',
-  '--ts-var-viz-title-font-family': '"Fraunces", "Iowan Old Style", "Georgia", serif',
-  '--ts-var-viz-description-color': '#1D5A59',
-  '--ts-var-viz-border-radius': '18px',
-  '--ts-var-viz-box-shadow': '0 1px 2px rgba(7, 59, 58, 0.06), 0 16px 44px rgba(7, 59, 58, 0.16)',
+  '--ts-var-button--primary--hover-background': '#002a4e',
+  '--ts-var-button--primary--active-background': '#001f38',
+  '--ts-var-button--secondary-background': '#E6EDF5',
+  '--ts-var-button--secondary-color': '#003865',
+  '--ts-var-button--secondary--hover-background': '#D4E0EE',
+  '--ts-var-button--secondary--hovers-background': '#D4E0EE',
+  '--ts-var-button--secondary--active-background': '#C2D3E6',
+  '--ts-var-viz-title-color': '#1a2533',
+  '--ts-var-viz-title-font-family': '"Inter", "Segoe UI", Arial, sans-serif',
+  '--ts-var-viz-description-color': '#4a5568',
+  '--ts-var-viz-border-radius': '8px',
+  '--ts-var-viz-box-shadow': '0 1px 3px rgba(0,56,101,0.08), 0 8px 24px rgba(0,56,101,0.10)',
   '--ts-var-viz-background': '#FFFFFF',
-  '--ts-var-chip-border-radius': '999px',
-  '--ts-var-chip-background': '#E8F4F3',
-  '--ts-var-chip-color': '#0A4A4A',
-  '--ts-var-chip--hover-background': '#D9ECEA',
-  '--ts-var-chip--hover-color': '#073B3A',
-  '--ts-var-chip--active-background': '#0C6E6C',
+  '--ts-var-chip-border-radius': '4px',
+  '--ts-var-chip-background': '#E6EDF5',
+  '--ts-var-chip-color': '#003865',
+  '--ts-var-chip--hover-background': '#D4E0EE',
+  '--ts-var-chip--hover-color': '#002a4e',
+  '--ts-var-chip--active-background': '#003865',
   '--ts-var-chip--active-color': '#FFFFFF',
   '--ts-var-menu-background': '#FFFFFF',
-  '--ts-var-menu-color': '#0A4A4A',
-  '--ts-var-menu--hover-background': '#F1F7F7',
+  '--ts-var-menu-color': '#1a2533',
+  '--ts-var-menu--hover-background': '#EEF2F7',
   '--ts-var-dialog-body-background': '#FFFFFF',
-  '--ts-var-dialog-body-color': '#0A4A4A',
+  '--ts-var-dialog-body-color': '#1a2533',
   '--ts-var-dialog-header-background': '#FFFFFF',
-  '--ts-var-dialog-header-color': '#073B3A',
-  '--ts-var-list-hover-background': '#F1F7F7',
-  '--ts-var-list-selected-background': '#E4F0EF',
-  '--ts-var-liveboard-layout-background': '#FDFEFE',
+  '--ts-var-dialog-header-color': '#003865',
+  '--ts-var-list-hover-background': '#EEF2F7',
+  '--ts-var-list-selected-background': '#D4E0EE',
+  '--ts-var-liveboard-layout-background': '#F7F8FA',
   '--ts-var-liveboard-header-background': '#FFFFFF',
-  '--ts-var-liveboard-header-font-color': '#073B3A',
+  '--ts-var-liveboard-header-font-color': '#003865',
   '--ts-var-liveboard-tile-background': '#FFFFFF',
-  '--ts-var-liveboard-tile-border-color': '#D7E7E6',
-  '--ts-var-liveboard-tile-border-radius': '18px',
+  '--ts-var-liveboard-tile-border-color': '#CBD5E0',
+  '--ts-var-liveboard-tile-border-radius': '8px',
   '--ts-var-liveboard-tile-padding': '12px',
-  '--ts-var-liveboard-tile-table-header-background': '#F4FAF9',
-  '--ts-var-liveboard-tab-active-border-color': '#15AE6E',
-  '--ts-var-liveboard-tab-hover-color': '#0C6E6C',
-  '--ts-var-liveboard-header-action-button-background': '#E8F4F3',
-  '--ts-var-liveboard-header-action-button-font-color': '#0A4A4A',
-  // NOTE: despite "-color", these are the button's hover/active BACKGROUND.
-  // Label is dark here, so keep the hover background LIGHT for contrast.
-  '--ts-var-liveboard-header-action-button-hover-color': '#D9ECEA',
-  '--ts-var-liveboard-header-action-button-active-color': '#CFE3E2',
-  '--ts-var-parameter-chip-background': '#E8F4F3',
-  '--ts-var-parameter-chip-text-color': '#0A4A4A',
-  '--ts-var-parameter-chip-hover-background': '#D9ECEA',
-  '--ts-var-parameter-chip-hover-text-color': '#073B3A',
-  '--ts-var-parameter-chip-active-background': '#0C6E6C',
+  '--ts-var-liveboard-tile-table-header-background': '#EEF2F7',
+  '--ts-var-liveboard-tab-active-border-color': '#DAAA00',
+  '--ts-var-liveboard-tab-hover-color': '#003865',
+  '--ts-var-liveboard-header-action-button-background': '#E6EDF5',
+  '--ts-var-liveboard-header-action-button-font-color': '#003865',
+  '--ts-var-liveboard-header-action-button-hover-color': '#D4E0EE',
+  '--ts-var-liveboard-header-action-button-active-color': '#C2D3E6',
+  '--ts-var-parameter-chip-background': '#E6EDF5',
+  '--ts-var-parameter-chip-text-color': '#003865',
+  '--ts-var-parameter-chip-hover-background': '#D4E0EE',
+  '--ts-var-parameter-chip-hover-text-color': '#002a4e',
+  '--ts-var-parameter-chip-active-background': '#003865',
   '--ts-var-parameter-chip-active-text-color': '#FFFFFF',
-  '--ts-var-axis-title-color': '#1D5A59',
-  '--ts-var-axis-data-label-color': '#2C6A69',
-  '--ts-var-kpi-hero-color': '#073B3A',
-  '--ts-var-kpi-comparison-color': '#1D5A59',
-  '--ts-var-kpi-positive-change-color': '#1E8E5A',
-  '--ts-var-kpi-negative-change-color': '#C84B3A',
+  '--ts-var-axis-title-color': '#4a5568',
+  '--ts-var-axis-data-label-color': '#718096',
+  '--ts-var-kpi-hero-color': '#003865',
+  '--ts-var-kpi-comparison-color': '#4a5568',
+  '--ts-var-kpi-positive-change-color': '#22863a',
+  '--ts-var-kpi-negative-change-color': '#c0392b',
 };
 
 export type ThemeName = 'light' | 'dark';
@@ -335,31 +329,28 @@ export const TS_RULES_DARK: Record<string, Record<string, string>> = {
 };
 
 /**
- * Welcome message for the host-owned Salesloft AI chatbot
- * (from salesloft_fin.json > appConfig.chatbot.welcomeMessage, lightly adapted).
+ * Welcome message for the MIDIS AI chatbot.
  */
 export const CHATBOT_WELCOME =
-  "Hi! I'm Salesloft AI. Ask me about Salesloft, or ask a question about your data — like “show meetings booked by week” or “top cadences by influenced pipeline.”";
+  `Hi! I'm MIDIS AI. Ask me a question about your disease surveillance data — like 'show case counts by jurisdiction' or 'completeness by diagnosis date'.`;
 
-/** Greeting + data model used when the chatbot is opened on the Cadences tab. */
+/** Greeting used when the chatbot is opened on a case tracking view. */
 export const CHATBOT_CADENCES_WELCOME =
-  'What would you like to know about the cadences shown here?';
+  'What would you like to know about the cases shown here?';
 
-/** Spotter icon sprite (magician/spotter icon) from salesloft_fin.json. */
+/** Spotter icon sprite. */
 export const TS_ICON_SPRITE_URL =
   'https://cdn.jsdelivr.net/gh/thoughtspot/tse-demo-builders-pre-built/icons/spotter/generic-02.svg';
 
 /**
- * String customizations — replace "Spotter" with "Salesloft AI" everywhere,
- * plus the landing-page description override (from
- * salesloft_fin.json > stylingConfig.embeddedContent.strings / stringIDs).
+ * String customizations — replace "Spotter" with "MIDIS AI" across all embeds.
  */
 export const TS_STRINGS: Record<string, string> = {
-  Spotter: 'Salesloft AI',
+  Spotter: 'MIDIS AI',
 };
 
 export const TS_STRING_IDS: Record<string, string> = {
-  'convAssist.landingpage.description2': 'Ask a question about sales.',
+  'convAssist.landingpage.description2': 'Ask a question about disease surveillance data.',
 };
 
 // ---------------------------------------------------------------------------
@@ -381,27 +372,21 @@ export const SPOTTER_EMBED_FLAGS = {
   },
 };
 
-/** Google-Fonts stylesheet loaded INTO embed iframes so embedded ThoughtSpot
- * surfaces render in the same faces as the host UI (Plus Jakarta Sans for text,
- * Fraunces for titles) — iframes can't see the host page's fonts. customCSSUrl.
- */
+/** Google-Fonts stylesheet loaded INTO embed iframes — Inter for Montana portal. */
 export const TS_FONT_URL =
-  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap';
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
 
-/** "Watch video" link shown in the Salesloft AI pane. */
-export const SALESLOFT_VIDEO_URL = 'https://www.salesloft.com/platform/conversations';
-
-/** Sample questions shown on the custom Salesloft AI landing pane. */
+/** Sample questions shown on the MIDIS AI landing pane. */
 export const SALESLOFT_SAMPLE_QUESTIONS = [
-  'Revenue generated by week',
-  'Top cadences by influenced pipeline',
-  'Meetings booked by rep',
-  'Reply rate by cadence',
+  'Case counts by jurisdiction',
+  'Completeness by diagnosis date',
+  'Cases closed by month',
+  'HIV referral rate by county',
 ];
 
-/** Trial / upgrade prompt shown in the Salesloft AI pane after the 2nd query. */
 export const SALESLOFT_TRIAL_QUESTIONS = 20;
-export const SALESLOFT_UPGRADE_URL = 'https://www.salesloft.com/pricing';
+export const SALESLOFT_UPGRADE_URL = '';
+export const SALESLOFT_VIDEO_URL = '';
 
 /**
  * Hide the Spotter embed's own composer / input bar on the Salesloft AI screen
