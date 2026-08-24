@@ -32,7 +32,7 @@ export default async function LoginPage({
 
           {error === "AccessDenied" && (
             <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-              Access is restricted to members of the ThoughtSpot GitHub org.
+              Your GitHub account doesn&apos;t have access. Ask Brant to add you.
             </p>
           )}
 
