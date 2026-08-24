@@ -1915,22 +1915,22 @@ button {
 .login-label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--sl-ink);
+  color: #212529;
 }
 .login-input {
   width: 100%;
-  border: 1px solid var(--sl-border);
+  border: 1px solid #ced4da;
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 15px;
-  color: var(--sl-ink);
-  background: var(--sl-white);
+  color: #212529;
+  background: #ffffff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .login-input:focus {
   outline: none;
-  border-color: var(--sl-green);
-  box-shadow: 0 0 0 3px rgba(21, 174, 110, 0.16);
+  border-color: var(--dphhs-blue);
+  box-shadow: 0 0 0 3px rgba(58, 113, 176, 0.2);
 }
 .login-input-wrapper {
   position: relative;
@@ -1945,7 +1945,7 @@ button {
   transform: translateY(-50%);
   border: none;
   background: transparent;
-  color: var(--sl-muted);
+  color: #6c757d;
   width: 32px;
   height: 32px;
   display: flex;
@@ -1954,7 +1954,7 @@ button {
   border-radius: 7px;
 }
 .login-toggle-password:hover {
-  background: var(--sl-cream);
+  background: #f0f0f0;
 }
 .login-submit {
   margin-top: 4px;
