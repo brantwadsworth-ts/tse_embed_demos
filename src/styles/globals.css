@@ -1,31 +1,18 @@
 /* ===========================================================================
-   Salesloft Analytics — theme approximating salesloft.com's 2024 rebrand:
-   tonal greens, warm cream surfaces, a humanist-serif display face (Fraunces,
-   in place of Salesloft's "Nib") + Inter for UI text (in place of "Metric").
+   Montana DPHHS MIDIS Disease Surveillance Portal
+   Colors sourced directly from dphhs.mt.gov
    =========================================================================== */
 
 :root {
-  /* Brand palette */
-  --sl-cream: #f4f2ec;
-  --sl-cream-2: #efece3;
-  --sl-white: #ffffff;
-  --sl-evergreen: #0e3a2c;
-  --sl-evergreen-2: #0a2c21;
-  --sl-green: #15ae6e;
-  --sl-green-dark: #0c5b43;
-  --sl-mint: #e7f3ec;
-  --sl-mint-2: #d9ecdf;
-  --sl-coral: #f26b5e;
-  --sl-ink: #14241e;
-  --sl-muted: #5a6b63;
-  --sl-border: #e4e2d8;
-  --sl-border-soft: #edebe2;
+  /* DPHHS brand palette */
+  --dphhs-navy:       #112F60;   /* utility bar, footer top */
+  --dphhs-blue:       #3A71B0;   /* footer main band */
+  --dphhs-subnav:     #EDF5FB;   /* sub-navigation row */
+  --dphhs-white:      #ffffff;
+  --dphhs-text:       #212529;
+  --dphhs-link:       #003865;
 
-  --font-serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
-  /* Body face — Plus Jakarta Sans (distinctive but professional). Matches the
-     embeds' --ts-var-root-font-family exactly so host UI, chatbot, and embedded
-     ThoughtSpot content share the same typeface + fallbacks. */
-  --font-sans: 'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif;
+  --font-sans: 'Segoe UI', Arial, sans-serif;
 
   --topbar-h: 82px;
   --shadow-card: 0 1px 2px rgba(7, 59, 58, 0.05),
@@ -2982,5 +2969,360 @@ button {
   text-align: center;
   font-size: 14px;
   color: #718096;
+}
+
+/* ===========================================================================
+   DPHHS Header
+   =========================================================================== */
+
+.dphhs-header {
+  width: 100%;
+  font-family: var(--font-sans);
+}
+
+/* Row 1 — utility bar */
+.dphhs-utility-bar {
+  background-color: var(--dphhs-navy);
+  color: var(--dphhs-white);
+}
+.dphhs-utility-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 6px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+.dphhs-social-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.dphhs-social-links a {
+  color: var(--dphhs-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 6px;
+  border-radius: 3px;
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.dphhs-social-links a:hover { opacity: 1; }
+.dphhs-social-icon { width: 16px; height: 16px; }
+.dphhs-search-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.dphhs-search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--dphhs-white);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 4px 8px;
+  width: 130px;
+}
+.dphhs-search-input::placeholder { color: rgba(255,255,255,0.7); }
+.dphhs-search-btn {
+  background: transparent;
+  border: none;
+  color: var(--dphhs-white);
+  cursor: pointer;
+  padding: 4px 7px;
+  display: flex;
+  align-items: center;
+}
+.dphhs-search-icon { width: 14px; height: 14px; }
+
+/* Row 2 — logo / agency name */
+.dphhs-brand-row {
+  background: var(--dphhs-white);
+  border-bottom: 1px solid #dee2e6;
+  padding: 10px 0;
+}
+.dphhs-brand-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.dphhs-circle-logo {
+  height: 68px;
+  width: 68px;
+  flex-shrink: 0;
+}
+.dphhs-agency-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.dphhs-dept-of {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #666;
+  text-transform: uppercase;
+}
+.dphhs-dept-main {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--dphhs-navy);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+/* Rows 3 & 4 — navigation */
+.dphhs-main-nav {
+  background: var(--dphhs-white);
+  border-bottom: 1px solid #dee2e6;
+}
+.dphhs-main-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.dphhs-top-links {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 8px 0 4px;
+  flex-wrap: wrap;
+}
+.dphhs-top-links a {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--dphhs-text);
+  text-decoration: none;
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+.dphhs-top-links a:hover { color: var(--dphhs-navy); }
+.dphhs-sub-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 0 8px;
+  background: var(--dphhs-subnav);
+  margin: 0 -24px;
+  padding-left: 24px;
+}
+.dphhs-sub-links a {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--dphhs-navy);
+  text-decoration: none;
+  padding: 6px 14px;
+  white-space: nowrap;
+}
+.dphhs-sub-links a:hover { background: rgba(17,47,96,0.08); border-radius: 3px; }
+.dphhs-sub-active {
+  background: var(--dphhs-navy) !important;
+  color: var(--dphhs-white) !important;
+  border-radius: 3px !important;
+}
+
+/* ===========================================================================
+   DPHHS Footer
+   =========================================================================== */
+
+.dphhs-footer { font-family: var(--font-sans); }
+
+.dphhs-footer-top {
+  background: var(--dphhs-navy);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: center;
+}
+.dphhs-footer-circle-logo { height: 72px; width: 72px; }
+
+.dphhs-footer-main { background: var(--dphhs-blue); color: var(--dphhs-white); }
+.dphhs-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 36px 24px 24px;
+  display: grid;
+  grid-template-columns: 240px 1fr auto;
+  gap: 40px;
+  align-items: start;
+}
+.dphhs-footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+.dphhs-footer-horiz-logo { width: 200px; filter: brightness(0) invert(1); }
+.dphhs-footer-social {
+  display: flex;
+  gap: 8px;
+}
+.dphhs-footer-social a {
+  color: var(--dphhs-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.dphhs-footer-social a:hover { opacity: 1; }
+.dphhs-footer-social-icon { width: 15px; height: 15px; }
+
+.dphhs-footer-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 24px;
+}
+.dphhs-footer-nav a {
+  color: var(--dphhs-white);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+.dphhs-footer-nav a:hover { opacity: 1; text-decoration: underline; }
+
+.dphhs-footer-address {
+  font-size: 12px;
+  line-height: 1.7;
+  opacity: 0.9;
+}
+.dphhs-footer-address p { margin: 0; }
+.dphhs-footer-phone { font-weight: 700; margin-top: 8px !important; }
+
+.dphhs-footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.25);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  gap: 20px;
+}
+.dphhs-footer-bottom a {
+  color: var(--dphhs-white);
+  font-size: 11px;
+  opacity: 0.8;
+  text-decoration: none;
+}
+.dphhs-footer-bottom a:hover { opacity: 1; text-decoration: underline; }
+
+/* ===========================================================================
+   DPHHS Login Page
+   =========================================================================== */
+
+.dphhs-login-page {
+  display: flex;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+}
+.dphhs-login-left {
+  width: 420px;
+  flex-shrink: 0;
+  background: var(--dphhs-navy);
+  color: var(--dphhs-white);
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.dphhs-login-logo { width: 80px; height: 80px; }
+.dphhs-login-state {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  opacity: 0.7;
+  margin: 0;
+}
+.dphhs-login-dept {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 6px 0 0;
+}
+.dphhs-login-portal {
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.75;
+  margin: 6px 0 0;
+}
+.dphhs-login-tagline p {
+  font-size: 14px;
+  line-height: 1.65;
+  opacity: 0.8;
+  margin: 0;
+}
+.dphhs-login-right {
+  flex: 1;
+  background: #f5f7fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+.dphhs-login-card {
+  background: var(--dphhs-white);
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+}
+.dphhs-login-card-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.dphhs-login-card-logo { width: 56px; height: 56px; margin-bottom: 12px; }
+.dphhs-login-card-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--dphhs-navy);
+  margin: 0 0 4px;
+}
+.dphhs-login-card-sub {
+  font-size: 13px;
+  color: #6c757d;
+  margin: 0;
+}
+.dphhs-login-submit {
+  width: 100%;
+  background: var(--dphhs-navy);
+  color: var(--dphhs-white);
+  border: none;
+  border-radius: 4px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.15s;
+}
+.dphhs-login-submit:hover:not(:disabled) { background: #0d2347; }
+.dphhs-login-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.dphhs-login-footer {
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 20px 0 0;
 }
 .gauge-error { color: #c0392b; }

@@ -1,7 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
-import SalesloftLogo from '../components/SalesloftLogo';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -30,50 +29,42 @@ export default function Login() {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-left">
-        <SalesloftLogo className="login-logo" size={34} />
-        <div className="login-hero-content">
-          <h1 className="login-hero-title">
-            A new story<br />about sales.
-          </h1>
-          <p className="login-hero-subtitle">
-            Pipeline performance, team activity, and AI-powered answers — all in
-            one place, powered by ThoughtSpot.
-          </p>
-          <div className="login-stats">
-            <div className="login-stat">
-              <span className="login-stat-value">40%</span>
-              <span className="login-stat-label">Higher Win Rates</span>
-            </div>
-            <div className="login-stat">
-              <span className="login-stat-value">3x</span>
-              <span className="login-stat-label">Pipeline Visibility</span>
-            </div>
-            <div className="login-stat">
-              <span className="login-stat-value">60%</span>
-              <span className="login-stat-label">Faster Insights</span>
-            </div>
-          </div>
+    <div className="dphhs-login-page">
+      {/* Left panel — navy brand */}
+      <div className="dphhs-login-left">
+        <img
+          src="https://dphhs.mt.gov/_images/logo/DPHHS-Logo-Circle-Color-White-Border.svg"
+          alt="Montana DPHHS"
+          className="dphhs-login-logo"
+        />
+        <div className="dphhs-login-brand">
+          <p className="dphhs-login-state">STATE OF MONTANA</p>
+          <h1 className="dphhs-login-dept">Department of Public Health &amp; Human Services</h1>
+          <p className="dphhs-login-portal">MIDIS Disease Surveillance Portal</p>
+        </div>
+        <div className="dphhs-login-tagline">
+          <p>Secure access to reconciliation data, completeness metrics, and AI-powered disease surveillance insights.</p>
         </div>
       </div>
 
-      <div className="login-right">
-        <div className="login-card">
-          <div className="login-card-header">
-            <h2 className="login-card-title">Sign in</h2>
-            <p className="login-card-subtitle">
-              Enter your ThoughtSpot credentials to continue
-            </p>
+      {/* Right panel — sign-in form */}
+      <div className="dphhs-login-right">
+        <div className="dphhs-login-card">
+          <div className="dphhs-login-card-header">
+            <img
+              src="https://dphhs.mt.gov/_images/logo/DPHHS-Logo-Circle-Color-White-Border.svg"
+              alt=""
+              className="dphhs-login-card-logo"
+            />
+            <h2 className="dphhs-login-card-title">Sign in</h2>
+            <p className="dphhs-login-card-sub">Enter your MIDIS credentials to continue</p>
           </div>
 
           <form className="login-form" onSubmit={handleSubmit}>
             {error && <div className="login-error">{error}</div>}
 
             <div className="login-field">
-              <label htmlFor="username" className="login-label">
-                Username
-              </label>
+              <label htmlFor="username" className="login-label">Username</label>
               <input
                 id="username"
                 type="text"
@@ -87,9 +78,7 @@ export default function Login() {
             </div>
 
             <div className="login-field">
-              <label htmlFor="password" className="login-label">
-                Password
-              </label>
+              <label htmlFor="password" className="login-label">Password</label>
               <div className="login-input-wrapper">
                 <input
                   id="password"
@@ -113,17 +102,14 @@ export default function Login() {
 
             <button
               type="submit"
-              className="login-submit"
+              className="dphhs-login-submit"
               disabled={isLoading || !username.trim() || !password.trim()}
             >
               {isLoading ? <span className="login-spinner" /> : 'Sign In'}
             </button>
           </form>
 
-          <div className="login-footer">
-            <span>Powered by</span>
-            <span className="login-ts-badge">ThoughtSpot</span>
-          </div>
+          <p className="dphhs-login-footer">Powered by ThoughtSpot</p>
         </div>
       </div>
     </div>
