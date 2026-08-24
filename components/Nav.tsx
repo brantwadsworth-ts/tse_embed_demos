@@ -1,16 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 export default function Nav() {
   const pathname = usePathname();
-  const router = useRouter();
-
-  async function signOut() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-  }
 
   return (
     <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/90 backdrop-blur">
@@ -57,7 +52,7 @@ export default function Nav() {
             + New Demo
           </Link>
           <button
-            onClick={signOut}
+            onClick={() => signOut({ callbackUrl: "/login" })}
             className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
           >
             Sign out
