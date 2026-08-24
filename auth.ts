@@ -8,15 +8,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      authorization: { params: { scope: "read:user read:org" } },
     }),
   ],
   callbacks: {
-    async signIn({ account, profile }) {
-      if (!account?.access_token || !profile?.login) return "/login?error=AccessDenied";
-      // Checks public org membership — no read:org scope required.
-      // Members must make their org membership public on GitHub.
+    async signIn({ account }) {
+      if (!account?.access_token) return "/login?error=AccessDenied";
       const res = await fetch(
-        `https://api.github.com/orgs/${GITHUB_ORG}/members/${profile.login}`,
+        `https://api.github.com/user/memberships/orgs/${GITHUB_ORG}`,
         {
           headers: {
             Authorization: `Bearer ${account.access_token}`,
@@ -24,7 +23,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         },
       );
-      return res.status === 204 ? true : "/login?error=AccessDenied";
+      if (!res.ok) return "/login?error=AccessDenied";
+      const data = await res.json();
+      return data.state === "active" ? true : "/login?error=AccessDenied";
     },
   },
   pages: {
