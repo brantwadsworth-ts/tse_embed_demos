@@ -1,13 +1,15 @@
 import { auth } from "@/auth";
 import { NextRequest, NextResponse } from "next/server";
-import { setRole, Role } from "@/lib/roles";
+import { setRole, getRole, Role } from "@/lib/roles";
 
 const ORG = process.env.GITHUB_ORG ?? "TSE-Embed-Demos";
 const USERNAME_RE = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/;
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session) {
+  const callerLogin = (session?.user as { login?: string })?.login ?? "";
+  const callerRole = await getRole(callerLogin);
+  if (!session || callerRole !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -92,8 +94,16 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Assign the role in our roles system
-  await setRole(username, role);
+  // Assign the role in our roles system (best-effort — don't crash if Blob is unavailable)
+  try {
+    await setRole(username, role);
+  } catch (err) {
+    console.error("setRole failed:", err);
+    return NextResponse.json(
+      { error: "GitHub invite sent but role assignment failed — check Blob storage configuration." },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }
