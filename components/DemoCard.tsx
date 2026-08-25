@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Demo } from "@/lib/demos";
 
 function Initials({ name }: { name: string }) {
@@ -137,13 +138,19 @@ export default function DemoCard({ demo }: { demo: Demo }) {
         )}
 
         {demo.status === "live" && (
-          <div className="mt-4">
-            <a
-              href={"/demo/" + demo.id}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#2770ef] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a56c4] transition-colors"
+          <div className="mt-4 flex gap-2">
+            <Link
+              href={`/demos/${demo.id}`}
+              className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-center text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              Launch demo ↗
-            </a>
+              Edit
+            </Link>
+            <Link
+              href={`/demo/${demo.id}`}
+              className="flex-1 rounded-xl bg-[#2770ef] px-3 py-2 text-center text-sm font-semibold text-white hover:bg-[#1a56c4] transition-colors"
+            >
+              Go to Demo ↗
+            </Link>
           </div>
         )}
       </div>

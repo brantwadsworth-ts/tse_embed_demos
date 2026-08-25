@@ -13,6 +13,19 @@ export interface DemoTheme {
   liveboards: DemoLiveboard[];
 }
 
+export interface DemoTable {
+  name: string;
+  columns: string[];
+}
+
+export interface DemoDataModel {
+  warehouse?: string;
+  cdw?: string;
+  database?: string;
+  schema?: string;
+  tables?: DemoTable[];
+}
+
 export interface Demo {
   id: string;
   companyName: string;
@@ -32,6 +45,10 @@ export interface Demo {
   status: "live" | "pending" | "building" | "draft";
   createdAt: string;
   theme?: DemoTheme;
+  owner?: string;
+  embedType?: "liveboard" | "fullApp" | "search";
+  dataModel?: DemoDataModel;
+  prompt?: string;
 }
 
 const SEED_FILE = path.join(process.cwd(), "data", "demos.json");

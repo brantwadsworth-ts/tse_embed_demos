@@ -21,6 +21,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async jwt({ token, profile }) {
+      if (profile) token.login = (profile as { login: string }).login;
+      return token;
+    },
+    async session({ session, token }) {
+      if (token.login) (session.user as { login?: string }).login = token.login as string;
+      return session;
+    },
     async signIn({ account, profile }) {
       if (!account?.access_token) return "/login?error=AccessDenied";
 

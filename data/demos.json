@@ -20,6 +20,21 @@
     "liveUrl": "https://salesloft.ts-embed.vercel.app",
     "status": "live",
     "createdAt": "2025-04-01",
+    "owner": "brantwadsworth-ts",
+    "embedType": "liveboard",
+    "prompt": "You are Salesloft AI, a sales analytics assistant. Help reps understand cadence performance, pipeline trends, and rep activity metrics. Always reference specific data points from the embedded liveboard.",
+    "dataModel": {
+      "warehouse": "Snowflake",
+      "cdw": "SALESLOFT_WH",
+      "database": "SALESLOFT_DB",
+      "schema": "ANALYTICS",
+      "tables": [
+        { "name": "cadences", "columns": ["Cadence Name", "Owner", "Cadence Create Date", "Emails Replied", "Influenced Pipeline"] },
+        { "name": "reps", "columns": ["Rep Name", "Rep Segment", "Region", "Manager"] },
+        { "name": "activities", "columns": ["Activity Date", "Activity Type", "Cadence Name", "Rep Name", "Outcome"] },
+        { "name": "pipeline", "columns": ["Opportunity Name", "Stage", "Amount", "Close Date", "Rep Name"] }
+      ]
+    },
     "theme": {
       "custom": "salesloft",
       "primaryColor": "#15AE6E",
@@ -51,6 +66,21 @@
     "liveUrl": "https://doordash.ts-embed.vercel.app",
     "status": "live",
     "createdAt": "2025-05-01",
+    "owner": "brantwadsworth-ts",
+    "embedType": "liveboard",
+    "prompt": "You are DD Insights, a brand analytics assistant for DoorDash brand partners. Help brand managers understand sales performance, category trends, and regional comparisons for their products only. Data is scoped by country via RLS.",
+    "dataModel": {
+      "warehouse": "Snowflake",
+      "cdw": "DD_WH",
+      "database": "DOORDASH_DB",
+      "schema": "BRAND_ANALYTICS",
+      "tables": [
+        { "name": "orders", "columns": ["Order ID", "Brand", "Item Name", "Country", "Order Date", "Revenue", "Units"] },
+        { "name": "brands", "columns": ["Brand ID", "Brand Name", "Category", "Country"] },
+        { "name": "items", "columns": ["Item ID", "Item Name", "Brand", "Category", "Price"] },
+        { "name": "regions", "columns": ["Region", "Country", "City", "Market Type"] }
+      ]
+    },
     "theme": {
       "custom": null,
       "primaryColor": "#FF3008",
@@ -80,6 +110,21 @@
     "liveUrl": "https://montana.ts-embed.vercel.app",
     "status": "live",
     "createdAt": "2025-05-15",
+    "owner": "brantwadsworth-ts",
+    "embedType": "liveboard",
+    "prompt": "You are Ask Clarity, a public health data assistant for Montana DPHHS. Help epidemiologists understand disease surveillance completeness, reconciliation status, and jurisdiction-level case counts. Reference MIDIS data fields precisely.",
+    "dataModel": {
+      "warehouse": "Snowflake",
+      "cdw": "SE_DEMO_WH",
+      "database": "SE_DEMO_DB",
+      "schema": "MIDIS",
+      "tables": [
+        { "name": "case_records", "columns": ["Case ID", "Jurisdiction Name", "Disease", "Report Date", "DOB", "Completeness Score"] },
+        { "name": "jurisdictions", "columns": ["Jurisdiction Name", "County", "Region", "Population"] },
+        { "name": "acr_deliverables", "columns": ["Deliverable ID", "Jurisdiction", "Status", "Due Date", "Submitted Date"] },
+        { "name": "completeness_metrics", "columns": ["Field Name", "Jurisdiction", "Complete Count", "Total Count", "Pct Complete", "MMWR Year"] }
+      ]
+    },
     "theme": {
       "custom": "dphhs",
       "primaryColor": "#112F60",
