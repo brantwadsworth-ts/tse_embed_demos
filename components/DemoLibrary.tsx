@@ -58,27 +58,34 @@ function Initials({ name, className }: { name: string; className?: string }) {
 function CompactCard({
   demo,
   selected,
+  userRole,
   onClick,
 }: {
   demo: Demo;
   selected: boolean;
+  userRole: Role;
   onClick: () => void;
 }) {
+  const router = useRouter();
   const status = STATUS_STYLES[demo.status];
   const instanceName = demo.tsInstance ? tsDisplayName(demo.tsInstance) : null;
   const dataset = datasetLabel(demo.dataModel);
+  const canEdit = userRole === "admin" || userRole === "create";
 
   return (
-    <button
-      onClick={onClick}
-      className={`w-full text-left flex flex-col overflow-hidden rounded-xl border transition-all ${
+    <div
+      className={`flex flex-col overflow-hidden rounded-xl border transition-all bg-white ${
         selected
           ? "border-[#2770ef] shadow-md ring-1 ring-[#2770ef]/20"
-          : "border-gray-200 bg-white hover:shadow-sm hover:border-gray-300"
+          : "border-gray-200 hover:shadow-sm hover:border-gray-300"
       }`}
     >
-      {/* Thumbnail */}
-      <div className="relative h-20 w-full overflow-hidden bg-gray-100 shrink-0">
+      {/* Thumbnail — clicking opens the detail panel */}
+      <button
+        onClick={onClick}
+        className="relative h-20 w-full overflow-hidden bg-gray-100 shrink-0 text-left"
+        aria-label={`View ${demo.companyName} details`}
+      >
         {demo.screenshotUrls?.[0] ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -95,11 +102,13 @@ function CompactCard({
           <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
           {status.label}
         </span>
-      </div>
+      </button>
 
       {/* Body */}
-      <div className="p-3 flex flex-col gap-1.5 bg-white">
-        <p className="font-semibold text-gray-900 text-sm truncate">{demo.companyName}</p>
+      <div className="p-3 flex flex-col gap-1.5">
+        <button onClick={onClick} className="text-left">
+          <p className="font-semibold text-gray-900 text-sm truncate">{demo.companyName}</p>
+        </button>
 
         {(instanceName || dataset) && (
           <div className="flex flex-wrap gap-1">
@@ -118,23 +127,43 @@ function CompactCard({
 
         <div className="flex flex-wrap gap-1">
           {demo.rlsRequired && (
-            <span className="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700">
-              RLS
-            </span>
+            <span className="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700">RLS</span>
           )}
           {demo.useSpotter && (
-            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
-              Spotter
-            </span>
-          )}
-          {demo.reportDesigner && (
-            <span className="rounded-full bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-700">
-              Report Designer
-            </span>
+            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">Spotter</span>
           )}
         </div>
       </div>
-    </button>
+
+      {/* Action buttons — always visible on the card */}
+      <div className="mt-auto flex gap-1.5 border-t border-gray-100 p-2.5">
+        {canEdit && (
+          <>
+            <button
+              onClick={() => router.push(`/demos/${demo.id}/edit`)}
+              className="flex-1 rounded-lg border border-gray-200 py-1.5 text-center text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => router.push(`/demos/${demo.id}/fork`)}
+              className="flex-1 rounded-lg border border-gray-200 py-1.5 text-center text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Fork
+            </button>
+          </>
+        )}
+        <a
+          href={`/demo/${demo.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="flex-1 rounded-lg bg-[#2770ef] py-1.5 text-center text-xs font-semibold text-white hover:bg-[#1a56c4] transition-colors"
+        >
+          View ↗
+        </a>
+      </div>
+    </div>
   );
 }
 
@@ -570,6 +599,7 @@ export default function DemoLibrary({
                 key={demo.id}
                 demo={demo}
                 selected={selectedId === demo.id}
+                userRole={userRole}
                 onClick={() => selectDemo(demo.id)}
               />
             ))}
@@ -622,7 +652,7 @@ export default function DemoLibrary({
           </div>
 
           {/* Detail panel */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden" style={{ height: "calc(100vh - 160px)" }}>
             {listSelectedDemo ? (
               <DetailPanel
                 demo={listSelectedDemo}
