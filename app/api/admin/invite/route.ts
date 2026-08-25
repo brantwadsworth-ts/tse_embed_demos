@@ -52,58 +52,31 @@ export async function POST(req: NextRequest) {
     "X-GitHub-Api-Version": "2022-11-28",
   };
 
-  // First verify the user exists on GitHub
-  const userRes = await fetch(`https://api.github.com/users/${username}`, {
-    headers,
-  });
+  // Verify the GitHub user exists
+  const userRes = await fetch(`https://api.github.com/users/${username}`, { headers });
   if (userRes.status === 404) {
-    return NextResponse.json(
-      { error: `GitHub user "${username}" not found` },
-      { status: 422 },
-    );
+    return NextResponse.json({ error: `GitHub user "${username}" not found` }, { status: 422 });
   }
   if (!userRes.ok) {
-    return NextResponse.json(
-      { error: `Could not verify GitHub user: ${userRes.status}` },
-      { status: 502 },
-    );
+    return NextResponse.json({ error: `Could not verify GitHub user: ${userRes.status}` }, { status: 502 });
   }
 
-  // Send the org membership invite (PUT sets role to "member")
-  const inviteRes = await fetch(
-    `https://api.github.com/orgs/${ORG}/memberships/${username}`,
-    {
-      method: "PUT",
-      headers,
-      body: JSON.stringify({ role: "member" }),
-    },
-  );
-
-  if (inviteRes.status === 422) {
-    return NextResponse.json(
-      { error: "Already a member of the org" },
-      { status: 422 },
-    );
-  }
-
-  if (!inviteRes.ok) {
-    const text = await inviteRes.text();
-    return NextResponse.json(
-      { error: `GitHub API error: ${inviteRes.status} ${text}` },
-      { status: 502 },
-    );
-  }
-
-  // Assign the role in our roles system (best-effort — don't crash if Blob is unavailable)
+  // Set role in our store — this is the primary access grant
   try {
     await setRole(username, role);
   } catch (err) {
     console.error("setRole failed:", err);
-    return NextResponse.json(
-      { error: "GitHub invite sent but role assignment failed — check Blob storage configuration." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Role assignment failed — check Blob storage configuration." }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  // Also send GitHub org invite if token has org admin scope (best-effort, not required)
+  if (token) {
+    await fetch(`https://api.github.com/orgs/${ORG}/memberships/${username}`, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify({ role: "member" }),
+    }).catch(() => { /* org invite is optional */ });
+  }
+
+  return NextResponse.json({ ok: true, loginUrl: "https://tse-embed-demos.vercel.app/login" });
 }

@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
+import { readRoles } from "@/lib/roles";
 
 const GITHUB_ORG = process.env.GITHUB_ORG ?? "TSE-Embed-Demos";
 
@@ -32,11 +33,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ account, profile }) {
       if (!account?.access_token) return "/login?error=AccessDenied";
 
-      // Allowlist check — bypasses org membership requirement
       const login = (profile as { login?: string })?.login?.toLowerCase() ?? "";
+
+      // 1. Hardcoded allowlist (env var) — always passes
       if (login && ALLOWED_LOGINS.has(login)) return true;
 
-      // Org membership check
+      // 2. Role store — if admin added them via Team page, let them in
+      if (login) {
+        try {
+          const roles = await readRoles();
+          if (roles.some((r) => r.login === login)) return true;
+        } catch {
+          // Blob unavailable — fall through to org check
+        }
+      }
+
+      // 3. GitHub org membership check
       const res = await fetch(
         `https://api.github.com/user/memberships/orgs/${GITHUB_ORG}`,
         {
