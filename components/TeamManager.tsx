@@ -79,7 +79,7 @@ export default function TeamManager() {
       } else {
         setInviteStatus({
           type: "success",
-          message: `Invite sent to @${username} with role "${inviteRole}"`,
+          message: `Invite sent to @${username} (role: ${inviteRole}). Share this link: https://tse-embed-demos.vercel.app/login`,
         });
         setInviteUsername("");
         setInviteRole("create");
