@@ -9,6 +9,8 @@ const SYSTEM_PROMPT = `You are a ThoughtSpot demo configuration assistant. Given
 
 Always respond with valid JSON only, no markdown, no explanation.`;
 
+const FREEFORM_SYSTEM_PROMPT = `You are a ThoughtSpot demo configuration assistant. Given a plain-English description, generate a complete demo configuration JSON. Return ONLY valid JSON, no markdown.`;
+
 export async function POST(request: NextRequest) {
   const session = await auth();
   if (!session?.user) {
@@ -25,12 +27,85 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json() as {
+    freeform?: string;
     companyName?: string;
     website?: string;
     useCase?: string;
     tsInstance?: string;
   };
 
+  // ── Freeform path: generate full demo config ────────────────────────────────
+  if (body.freeform) {
+    const userPrompt = `Create a demo configuration from this description:
+
+${body.freeform}
+
+Return JSON with exactly this shape:
+{
+  "companyName": "...",
+  "website": "...",
+  "useCase": "...",
+  "prompt": "...",
+  "tsInstance": "https://...",
+  "embedType": "liveboard",
+  "useSpotter": true,
+  "spotterName": "...",
+  "reportDesigner": false,
+  "rlsRequired": true,
+  "rlsRules": "...",
+  "sampleQuestions": ["...", "...", "..."],
+  "dataModel": {
+    "warehouse": "Snowflake",
+    "cdw": "...",
+    "database": "...",
+    "schema": "...",
+    "tables": []
+  }
+}`;
+
+    const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 2048,
+        system: FREEFORM_SYSTEM_PROMPT,
+        messages: [{ role: "user", content: userPrompt }],
+      }),
+    });
+
+    if (!anthropicRes.ok) {
+      const detail = await anthropicRes.text();
+      return NextResponse.json(
+        { error: `Anthropic API error: ${anthropicRes.status} — ${detail}` },
+        { status: 502 },
+      );
+    }
+
+    const data = await anthropicRes.json() as {
+      content?: Array<{ type: string; text?: string }>;
+    };
+
+    const text = data.content?.find((c) => c.type === "text")?.text ?? "";
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      return NextResponse.json(
+        { error: "AI returned malformed JSON. Try again." },
+        { status: 502 },
+      );
+    }
+
+    return NextResponse.json(parsed);
+  }
+
+  // ── Structured path: polish existing fields ─────────────────────────────────
   const userPrompt = `Company: ${body.companyName ?? ""}
 Website: ${body.website ?? ""}
 Use Case: ${body.useCase ?? ""}
