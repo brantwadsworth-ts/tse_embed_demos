@@ -22,6 +22,8 @@
     "createdAt": "2025-04-01",
     "owner": "brantwadsworth-ts",
     "embedType": "liveboard",
+    "trustedAuthEnabled": false,
+    "credentialsHint": "Use your ThoughtSpot credentials",
     "prompt": "You are Salesloft AI, a sales analytics assistant. Help reps understand cadence performance, pipeline trends, and rep activity metrics. Always reference specific data points from the embedded liveboard.",
     "dataModel": {
       "warehouse": "Snowflake",
@@ -68,6 +70,13 @@
     "createdAt": "2025-05-01",
     "owner": "brantwadsworth-ts",
     "embedType": "liveboard",
+    "trustedAuthEnabled": false,
+    "credentialsHint": "Use your ThoughtSpot credentials",
+    "demoUsers": [
+      { "label": "National Admin", "tsUsername": "admin@doordash.com" },
+      { "label": "US Market", "tsUsername": "demo-us@doordash.com" },
+      { "label": "Canada Market", "tsUsername": "demo-canada@doordash.com" }
+    ],
     "prompt": "You are DD Insights, a brand analytics assistant for DoorDash brand partners. Help brand managers understand sales performance, category trends, and regional comparisons for their products only. Data is scoped by country via RLS.",
     "dataModel": {
       "warehouse": "Snowflake",
@@ -112,6 +121,13 @@
     "createdAt": "2025-05-15",
     "owner": "brantwadsworth-ts",
     "embedType": "liveboard",
+    "trustedAuthEnabled": false,
+    "credentialsHint": "Use your ThoughtSpot credentials",
+    "demoUsers": [
+      { "label": "Statewide Admin", "tsUsername": "admin@dphhs.mt.gov" },
+      { "label": "Yellowstone County", "tsUsername": "demo-yellowstone@dphhs.mt.gov" },
+      { "label": "Cascade County", "tsUsername": "demo-cascade@dphhs.mt.gov" }
+    ],
     "prompt": "You are Ask Clarity, a public health data assistant for Montana DPHHS. Help epidemiologists understand disease surveillance completeness, reconciliation status, and jurisdiction-level case counts. Reference MIDIS data fields precisely.",
     "dataModel": {
       "warehouse": "Snowflake",

@@ -8,6 +8,7 @@ export default auth((req) => {
   if (
     !isLoggedIn &&
     !pathname.startsWith("/api/auth") &&
+    !pathname.startsWith("/api/demo") &&
     !pathname.startsWith("/demo") &&
     pathname !== "/login"
   ) {

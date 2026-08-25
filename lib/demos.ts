@@ -25,6 +25,11 @@ export interface DemoDataModel {
   tables?: DemoTable[];
 }
 
+export interface DemoUser {
+  label: string;
+  tsUsername: string;
+}
+
 export interface Demo {
   id: string;
   companyName: string;
@@ -49,6 +54,9 @@ export interface Demo {
   dataModel?: DemoDataModel;
   prompt?: string;
   forkedFrom?: string;
+  trustedAuthEnabled?: boolean;
+  credentialsHint?: string;
+  demoUsers?: DemoUser[];
 }
 
 export async function getAllDemos(): Promise<Demo[]> {

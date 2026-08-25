@@ -6,19 +6,35 @@ interface DemoLoginProps {
   companyName: string;
   logoUrl?: string;
   primaryColor: string;
+  tsInstance?: string;
+  credentialsHint?: string;
   onLogin: (username: string, password: string) => Promise<void>;
+}
+
+function instanceSubdomain(tsInstance?: string): string | null {
+  if (!tsInstance) return null;
+  try {
+    const hostname = new URL(tsInstance).hostname;
+    return hostname.replace(/\.thoughtspot(staging)?\.cloud$/, "");
+  } catch {
+    return null;
+  }
 }
 
 export default function DemoLogin({
   companyName,
   logoUrl,
   primaryColor,
+  tsInstance,
+  credentialsHint,
   onLogin,
 }: DemoLoginProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const subdomain = instanceSubdomain(tsInstance);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -103,6 +119,36 @@ export default function DemoLogin({
               Enter your credentials to continue
             </p>
           </div>
+
+          {/* Instance / credentials hint */}
+          {(subdomain || credentialsHint) && (
+            <div
+              style={{
+                background: "#f8f9fa",
+                border: "1px solid #e9ecef",
+                borderRadius: "6px",
+                padding: "10px 12px",
+                marginBottom: "18px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "4px",
+              }}
+            >
+              {subdomain && (
+                <p style={{ fontSize: "12px", color: "#6c757d", margin: 0 }}>
+                  ThoughtSpot Instance:{" "}
+                  <span style={{ fontWeight: 600 }}>
+                    {subdomain}.thoughtspot.cloud
+                  </span>
+                </p>
+              )}
+              {credentialsHint && (
+                <p style={{ fontSize: "12px", color: "#6c757d", margin: 0 }}>
+                  Credentials: <span style={{ fontWeight: 600 }}>{credentialsHint}</span>
+                </p>
+              )}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
             {error && (

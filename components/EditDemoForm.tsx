@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Demo, DemoLiveboard } from "@/lib/demos";
+import { Demo, DemoLiveboard, DemoUser } from "@/lib/demos";
 
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-[#2770ef] focus:outline-none focus:ring-2 focus:ring-[#2770ef]/20";
@@ -83,6 +83,21 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
   const [rlsRequired, setRlsRequired] = useState(demo.rlsRequired);
   const [rlsRules, setRlsRules] = useState(demo.rlsRules ?? "");
 
+  // Access & Authentication
+  const [trustedAuthEnabled, setTrustedAuthEnabled] = useState(
+    demo.trustedAuthEnabled ?? false,
+  );
+  const [credentialsHint, setCredentialsHint] = useState(
+    demo.credentialsHint ?? "",
+  );
+  const [demoUsers, setDemoUsers] = useState<DemoUser[]>(
+    demo.demoUsers ?? [],
+  );
+  const [newSecret, setNewSecret] = useState("");
+  const [secretConfigured, setSecretConfigured] = useState<boolean | null>(null);
+  const [secretSaving, setSecretSaving] = useState(false);
+  const [secretMsg, setSecretMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
   // Data Model
   const [warehouse, setWarehouse] = useState(demo.dataModel?.warehouse ?? "");
   const [cdw, setCdw] = useState(demo.dataModel?.cdw ?? "");
@@ -113,6 +128,42 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+
+  function updateDemoUser(idx: number, field: keyof DemoUser, value: string) {
+    setDemoUsers((prev) => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], [field]: value };
+      return next;
+    });
+  }
+
+  async function checkSecretConfigured() {
+    const res = await fetch(`/api/demo/${demo.id}/secret`);
+    if (res.ok) {
+      const data = await res.json() as { configured: boolean };
+      setSecretConfigured(data.configured);
+    }
+  }
+
+  async function handleSaveSecret() {
+    if (!newSecret.trim()) return;
+    setSecretSaving(true);
+    setSecretMsg(null);
+    const res = await fetch(`/api/demo/${demo.id}/secret`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret: newSecret.trim() }),
+    });
+    setSecretSaving(false);
+    if (res.ok) {
+      setNewSecret("");
+      setSecretConfigured(true);
+      setSecretMsg({ type: "success", text: "Secret saved." });
+    } else {
+      const body = await res.json().catch(() => ({})) as { error?: string };
+      setSecretMsg({ type: "error", text: body.error ?? "Failed to save secret." });
+    }
+  }
 
   function updateTable(idx: number, field: keyof TableRow, value: string) {
     setTables((prev) => {
@@ -204,6 +255,9 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
         logoUrl: demo.theme?.logoUrl,
         liveboards,
       },
+      trustedAuthEnabled,
+      credentialsHint: credentialsHint || undefined,
+      demoUsers: demoUsers.filter((u) => u.label.trim() && u.tsUsername.trim()),
     };
 
     const res = await fetch(`/api/demos/${demo.id}`, {
@@ -381,6 +435,140 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
             checked={reportDesigner}
             onChange={setReportDesigner}
           />
+        </div>
+      </Section>
+
+      {/* ── Access & Authentication ── */}
+      <Section title="Access &amp; Authentication">
+        <div className="space-y-4 rounded-xl bg-gray-50 p-4">
+          <Toggle
+            label="Enable Trusted Authentication (no login page for visitors)"
+            checked={trustedAuthEnabled}
+            onChange={setTrustedAuthEnabled}
+          />
+          {trustedAuthEnabled && (
+            <p className="text-xs text-gray-400">
+              When enabled, the portal generates auth tokens server-side. Store the
+              secret key below — it will not be shown after saving.
+            </p>
+          )}
+        </div>
+
+        {trustedAuthEnabled && (
+          <div className="space-y-3">
+            <div className="flex items-end gap-3">
+              <Field
+                label="Trusted Auth Secret"
+                hint={
+                  secretConfigured === null
+                    ? undefined
+                    : secretConfigured
+                    ? "A secret is already configured."
+                    : "No secret configured yet."
+                }
+              >
+                <input
+                  type="password"
+                  className={inputClass}
+                  value={newSecret}
+                  onChange={(e) => setNewSecret(e.target.value)}
+                  onFocus={() => {
+                    if (secretConfigured === null) void checkSecretConfigured();
+                  }}
+                  placeholder={
+                    secretConfigured
+                      ? "••••••• (configured — enter new value to replace)"
+                      : "Paste secret key here"
+                  }
+                />
+              </Field>
+              <button
+                type="button"
+                onClick={() => void handleSaveSecret()}
+                disabled={secretSaving || !newSecret.trim()}
+                className="mb-0.5 shrink-0 rounded-lg bg-[#2770ef] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1a56c4] disabled:opacity-40 transition-colors"
+              >
+                {secretSaving ? "Saving…" : "Save Secret"}
+              </button>
+            </div>
+            {secretMsg && (
+              <p
+                className={`text-xs ${secretMsg.type === "success" ? "text-emerald-600" : "text-red-500"}`}
+              >
+                {secretMsg.text}
+              </p>
+            )}
+          </div>
+        )}
+
+        <Field
+          label="Credentials Hint"
+          hint={`Shown on the login page when trusted auth is off, e.g. "demo / demo"`}
+        >
+          <input
+            className={inputClass}
+            value={credentialsHint}
+            onChange={(e) => setCredentialsHint(e.target.value)}
+            placeholder="demo / demo"
+          />
+        </Field>
+
+        {/* Demo Users */}
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">
+              Demo Users{" "}
+              <span className="text-xs font-normal text-gray-400">
+                (for role picker / RLS)
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={() =>
+                setDemoUsers((prev) => [
+                  ...prev,
+                  { label: "", tsUsername: "" },
+                ])
+              }
+              className="rounded-lg bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+            >
+              + Add User
+            </button>
+          </div>
+          <div className="space-y-2">
+            {demoUsers.map((user, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <input
+                  className={inputClass}
+                  placeholder="Label (e.g. County A)"
+                  value={user.label}
+                  onChange={(e) => updateDemoUser(i, "label", e.target.value)}
+                />
+                <input
+                  className={inputClass}
+                  placeholder="TS Username"
+                  value={user.tsUsername}
+                  onChange={(e) =>
+                    updateDemoUser(i, "tsUsername", e.target.value)
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDemoUsers((prev) => prev.filter((_, idx) => idx !== i))
+                  }
+                  className="shrink-0 text-sm text-red-400 hover:text-red-600"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            {demoUsers.length === 0 && (
+              <p className="text-sm text-gray-400">
+                No demo users yet. Click + Add User to start.
+              </p>
+            )}
+          </div>
         </div>
       </Section>
 
