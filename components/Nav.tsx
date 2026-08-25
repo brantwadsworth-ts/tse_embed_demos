@@ -41,6 +41,16 @@ export default function Nav() {
             >
               New Demo
             </Link>
+            <Link
+              href="/admin/access"
+              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                pathname === "/admin/access"
+                  ? "bg-gray-100 text-gray-900"
+                  : "text-gray-500 hover:text-gray-900"
+              }`}
+            >
+              Team
+            </Link>
           </nav>
         </div>
 
