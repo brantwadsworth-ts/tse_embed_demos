@@ -1,5 +1,6 @@
 import { getDemoById } from "@/lib/demos";
 import { auth } from "@/auth";
+import { getRole } from "@/lib/roles";
 import Nav from "@/components/Nav";
 import ForkDemoForm from "@/components/ForkDemoForm";
 import Link from "next/link";
@@ -18,10 +19,11 @@ export default async function ForkPage({
   if (!demo) notFound();
 
   const currentLogin = (session?.user as { login?: string })?.login ?? "";
+  const userRole = await getRole(currentLogin);
 
   return (
     <div className="min-h-full">
-      <Nav />
+      <Nav isAdmin={userRole === "admin"} />
       <main className="mx-auto max-w-2xl px-6 py-10">
         <Link
           href={`/demos/${id}`}

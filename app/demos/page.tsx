@@ -2,17 +2,23 @@ import Link from "next/link";
 import Nav from "@/components/Nav";
 import DemoCard from "@/components/DemoCard";
 import { getAllDemos } from "@/lib/demos";
+import { auth } from "@/auth";
+import { getRole } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
 export default async function DemosPage() {
-  const demos = await getAllDemos();
+  const [demos, session] = await Promise.all([getAllDemos(), auth()]);
+  const login = (session?.user as { login?: string })?.login ?? "";
+  const userRole = await getRole(login);
+  const isAdmin = userRole === "admin";
+
   const live = demos.filter((d) => d.status === "live");
   const pending = demos.filter((d) => d.status !== "live");
 
   return (
     <div className="min-h-full">
-      <Nav />
+      <Nav isAdmin={isAdmin} />
 
       <main className="mx-auto max-w-7xl px-6 py-10">
         {/* Header */}
@@ -23,12 +29,14 @@ export default async function DemosPage() {
               {demos.length} demo{demos.length !== 1 ? "s" : ""} — {live.length} live, {pending.length} pending
             </p>
           </div>
-          <Link
-            href="/demos/new"
-            className="rounded-xl bg-[#2770ef] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a56c4] transition-colors"
-          >
-            + New Demo
-          </Link>
+          {userRole !== "view" && (
+            <Link
+              href="/demos/new"
+              className="rounded-xl bg-[#2770ef] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a56c4] transition-colors"
+            >
+              + New Demo
+            </Link>
+          )}
         </div>
 
         {/* Live demos */}
@@ -37,7 +45,7 @@ export default async function DemosPage() {
             <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">Live</h2>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {live.map((demo) => (
-                <DemoCard key={demo.id} demo={demo} />
+                <DemoCard key={demo.id} demo={demo} userRole={userRole} />
               ))}
             </div>
           </section>
@@ -49,7 +57,7 @@ export default async function DemosPage() {
             <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">Pending</h2>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {pending.map((demo) => (
-                <DemoCard key={demo.id} demo={demo} />
+                <DemoCard key={demo.id} demo={demo} userRole={userRole} />
               ))}
             </div>
           </section>
@@ -58,9 +66,11 @@ export default async function DemosPage() {
         {demos.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 py-20 text-center">
             <p className="text-gray-400">No demos yet.</p>
-            <Link href="/demos/new" className="mt-3 text-sm font-medium text-[#2770ef] hover:underline">
-              Create your first demo →
-            </Link>
+            {userRole !== "view" && (
+              <Link href="/demos/new" className="mt-3 text-sm font-medium text-[#2770ef] hover:underline">
+                Create your first demo →
+              </Link>
+            )}
           </div>
         )}
       </main>

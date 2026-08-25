@@ -1,5 +1,6 @@
 import { getDemoById } from "@/lib/demos";
 import { auth } from "@/auth";
+import { getRole } from "@/lib/roles";
 import Nav from "@/components/Nav";
 import EditDemoForm from "@/components/EditDemoForm";
 import Link from "next/link";
@@ -18,6 +19,10 @@ export default async function EditPage({
   if (!demo) notFound();
 
   const login = (session?.user as { login?: string })?.login ?? "";
+  const userRole = await getRole(login);
+
+  // view-only users can't edit
+  if (userRole === "view") redirect(`/demos/${id}`);
 
   // Non-owners get redirected back to the detail view
   if (demo.owner && demo.owner !== login) {
@@ -26,7 +31,7 @@ export default async function EditPage({
 
   return (
     <div className="min-h-full">
-      <Nav />
+      <Nav isAdmin={userRole === "admin"} />
       <main className="mx-auto max-w-3xl px-6 py-10">
         <Link
           href={`/demos/${id}`}

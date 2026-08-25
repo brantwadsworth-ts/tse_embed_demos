@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Demo } from "@/lib/demos";
+import { Role } from "@/lib/roles";
 
 function Initials({ name }: { name: string }) {
   const parts = name.trim().split(" ");
@@ -31,11 +32,38 @@ const STATUS_STYLES: Record<Demo["status"], { dot: string; label: string; bg: st
   draft:    { dot: "bg-gray-300",    label: "Draft",    bg: "bg-gray-50 text-gray-500" },
 };
 
-export default function DemoCard({ demo }: { demo: Demo }) {
+function tsDisplayName(url: string): string {
+  try {
+    const host = new URL(url).hostname;
+    return host.split(".")[0];
+  } catch {
+    return url;
+  }
+}
+
+function datasetLabel(dataModel?: Demo["dataModel"]): string | null {
+  if (!dataModel) return null;
+  const db = dataModel.database;
+  const sc = dataModel.schema;
+  if (db && sc) return `${db}.${sc}`;
+  if (db) return db;
+  if (sc) return sc;
+  return null;
+}
+
+export default function DemoCard({
+  demo,
+  userRole,
+}: {
+  demo: Demo;
+  userRole?: Role;
+}) {
   const router = useRouter();
   const [building, setBuilding] = useState(false);
   const [buildError, setBuildError] = useState("");
   const status = STATUS_STYLES[demo.status];
+
+  const canEdit = !userRole || userRole === "admin" || userRole === "create";
 
   async function triggerBuild() {
     setBuilding(true);
@@ -49,6 +77,9 @@ export default function DemoCard({ demo }: { demo: Demo }) {
       setBuilding(false);
     }
   }
+
+  const instanceName = demo.tsInstance ? tsDisplayName(demo.tsInstance) : null;
+  const dataset = datasetLabel(demo.dataModel);
 
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
@@ -89,6 +120,22 @@ export default function DemoCard({ demo }: { demo: Demo }) {
           <p className="mt-1.5 line-clamp-3 text-sm text-gray-500">{demo.useCase}</p>
         </div>
 
+        {/* TS Instance + Dataset badges */}
+        {(instanceName || dataset) && (
+          <div className="flex flex-wrap gap-1.5">
+            {instanceName && (
+              <span className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                ☁ {instanceName}
+              </span>
+            )}
+            {dataset && (
+              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+                {dataset}
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Feature badges */}
         <div className="flex flex-wrap gap-1.5">
           {demo.rlsRequired && (
@@ -108,9 +155,6 @@ export default function DemoCard({ demo }: { demo: Demo }) {
         <div className="mt-auto space-y-1 border-t border-gray-100 pt-3 text-xs text-gray-400">
           {demo.branch && (
             <p>Branch: <span className="font-mono text-gray-600">{demo.branch}</span></p>
-          )}
-          {demo.tsInstance && (
-            <p className="truncate">Instance: <span className="text-gray-600">{demo.tsInstance}</span></p>
           )}
           <p>Created: {demo.createdAt}</p>
         </div>
@@ -139,12 +183,14 @@ export default function DemoCard({ demo }: { demo: Demo }) {
 
         {demo.status === "live" && (
           <div className="mt-4 flex gap-2">
-            <Link
-              href={`/demos/${demo.id}`}
-              className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-center text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Edit
-            </Link>
+            {canEdit && (
+              <Link
+                href={`/demos/${demo.id}`}
+                className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-center text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Edit
+              </Link>
+            )}
             <Link
               href={`/demo/${demo.id}`}
               className="flex-1 rounded-xl bg-[#2770ef] px-3 py-2 text-center text-sm font-semibold text-white hover:bg-[#1a56c4] transition-colors"

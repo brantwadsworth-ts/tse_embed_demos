@@ -67,15 +67,17 @@ function FeatureRow({
 export default function DemoDetail({
   demo,
   currentLogin,
+  isAdmin,
 }: {
   demo: Demo;
   currentLogin: string;
+  isAdmin?: boolean;
 }) {
   const isOwner = !!demo.owner && demo.owner === currentLogin;
 
   return (
     <div className="min-h-full">
-      <Nav />
+      <Nav isAdmin={isAdmin} />
       <main className="mx-auto max-w-5xl px-6 py-10">
         {/* Back link */}
         <Link
@@ -139,7 +141,45 @@ export default function DemoDetail({
             <FeatureRow icon="📊" label="Report Designer" value={demo.reportDesigner} />
             <FeatureRow icon="🔒" label="Row-Level Security" value={demo.rlsRequired} />
             <FeatureRow icon="📌" label="Embed Type" value={demo.embedType ?? "liveboard"} isText />
-            <FeatureRow icon="🌐" label="ThoughtSpot Instance" value={demo.tsInstance} isText />
+
+            {/* ThoughtSpot Instance — clickable link */}
+            <div className="flex items-center justify-between py-2 border-b border-gray-100">
+              <span className="flex items-center gap-2 text-sm text-gray-600">
+                <span>🌐</span>
+                ThoughtSpot Instance
+              </span>
+              {demo.tsInstance ? (
+                <a
+                  href={demo.tsInstance}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-[#2770ef] hover:underline truncate max-w-[200px]"
+                >
+                  {demo.tsInstance}
+                </a>
+              ) : (
+                <span className="text-sm text-gray-400">—</span>
+              )}
+            </div>
+
+            {/* Liveboards */}
+            <div className="mt-4">
+              <p className="text-sm font-medium text-gray-700 mb-2">Liveboards</p>
+              {!demo.theme?.liveboards || demo.theme.liveboards.length === 0 ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                  ⚠ No liveboards configured — go to Edit to add liveboard IDs.
+                </div>
+              ) : (
+                <ul className="space-y-1">
+                  {demo.theme.liveboards.map((lb) => (
+                    <li key={lb.id} className="flex items-center gap-2 text-sm">
+                      <span className="text-gray-800 font-medium">{lb.name}</span>
+                      <span className="font-mono text-xs text-gray-400 truncate max-w-[150px]">{lb.id}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </section>
 
           {/* Prompt card */}

@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
+import { getRole } from "@/lib/roles";
 
 const ORG = process.env.GITHUB_ORG ?? "TSE-Embed-Demos";
 
@@ -48,10 +49,12 @@ export async function GET() {
     role?: string;
   }
 
-  const members = (membersData as GitHubMember[]).map((m) => ({
+  const githubMembers = membersData as GitHubMember[];
+  const memberRoles = await Promise.all(githubMembers.map((m) => getRole(m.login)));
+  const members = githubMembers.map((m, i) => ({
     login: m.login,
     avatarUrl: m.avatar_url,
-    role: m.role ?? "member",
+    role: memberRoles[i],
   }));
 
   let pending: { login: string; avatarUrl: string }[] = [];

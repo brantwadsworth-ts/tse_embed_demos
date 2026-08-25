@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { NextRequest, NextResponse } from "next/server";
+import { setRole, Role } from "@/lib/roles";
 
 const ORG = process.env.GITHUB_ORG ?? "TSE-Embed-Demos";
 const USERNAME_RE = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/;
@@ -19,9 +20,14 @@ export async function POST(req: NextRequest) {
   }
 
   let username: string;
+  let role: Role = "create";
   try {
     const body = await req.json();
     username = (body?.username ?? "").trim();
+    const bodyRole = body?.role;
+    if (bodyRole && ["admin", "create", "view"].includes(bodyRole)) {
+      role = bodyRole as Role;
+    }
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
@@ -85,6 +91,9 @@ export async function POST(req: NextRequest) {
       { status: 502 },
     );
   }
+
+  // Assign the role in our roles system
+  await setRole(username, role);
 
   return NextResponse.json({ ok: true });
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
-export default function Nav() {
+export default function Nav({ isAdmin }: { isAdmin?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -41,16 +41,18 @@ export default function Nav() {
             >
               New Demo
             </Link>
-            <Link
-              href="/admin/access"
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                pathname === "/admin/access"
-                  ? "bg-gray-100 text-gray-900"
-                  : "text-gray-500 hover:text-gray-900"
-              }`}
-            >
-              Team
-            </Link>
+            {isAdmin && (
+              <Link
+                href="/admin/access"
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  pathname === "/admin/access"
+                    ? "bg-gray-100 text-gray-900"
+                    : "text-gray-500 hover:text-gray-900"
+                }`}
+              >
+                Team
+              </Link>
+            )}
             <Link
               href="/settings"
               className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
