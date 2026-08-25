@@ -1,5 +1,4 @@
-import { promises as fs } from "fs";
-import path from "path";
+import { readDemos, writeDemos } from "./store";
 
 export interface DemoLiveboard {
   id: string;
@@ -52,55 +51,29 @@ export interface Demo {
   forkedFrom?: string;
 }
 
-const SEED_FILE = path.join(process.cwd(), "data", "demos.json");
-const SUBMISSIONS_FILE = process.env.VERCEL
-  ? "/tmp/demo-submissions.json"
-  : path.join(process.cwd(), "data", "submissions.json");
-
-export async function getSeedDemos(): Promise<Demo[]> {
-  try {
-    const raw = await fs.readFile(SEED_FILE, "utf8");
-    return JSON.parse(raw) as Demo[];
-  } catch {
-    return [];
-  }
-}
-
-export async function getSubmissions(): Promise<Demo[]> {
-  try {
-    const raw = await fs.readFile(SUBMISSIONS_FILE, "utf8");
-    return JSON.parse(raw) as Demo[];
-  } catch {
-    return [];
-  }
-}
-
 export async function getAllDemos(): Promise<Demo[]> {
-  const [seeds, submissions] = await Promise.all([getSeedDemos(), getSubmissions()]);
-  return [...seeds, ...submissions];
+  return readDemos();
+}
+
+export async function getDemoById(id: string): Promise<Demo | null> {
+  const all = await getAllDemos();
+  return all.find((d) => d.id === id) ?? null;
+}
+
+export async function saveSubmission(demo: Demo): Promise<void> {
+  const demos = await readDemos();
+  demos.push(demo);
+  await writeDemos(demos);
 }
 
 export async function updateDemoStatus(
   id: string,
   status: Demo["status"],
 ): Promise<void> {
-  const submissions = await getSubmissions();
-  const idx = submissions.findIndex((d) => d.id === id);
+  const demos = await readDemos();
+  const idx = demos.findIndex((d) => d.id === id);
   if (idx !== -1) {
-    submissions[idx].status = status;
-    await fs.mkdir(path.dirname(SUBMISSIONS_FILE), { recursive: true });
-    await fs.writeFile(SUBMISSIONS_FILE, JSON.stringify(submissions, null, 2));
+    demos[idx].status = status;
+    await writeDemos(demos);
   }
-}
-
-export async function saveSubmission(demo: Demo): Promise<void> {
-  const submissions = await getSubmissions();
-  submissions.push(demo);
-  await fs.mkdir(path.dirname(SUBMISSIONS_FILE), { recursive: true });
-  await fs.writeFile(SUBMISSIONS_FILE, JSON.stringify(submissions, null, 2));
-}
-
-export async function getDemoById(id: string): Promise<Demo | null> {
-  const all = await getAllDemos();
-  return all.find((d) => d.id === id) ?? null;
 }

@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllDemos, saveSubmission, Demo } from "@/lib/demos";
+import { readDemos, writeDemos } from "@/lib/store";
 import { uploadToBlob } from "@/lib/upload";
 import { isAuthenticated } from "@/lib/auth";
 import { auth } from "@/auth";
 import { randomUUID } from "crypto";
-import { writeFileSync } from "fs";
-import { promises as fsPromises } from "fs";
-import path from "path";
-
-const DEMOS_FILE = path.join(process.cwd(), "data", "demos.json");
 
 function slugify(name: string): string {
   return name
@@ -22,15 +18,6 @@ function uniqueId(base: string, existing: string[]): string {
   let n = 2;
   while (existing.includes(`${base}-${n}`)) n++;
   return `${base}-${n}`;
-}
-
-async function readDemosJson(): Promise<Demo[]> {
-  try {
-    const raw = await fsPromises.readFile(DEMOS_FILE, "utf8");
-    return JSON.parse(raw) as Demo[];
-  } catch {
-    return [];
-  }
 }
 
 export async function GET() {
@@ -54,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = (await request.json()) as Partial<Demo> & { forkedFrom?: string };
 
-    const demos = await readDemosJson();
+    const demos = await readDemos();
     const base = slugify(body.companyName ?? "demo");
     const id = uniqueId(base, demos.map((d) => d.id));
     const now = new Date().toISOString().slice(0, 10);
@@ -74,7 +61,7 @@ export async function POST(request: NextRequest) {
     };
 
     demos.push(newDemo);
-    writeFileSync(DEMOS_FILE, JSON.stringify(demos, null, 2));
+    await writeDemos(demos);
 
     return NextResponse.json(newDemo);
   }

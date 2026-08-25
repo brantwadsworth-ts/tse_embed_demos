@@ -100,6 +100,15 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
     demo.theme?.liveboards ?? [],
   );
 
+  // Sample Questions
+  const [sampleQuestions, setSampleQuestions] = useState(
+    (demo.sampleQuestions ?? []).join("\n"),
+  );
+
+  // AI Assist state
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiMessage, setAiMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
   // Save / delete state
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
@@ -121,6 +130,37 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
     });
   }
 
+  async function handleAiAssist() {
+    setAiLoading(true);
+    setAiMessage(null);
+    const res = await fetch("/api/ai/assist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ companyName, website, useCase, tsInstance }),
+    });
+    setAiLoading(false);
+    const json = await res.json().catch(() => ({})) as {
+      error?: string;
+      prompt?: string;
+      sampleQuestions?: string[];
+      useSpotter?: boolean;
+      spotterName?: string;
+      reportDesigner?: boolean;
+      rlsRequired?: boolean;
+    };
+    if (!res.ok || json.error) {
+      setAiMessage({ type: "error", text: json.error ?? "AI Assist failed." });
+      return;
+    }
+    if (json.prompt) setPrompt(json.prompt);
+    if (json.sampleQuestions) setSampleQuestions(json.sampleQuestions.join("\n"));
+    if (typeof json.useSpotter === "boolean") setUseSpotter(json.useSpotter);
+    if (json.spotterName) setSpotterName(json.spotterName);
+    if (typeof json.reportDesigner === "boolean") setReportDesigner(json.reportDesigner);
+    if (typeof json.rlsRequired === "boolean") setRlsRequired(json.rlsRequired);
+    setAiMessage({ type: "success", text: "AI filled in the suggestions — review and save." });
+  }
+
   async function handleSave() {
     setSaving(true);
     setSaveStatus("idle");
@@ -131,6 +171,10 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
       website: website || undefined,
       useCase,
       prompt: prompt || undefined,
+      sampleQuestions: sampleQuestions
+        .split("\n")
+        .map((q) => q.trim())
+        .filter(Boolean),
       status,
       tsInstance,
       embedType: embedType as Demo["embedType"],
@@ -212,6 +256,35 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
 
       {/* ── Basic Info ── */}
       <Section title="Basic Info">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-400">Fill in Company Name, Website, and Use Case, then click AI Assist to auto-populate suggestions.</span>
+          <button
+            type="button"
+            onClick={handleAiAssist}
+            disabled={aiLoading}
+            className="rounded-xl border border-[#2770ef] px-4 py-2 text-sm font-semibold text-[#2770ef] hover:bg-blue-50 transition-colors flex items-center gap-2 disabled:opacity-50"
+          >
+            {aiLoading ? "Thinking…" : "✨ AI Assist"}
+          </button>
+        </div>
+
+        {aiMessage && (
+          <div
+            className={`rounded-xl px-4 py-3 text-sm ${
+              aiMessage.type === "success"
+                ? "bg-blue-50 text-blue-700"
+                : "bg-red-50 text-red-600"
+            }`}
+          >
+            {aiMessage.text}
+            {aiMessage.type === "error" && aiMessage.text.includes("No API key") && (
+              <a href="/settings" className="ml-2 underline font-medium">
+                Go to Settings
+              </a>
+            )}
+          </div>
+        )}
+
         <Field label="Company Name">
           <input
             className={inputClass}
@@ -243,6 +316,15 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="System prompt for the embedded Spotter AI persona…"
+          />
+        </Field>
+        <Field label="Sample Questions" hint="One question per line. Shown as conversation starters in the demo.">
+          <textarea
+            rows={4}
+            className={inputClass}
+            value={sampleQuestions}
+            onChange={(e) => setSampleQuestions(e.target.value)}
+            placeholder={"Which reps have the highest connect rates?\nShow pipeline by stage."}
           />
         </Field>
         <Field label="Status">
