@@ -8,6 +8,7 @@ export default auth((req) => {
   if (
     !isLoggedIn &&
     !pathname.startsWith("/api/auth") &&
+    !pathname.startsWith("/demo") &&
     pathname !== "/login"
   ) {
     return NextResponse.redirect(new URL("/login", req.url));

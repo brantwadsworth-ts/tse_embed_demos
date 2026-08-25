@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@thoughtspot/visual-embed-sdk": "^1.51.0",
     "@vercel/blob": "^0.27.0",
     "next": "16.2.11",
     "next-auth": "^5.0.0-beta.32",

@@ -1,6 +1,18 @@
 import { promises as fs } from "fs";
 import path from "path";
 
+export interface DemoLiveboard {
+  id: string;
+  name: string;
+}
+
+export interface DemoTheme {
+  custom: "dphhs" | "salesloft" | null;
+  primaryColor: string;
+  logoUrl?: string;
+  liveboards: DemoLiveboard[];
+}
+
 export interface Demo {
   id: string;
   companyName: string;
@@ -19,6 +31,7 @@ export interface Demo {
   liveUrl?: string;
   status: "live" | "pending" | "building" | "draft";
   createdAt: string;
+  theme?: DemoTheme;
 }
 
 const SEED_FILE = path.join(process.cwd(), "data", "demos.json");
@@ -67,4 +80,9 @@ export async function saveSubmission(demo: Demo): Promise<void> {
   submissions.push(demo);
   await fs.mkdir(path.dirname(SUBMISSIONS_FILE), { recursive: true });
   await fs.writeFile(SUBMISSIONS_FILE, JSON.stringify(submissions, null, 2));
+}
+
+export async function getDemoById(id: string): Promise<Demo | null> {
+  const all = await getAllDemos();
+  return all.find((d) => d.id === id) ?? null;
 }

@@ -136,12 +136,10 @@ export default function DemoCard({ demo }: { demo: Demo }) {
           </div>
         )}
 
-        {demo.status === "live" && demo.liveUrl && (
+        {demo.status === "live" && (
           <div className="mt-4">
             <a
-              href={demo.liveUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={"/demo/" + demo.id}
               className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#2770ef] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a56c4] transition-colors"
             >
               Launch demo ↗
