@@ -49,6 +49,7 @@ export interface Demo {
   embedType?: "liveboard" | "fullApp" | "search";
   dataModel?: DemoDataModel;
   prompt?: string;
+  forkedFrom?: string;
 }
 
 const SEED_FILE = path.join(process.cwd(), "data", "demos.json");

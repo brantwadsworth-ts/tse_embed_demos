@@ -2,7 +2,36 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAllDemos, saveSubmission, Demo } from "@/lib/demos";
 import { uploadToBlob } from "@/lib/upload";
 import { isAuthenticated } from "@/lib/auth";
+import { auth } from "@/auth";
 import { randomUUID } from "crypto";
+import { writeFileSync } from "fs";
+import { promises as fsPromises } from "fs";
+import path from "path";
+
+const DEMOS_FILE = path.join(process.cwd(), "data", "demos.json");
+
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function uniqueId(base: string, existing: string[]): string {
+  if (!existing.includes(base)) return base;
+  let n = 2;
+  while (existing.includes(`${base}-${n}`)) n++;
+  return `${base}-${n}`;
+}
+
+async function readDemosJson(): Promise<Demo[]> {
+  try {
+    const raw = await fsPromises.readFile(DEMOS_FILE, "utf8");
+    return JSON.parse(raw) as Demo[];
+  } catch {
+    return [];
+  }
+}
 
 export async function GET() {
   if (!(await isAuthenticated())) {
@@ -13,6 +42,44 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const contentType = request.headers.get("content-type") ?? "";
+
+  // ── JSON body path (used by ForkDemoForm and programmatic creation) ──
+  if (contentType.includes("application/json")) {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    }
+    const login = (session.user as { login?: string }).login ?? "";
+
+    const body = (await request.json()) as Partial<Demo> & { forkedFrom?: string };
+
+    const demos = await readDemosJson();
+    const base = slugify(body.companyName ?? "demo");
+    const id = uniqueId(base, demos.map((d) => d.id));
+    const now = new Date().toISOString().slice(0, 10);
+
+    const newDemo: Demo = {
+      companyName: body.companyName ?? "Untitled Demo",
+      useCase: body.useCase ?? "",
+      tsInstance: body.tsInstance ?? "",
+      rlsRequired: body.rlsRequired ?? false,
+      useSpotter: body.useSpotter ?? false,
+      reportDesigner: body.reportDesigner ?? false,
+      ...body,
+      id,
+      status: "draft",
+      createdAt: now,
+      owner: login,
+    };
+
+    demos.push(newDemo);
+    writeFileSync(DEMOS_FILE, JSON.stringify(demos, null, 2));
+
+    return NextResponse.json(newDemo);
+  }
+
+  // ── FormData path (used by NewDemoForm — original behaviour) ──
   if (!(await isAuthenticated())) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
