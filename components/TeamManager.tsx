@@ -30,8 +30,7 @@ const ROLE_LABELS: Record<Role, string> = {
 export default function TeamManager() {
   const [data, setData] = useState<ApiData | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [inviteUsername, setInviteUsername] = useState("");
-  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteInput, setInviteInput] = useState("");
   const [inviteRole, setInviteRole] = useState<Role>("create");
   const [inviteStatus, setInviteStatus] = useState<{
     type: "success" | "error";
@@ -62,9 +61,8 @@ export default function TeamManager() {
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault();
-    const username = inviteUsername.trim();
-    const email = inviteEmail.trim();
-    if (!username) return;
+    const input = inviteInput.trim();
+    if (!input) return;
 
     setInviting(true);
     setInviteStatus(null);
@@ -73,7 +71,7 @@ export default function TeamManager() {
       const res = await fetch("/api/admin/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, role: inviteRole }),
+        body: JSON.stringify({ input, role: inviteRole }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -81,12 +79,11 @@ export default function TeamManager() {
       } else {
         setInviteStatus({
           type: "success",
-          message: email
-            ? `Invite email sent to ${email}`
-            : `Role assigned to @${username} (${inviteRole})`,
+          message: json.emailSent
+            ? `Invite sent to @${json.username}`
+            : `Access granted to @${json.username} — no public email on GitHub to notify them`,
         });
-        setInviteUsername("");
-        setInviteEmail("");
+        setInviteInput("");
         setInviteRole("create");
         await loadMembers();
       }
@@ -162,17 +159,9 @@ export default function TeamManager() {
             <div className="flex gap-2">
               <input
                 type="text"
-                value={inviteUsername}
-                onChange={(e) => setInviteUsername(e.target.value)}
-                placeholder="github-username"
-                className="flex-1 rounded-lg border border-gray-200 px-3.5 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2770ef] focus:outline-none focus:ring-2 focus:ring-[#2770ef]/20"
-                disabled={inviting}
-              />
-              <input
-                type="email"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="email@company.com"
+                value={inviteInput}
+                onChange={(e) => setInviteInput(e.target.value)}
+                placeholder="github-username or email@company.com"
                 className="flex-1 rounded-lg border border-gray-200 px-3.5 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2770ef] focus:outline-none focus:ring-2 focus:ring-[#2770ef]/20"
                 disabled={inviting}
               />
@@ -199,7 +188,7 @@ export default function TeamManager() {
           </div>
           <button
             type="submit"
-            disabled={inviting || !inviteUsername.trim()}
+            disabled={inviting || !inviteInput.trim()}
             className="rounded-lg bg-[#2770ef] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a56c4] disabled:opacity-50 transition-colors"
           >
             {inviting ? "Sending…" : "Send Invite"}

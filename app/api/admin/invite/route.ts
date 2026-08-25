@@ -21,13 +21,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let username: string;
-  let email: string;
+  let input: string;
   let role: Role = "create";
   try {
     const body = await req.json();
-    username = (body?.username ?? "").trim();
-    email = (body?.email ?? "").trim();
+    input = (body?.input ?? body?.username ?? "").trim();
     const bodyRole = body?.role;
     if (bodyRole && ["admin", "create", "view"].includes(bodyRole)) {
       role = bodyRole as Role;
@@ -36,19 +34,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  if (email && !email.includes("@")) {
-    return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
-  }
-
-  if (!username) {
-    return NextResponse.json({ error: "Username is required" }, { status: 400 });
-  }
-
-  if (!USERNAME_RE.test(username)) {
-    return NextResponse.json(
-      { error: "Invalid GitHub username format" },
-      { status: 400 },
-    );
+  if (!input) {
+    return NextResponse.json({ error: "GitHub username or email is required" }, { status: 400 });
   }
 
   const headers = {
@@ -58,13 +45,43 @@ export async function POST(req: NextRequest) {
     "X-GitHub-Api-Version": "2022-11-28",
   };
 
-  // Verify the GitHub user exists
-  const userRes = await fetch(`https://api.github.com/users/${username}`, { headers });
-  if (userRes.status === 404) {
-    return NextResponse.json({ error: `GitHub user "${username}" not found` }, { status: 422 });
-  }
-  if (!userRes.ok) {
-    return NextResponse.json({ error: `Could not verify GitHub user: ${userRes.status}` }, { status: 502 });
+  let username: string;
+  let email: string | null = null;
+
+  if (input.includes("@")) {
+    // Input is an email — search GitHub for the matching user
+    const searchRes = await fetch(
+      `https://api.github.com/search/users?q=${encodeURIComponent(input)}+in:email&per_page=1`,
+      { headers },
+    );
+    if (!searchRes.ok) {
+      return NextResponse.json({ error: `GitHub search failed: ${searchRes.status}` }, { status: 502 });
+    }
+    const searchData = await searchRes.json() as { total_count: number; items: { login: string }[] };
+    if (searchData.total_count === 0 || !searchData.items[0]) {
+      return NextResponse.json(
+        { error: `No GitHub account found for email "${input}". Ask them for their GitHub username instead.` },
+        { status: 422 },
+      );
+    }
+    username = searchData.items[0].login;
+    email = input;
+  } else {
+    // Input is a GitHub username
+    if (!USERNAME_RE.test(input)) {
+      return NextResponse.json({ error: "Invalid GitHub username format" }, { status: 400 });
+    }
+    username = input;
+    // Look up their public email from GitHub
+    const userRes = await fetch(`https://api.github.com/users/${username}`, { headers });
+    if (userRes.status === 404) {
+      return NextResponse.json({ error: `GitHub user "${username}" not found` }, { status: 422 });
+    }
+    if (!userRes.ok) {
+      return NextResponse.json({ error: `Could not verify GitHub user: ${userRes.status}` }, { status: 502 });
+    }
+    const userData = await userRes.json() as { email?: string | null };
+    email = userData.email ?? null;
   }
 
   // Set role in our store — this is the primary access grant
@@ -75,14 +92,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Role assignment failed — check Blob storage configuration." }, { status: 500 });
   }
 
-  // Also send GitHub org invite if token has org admin scope (best-effort, not required)
-  if (token) {
-    await fetch(`https://api.github.com/orgs/${ORG}/memberships/${username}`, {
-      method: "PUT",
-      headers,
-      body: JSON.stringify({ role: "member" }),
-    }).catch(() => { /* org invite is optional */ });
-  }
+  // Also send GitHub org invite (best-effort)
+  await fetch(`https://api.github.com/orgs/${ORG}/memberships/${username}`, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ role: "member" }),
+  }).catch(() => {});
 
   // Send invite email via Resend (best-effort)
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -90,7 +105,7 @@ export async function POST(req: NextRequest) {
     await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        Authorization: `Bearer ${RESEND_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -102,7 +117,12 @@ export async function POST(req: NextRequest) {
     }).catch((err) => console.error("Email send failed:", err));
   }
 
-  return NextResponse.json({ ok: true, loginUrl: "https://tse-embed-demos.vercel.app/login" });
+  return NextResponse.json({
+    ok: true,
+    username,
+    emailSent: !!(RESEND_API_KEY && email),
+    loginUrl: "https://tse-embed-demos.vercel.app/login",
+  });
 }
 
 function emailHtml(username: string, role: string): string {
@@ -112,8 +132,7 @@ function emailHtml(username: string, role: string): string {
 <html>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; margin: 0; padding: 40px 20px;">
   <div style="max-width: 480px; margin: 0 auto; background: white; border-radius: 16px; padding: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-    <div style="width: 40px; height: 40px; background: #2770ef; border-radius: 10px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
-      <span style="color: white; font-size: 20px;">⚡</span>
+    <div style="width: 40px; height: 40px; background: #2770ef; border-radius: 10px; margin-bottom: 24px;">
     </div>
     <h1 style="margin: 0 0 8px; font-size: 22px; color: #111827;">You've been invited</h1>
     <p style="margin: 0 0 24px; color: #6b7280; font-size: 15px;">
