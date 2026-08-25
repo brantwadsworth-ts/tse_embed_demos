@@ -3,6 +3,15 @@ import GitHub from "next-auth/providers/github";
 
 const GITHUB_ORG = process.env.GITHUB_ORG ?? "TSE-Embed-Demos";
 
+// Comma-separated GitHub usernames that always get access, regardless of org membership.
+// Set ALLOWED_GITHUB_LOGINS in Vercel env vars. Example: "brantwadsworth-ts,another-user"
+const ALLOWED_LOGINS = new Set(
+  (process.env.ALLOWED_GITHUB_LOGINS ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean),
+);
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     GitHub({
@@ -12,8 +21,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ account }) {
+    async signIn({ account, profile }) {
       if (!account?.access_token) return "/login?error=AccessDenied";
+
+      // Allowlist check — bypasses org membership requirement
+      const login = (profile as { login?: string })?.login?.toLowerCase() ?? "";
+      if (login && ALLOWED_LOGINS.has(login)) return true;
+
+      // Org membership check
       const res = await fetch(
         `https://api.github.com/user/memberships/orgs/${GITHUB_ORG}`,
         {
