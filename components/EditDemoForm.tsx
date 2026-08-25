@@ -123,7 +123,7 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
 
   // Save / delete state
   const [saving, setSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "fading" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
   function updateDemoUser(idx: number, field: keyof DemoUser, value: string) {
@@ -239,6 +239,8 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
     if (res.ok) {
       setSaveStatus("saved");
       router.refresh();
+      setTimeout(() => setSaveStatus("fading"), 2000);
+      setTimeout(() => setSaveStatus("idle"), 2500);
     } else {
       const body = await res.json().catch(() => ({}));
       setErrorMsg((body as { error?: string }).error ?? "Save failed.");
@@ -267,8 +269,12 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
 
   return (
     <div className="space-y-5">
-      {saveStatus === "saved" && (
-        <div className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+      {(saveStatus === "saved" || saveStatus === "fading") && (
+        <div
+          className={`rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700 transition-opacity duration-500 ${
+            saveStatus === "fading" ? "opacity-0" : "opacity-100"
+          }`}
+        >
           Saved ✓
         </div>
       )}
