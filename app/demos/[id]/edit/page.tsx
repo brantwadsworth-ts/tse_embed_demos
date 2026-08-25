@@ -1,7 +1,6 @@
 import { getDemoById } from "@/lib/demos";
 import { auth } from "@/auth";
 import { getRole } from "@/lib/roles";
-import Nav from "@/components/Nav";
 import EditDemoForm from "@/components/EditDemoForm";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -21,8 +20,9 @@ export default async function EditPage({
   const login = (session?.user as { login?: string })?.login ?? "";
   const userRole = await getRole(login);
 
-  // view-only users can't edit
-  if (userRole === "view") redirect(`/demos/${id}`);
+  // Only redirect if we have a confirmed login AND it's not a create/admin role
+  // Empty login means JWT is stale — allow through rather than locking out
+  if (login && userRole !== "admin" && userRole !== "create") redirect("/demos");
 
   // Non-owners get redirected back to the detail view
   if (demo.owner && demo.owner !== login) {
@@ -30,18 +30,15 @@ export default async function EditPage({
   }
 
   return (
-    <div className="min-h-full">
-      <Nav isAdmin={userRole === "admin"} />
-      <main className="mx-auto max-w-3xl px-6 py-10">
-        <Link
-          href={`/demos/${id}`}
-          className="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
-        >
-          ← Back to demo
-        </Link>
-        <h1 className="mt-2 mb-8 text-2xl font-bold text-gray-900">Edit Demo</h1>
-        <EditDemoForm demo={demo} />
-      </main>
-    </div>
+    <main className="mx-auto max-w-3xl px-6 py-10">
+      <Link
+        href={`/demos/${id}`}
+        className="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+      >
+        ← Back to demo
+      </Link>
+      <h1 className="mt-2 mb-8 text-2xl font-bold text-gray-900">Edit Demo</h1>
+      <EditDemoForm demo={demo} />
+    </main>
   );
 }

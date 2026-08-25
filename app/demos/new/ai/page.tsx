@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Nav from "@/components/Nav";
-
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-[#2770ef] focus:outline-none focus:ring-2 focus:ring-[#2770ef]/20";
 
@@ -43,9 +41,7 @@ export default function AIQuickStartPage() {
   }
 
   return (
-    <div className="min-h-full">
-      <Nav isAdmin={false} />
-      <main className="mx-auto max-w-2xl px-6 py-12">
+    <main className="mx-auto max-w-2xl px-6 py-12">
         <div className="mb-8">
           <div className="mb-3 flex items-center gap-2">
             <span className="text-2xl">✨</span>
@@ -110,7 +106,6 @@ export default function AIQuickStartPage() {
             </button>
           </div>
         </form>
-      </main>
-    </div>
+    </main>
   );
 }

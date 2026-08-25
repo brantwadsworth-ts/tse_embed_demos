@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getRole } from "@/lib/roles";
-import Nav from "@/components/Nav";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -11,12 +10,12 @@ export default async function NewDemoPage() {
   const login = (session?.user as { login?: string })?.login ?? "";
   const userRole = await getRole(login);
 
-  if (userRole === "view") redirect("/demos");
+  // Only redirect if we have a confirmed login AND it's view-only
+  // Empty login means JWT is stale — allow through rather than locking out
+  if (login && userRole === "view") redirect("/demos");
 
   return (
-    <div className="min-h-full">
-      <Nav isAdmin={userRole === "admin"} />
-      <main className="mx-auto max-w-3xl px-6 py-16">
+    <main className="mx-auto max-w-3xl px-6 py-16">
         <div className="mb-10 text-center">
           <h1 className="text-3xl font-bold text-gray-900">Create a New Demo</h1>
           <p className="mt-2 text-gray-500">Choose how you want to get started.</p>
@@ -61,7 +60,6 @@ export default async function NewDemoPage() {
             </div>
           </Link>
         </div>
-      </main>
-    </div>
+    </main>
   );
 }

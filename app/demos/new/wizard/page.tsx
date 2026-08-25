@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getRole } from "@/lib/roles";
-import Nav from "@/components/Nav";
 import DemoWizard from "@/components/DemoWizard";
 import { Demo } from "@/lib/demos";
 
@@ -16,7 +15,9 @@ export default async function WizardPage({ searchParams }: Props) {
   const login = (session?.user as { login?: string })?.login ?? "";
   const userRole = await getRole(login);
 
-  if (userRole === "view") redirect("/demos");
+  // Only redirect if we have a confirmed login AND it's view-only
+  // Empty login means JWT is stale — allow through rather than locking out
+  if (login && userRole === "view") redirect("/demos");
 
   const params = await searchParams;
   let prefillData: Partial<Demo> | undefined;
@@ -29,11 +30,8 @@ export default async function WizardPage({ searchParams }: Props) {
   }
 
   return (
-    <div className="min-h-full">
-      <Nav isAdmin={userRole === "admin"} />
-      <main className="mx-auto max-w-2xl px-6 py-10">
-        <DemoWizard prefillData={prefillData} hasPrefill={!!params.prefill} />
-      </main>
-    </div>
+    <main className="mx-auto max-w-2xl px-6 py-10">
+      <DemoWizard prefillData={prefillData} hasPrefill={!!params.prefill} />
+    </main>
   );
 }

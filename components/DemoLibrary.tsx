@@ -435,18 +435,18 @@ function DetailPanel({
       <div className="border-t border-gray-100 p-4 flex flex-wrap gap-2">
         {canEdit && (
           <>
-            <a
-              href={`/demos/${demo.id}/edit`}
+            <button
+              onClick={() => router.push(`/demos/${demo.id}/edit`)}
               className="flex-1 min-w-[72px] rounded-xl border border-gray-200 px-3 py-2 text-center text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Edit →
-            </a>
-            <a
-              href={`/demos/${demo.id}/fork`}
+            </button>
+            <button
+              onClick={() => router.push(`/demos/${demo.id}/fork`)}
               className="flex-1 min-w-[72px] rounded-xl border border-gray-200 px-3 py-2 text-center text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Fork
-            </a>
+            </button>
           </>
         )}
         <a
@@ -543,15 +543,6 @@ export default function DemoLibrary({
             </button>
           </div>
 
-          {/* New Demo button */}
-          {userRole !== "view" && (
-            <a
-              href="/demos/new"
-              className="rounded-xl bg-[#2770ef] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a56c4] transition-colors"
-            >
-              + New Demo
-            </a>
-          )}
         </div>
       </div>
 
