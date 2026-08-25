@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Demo, DemoLiveboard, DemoUser } from "@/lib/demos";
+import { instanceSlug } from "@/lib/tsSecrets";
 
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-[#2770ef] focus:outline-none focus:ring-2 focus:ring-[#2770ef]/20";
@@ -93,10 +94,6 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
   const [demoUsers, setDemoUsers] = useState<DemoUser[]>(
     demo.demoUsers ?? [],
   );
-  const [newSecret, setNewSecret] = useState("");
-  const [secretConfigured, setSecretConfigured] = useState<boolean | null>(null);
-  const [secretSaving, setSecretSaving] = useState(false);
-  const [secretMsg, setSecretMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Data Model
   const [warehouse, setWarehouse] = useState(demo.dataModel?.warehouse ?? "");
@@ -137,33 +134,6 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
     });
   }
 
-  async function checkSecretConfigured() {
-    const res = await fetch(`/api/demo/${demo.id}/secret`);
-    if (res.ok) {
-      const data = await res.json() as { configured: boolean };
-      setSecretConfigured(data.configured);
-    }
-  }
-
-  async function handleSaveSecret() {
-    if (!newSecret.trim()) return;
-    setSecretSaving(true);
-    setSecretMsg(null);
-    const res = await fetch(`/api/demo/${demo.id}/secret`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ secret: newSecret.trim() }),
-    });
-    setSecretSaving(false);
-    if (res.ok) {
-      setNewSecret("");
-      setSecretConfigured(true);
-      setSecretMsg({ type: "success", text: "Secret saved." });
-    } else {
-      const body = await res.json().catch(() => ({})) as { error?: string };
-      setSecretMsg({ type: "error", text: body.error ?? "Failed to save secret." });
-    }
-  }
 
   function updateTable(idx: number, field: keyof TableRow, value: string) {
     setTables((prev) => {
@@ -448,58 +418,14 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
           />
           {trustedAuthEnabled && (
             <p className="text-xs text-gray-400">
-              When enabled, the portal generates auth tokens server-side. Store the
-              secret key below — it will not be shown after saving.
+              When enabled, the portal generates auth tokens server-side. Set{" "}
+              <code className="rounded bg-gray-200 px-1 font-mono text-xs text-gray-700">
+                TS_AUTH_SECRET_{instanceSlug(tsInstance).toUpperCase().replace(/-/g, "_")}
+              </code>{" "}
+              in Vercel environment variables.
             </p>
           )}
         </div>
-
-        {trustedAuthEnabled && (
-          <div className="space-y-3">
-            <div className="flex items-end gap-3">
-              <Field
-                label="Trusted Auth Secret"
-                hint={
-                  secretConfigured === null
-                    ? undefined
-                    : secretConfigured
-                    ? "A secret is already configured."
-                    : "No secret configured yet."
-                }
-              >
-                <input
-                  type="password"
-                  className={inputClass}
-                  value={newSecret}
-                  onChange={(e) => setNewSecret(e.target.value)}
-                  onFocus={() => {
-                    if (secretConfigured === null) void checkSecretConfigured();
-                  }}
-                  placeholder={
-                    secretConfigured
-                      ? "••••••• (configured — enter new value to replace)"
-                      : "Paste secret key here"
-                  }
-                />
-              </Field>
-              <button
-                type="button"
-                onClick={() => void handleSaveSecret()}
-                disabled={secretSaving || !newSecret.trim()}
-                className="mb-0.5 shrink-0 rounded-lg bg-[#2770ef] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1a56c4] disabled:opacity-40 transition-colors"
-              >
-                {secretSaving ? "Saving…" : "Save Secret"}
-              </button>
-            </div>
-            {secretMsg && (
-              <p
-                className={`text-xs ${secretMsg.type === "success" ? "text-emerald-600" : "text-red-500"}`}
-              >
-                {secretMsg.text}
-              </p>
-            )}
-          </div>
-        )}
 
         <Field
           label="Credentials Hint"

@@ -7,16 +7,20 @@ const BLOB_KEY = "demos.json";
 const SEED_PATH = path.join(process.cwd(), "data", "demos.json");
 
 export async function readDemos(): Promise<Demo[]> {
-  const { blobs } = await list({ prefix: BLOB_KEY }).catch(() => ({ blobs: [] }));
-  if (blobs.length > 0) {
-    const res = await fetch(blobs[0].downloadUrl, { cache: "no-store" });
-    return res.json();
+  try {
+    const { blobs } = await list({ prefix: BLOB_KEY });
+    if (blobs.length > 0) {
+      const res = await fetch(blobs[0].downloadUrl, { cache: "no-store" });
+      return res.json();
+    }
+    // Blob store exists but empty — seed it
+    const demos = JSON.parse(readFileSync(SEED_PATH, "utf8")) as Demo[];
+    await writeDemos(demos);
+    return demos;
+  } catch {
+    // Blob not configured or unavailable — fall back to static file (read-only)
+    return JSON.parse(readFileSync(SEED_PATH, "utf8")) as Demo[];
   }
-  // Seed from static file and upload to blob
-  const raw = readFileSync(SEED_PATH, "utf8");
-  const demos = JSON.parse(raw) as Demo[];
-  await writeDemos(demos);
-  return demos;
 }
 
 export async function writeDemos(demos: Demo[]): Promise<void> {

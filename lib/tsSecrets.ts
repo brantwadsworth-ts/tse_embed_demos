@@ -1,8 +1,6 @@
-import { put, list } from "@vercel/blob";
-
-function blobKey(slug: string): string {
-  return `ts-secrets/${slug}.json`;
-}
+// Trusted auth secrets are stored as Vercel env vars, never in the UI or Blob.
+// Naming convention: TS_AUTH_SECRET_<SLUG_UPPERCASED>
+// Example: se-thoughtspot-cloud → TS_AUTH_SECRET_SE_THOUGHTSPOT_CLOUD
 
 export function instanceSlug(tsInstance: string): string {
   try {
@@ -12,29 +10,14 @@ export function instanceSlug(tsInstance: string): string {
   }
 }
 
-export async function getTsSecret(tsInstance: string): Promise<string | null> {
-  const key = blobKey(instanceSlug(tsInstance));
-  const { blobs } = await list({ prefix: key }).catch(() => ({ blobs: [] }));
-  if (!blobs.length) return null;
-  const res = await fetch(blobs[0].downloadUrl, { cache: "no-store" });
-  const data = await res.json();
-  return (data as { secret?: string }).secret ?? null;
+function envKey(tsInstance: string): string {
+  return `TS_AUTH_SECRET_${instanceSlug(tsInstance).toUpperCase().replace(/-/g, "_")}`;
 }
 
-export async function saveTsSecret(
-  tsInstance: string,
-  secret: string,
-): Promise<void> {
-  const key = blobKey(instanceSlug(tsInstance));
-  await put(key, JSON.stringify({ secret }), {
-    access: "public",
-    contentType: "application/json",
-    addRandomSuffix: false,
-  });
+export function getTsSecret(tsInstance: string): string | null {
+  return process.env[envKey(tsInstance)] ?? null;
 }
 
-export async function hasTsSecret(tsInstance: string): Promise<boolean> {
-  const key = blobKey(instanceSlug(tsInstance));
-  const { blobs } = await list({ prefix: key }).catch(() => ({ blobs: [] }));
-  return blobs.length > 0;
+export function hasTsSecret(tsInstance: string): boolean {
+  return !!process.env[envKey(tsInstance)];
 }

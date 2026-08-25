@@ -13,7 +13,7 @@ export async function POST(
     return NextResponse.json({ error: "Demo not found." }, { status: 404 });
   }
 
-  const secret = await getTsSecret(demo.tsInstance);
+  const secret = getTsSecret(demo.tsInstance);
   if (!secret) {
     return NextResponse.json(
       { error: "Trusted auth not configured for this demo." },
