@@ -31,6 +31,7 @@ export default function TeamManager() {
   const [data, setData] = useState<ApiData | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [inviteUsername, setInviteUsername] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<Role>("create");
   const [inviteStatus, setInviteStatus] = useState<{
     type: "success" | "error";
@@ -62,6 +63,7 @@ export default function TeamManager() {
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault();
     const username = inviteUsername.trim();
+    const email = inviteEmail.trim();
     if (!username) return;
 
     setInviting(true);
@@ -71,7 +73,7 @@ export default function TeamManager() {
       const res = await fetch("/api/admin/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, role: inviteRole }),
+        body: JSON.stringify({ username, email, role: inviteRole }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -79,9 +81,12 @@ export default function TeamManager() {
       } else {
         setInviteStatus({
           type: "success",
-          message: `Invite sent to @${username} (role: ${inviteRole}). Share this link: https://tse-embed-demos.vercel.app/login`,
+          message: email
+            ? `Invite email sent to ${email}`
+            : `Role assigned to @${username} (${inviteRole})`,
         });
         setInviteUsername("");
+        setInviteEmail("");
         setInviteRole("create");
         await loadMembers();
       }
@@ -160,6 +165,14 @@ export default function TeamManager() {
                 value={inviteUsername}
                 onChange={(e) => setInviteUsername(e.target.value)}
                 placeholder="github-username"
+                className="flex-1 rounded-lg border border-gray-200 px-3.5 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2770ef] focus:outline-none focus:ring-2 focus:ring-[#2770ef]/20"
+                disabled={inviting}
+              />
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="email@company.com"
                 className="flex-1 rounded-lg border border-gray-200 px-3.5 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2770ef] focus:outline-none focus:ring-2 focus:ring-[#2770ef]/20"
                 disabled={inviting}
               />
