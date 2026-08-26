@@ -151,10 +151,12 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
     );
   }
 
+  const hasDphhs = theme?.custom === "dphhs";
+
   // Logged in — show the portal
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
-      {theme?.custom === "dphhs" ? (
+      {hasDphhs ? (
         <DphHsHeader />
       ) : (
         <GenericHeader
@@ -176,13 +178,22 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
               fontSize: "15px",
             }}
           >
-            {/* TODO: no liveboard configured for this demo */}
             No liveboard configured for this demo yet.
           </div>
         )}
       </main>
 
-      {theme?.custom === "dphhs" && <DphHsFooter />}
+      {hasDphhs && (
+        <div style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+        }}>
+          <DphHsFooter />
+        </div>
+      )}
     </div>
   );
 }
