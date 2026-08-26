@@ -17,13 +17,12 @@ interface DemoPortalProps {
 }
 
 export default function DemoPortal({ demo }: DemoPortalProps) {
+  const theme = demo.theme;
   const [showLanding, setShowLanding] = useState(theme?.custom === "dphhs");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   // For trusted auth: null = not yet selected, string = chosen username
   const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
-
-  const theme = demo.theme;
   const primaryColor = theme?.primaryColor ?? "#2770ef";
   const logoUrl = theme?.logoUrl;
   const firstLiveboard = theme?.liveboards?.[0];
