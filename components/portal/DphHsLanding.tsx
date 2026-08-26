@@ -48,29 +48,13 @@ export default function DphHsLanding({ onLogin }: DphHsLandingProps) {
       {/* ── Main nav ── */}
       <nav style={{ background: "#112F60", borderTop: "1px solid rgba(255,255,255,0.15)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-            {/* Top links */}
-            <div style={{ display: "flex", gap: 0, borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-              {["ABOUT", "CONTACT", "NEWS", "MEETINGS + EVENTS", "PUBLIC INFORMATION REQUESTS", "LEGISLATIVE PRESENTATIONS"].map((label) => (
-                <a key={label} href="https://dphhs.mt.gov" target="_blank" rel="noreferrer"
-                  style={{ color: "rgba(255,255,255,0.8)", fontSize: 11, letterSpacing: "0.08em", padding: "7px 12px", textDecoration: "none", whiteSpace: "nowrap" }}>
-                  {label}
-                </a>
-              ))}
-            </div>
-            {/* Sub links */}
-            <div style={{ display: "flex", gap: 0 }}>
-              {["REQUIRED REPORTS ▾", "APPLY/REPORT/REQUEST ▾", "A-Z INDEX"].map((label) => (
-                <a key={label} href="https://dphhs.mt.gov" target="_blank" rel="noreferrer"
-                  style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, letterSpacing: "0.06em", padding: "9px 14px", textDecoration: "none", whiteSpace: "nowrap" }}>
-                  {label}
-                </a>
-              ))}
-              <button onClick={onLogin}
-                style={{ color: "#fff", fontSize: 12, letterSpacing: "0.06em", padding: "9px 14px", background: "#1a56a0", border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", fontWeight: 600 }}>
-                DATA DASHBOARDS ▾
-              </button>
-            </div>
+          <div style={{ display: "flex", gap: 0 }}>
+            {["ABOUT", "CONTACT", "NEWS", "MEETINGS + EVENTS", "PUBLIC INFORMATION REQUESTS", "LEGISLATIVE PRESENTATIONS"].map((label) => (
+              <a key={label} href="https://dphhs.mt.gov" target="_blank" rel="noreferrer"
+                style={{ color: "rgba(255,255,255,0.8)", fontSize: 11, letterSpacing: "0.08em", padding: "10px 12px", textDecoration: "none", whiteSpace: "nowrap" }}>
+                {label}
+              </a>
+            ))}
           </div>
           {/* Login button */}
           <button onClick={onLogin}
