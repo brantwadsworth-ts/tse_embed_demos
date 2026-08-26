@@ -153,7 +153,7 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
 
   // Logged in — show the portal
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
       {theme?.custom === "dphhs" ? (
         <DphHsHeader />
       ) : (
@@ -164,7 +164,7 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
         />
       )}
 
-      <main style={{ flex: 1 }}>
+      <main style={{ flex: 1, overflow: "hidden", minHeight: 0 }}>
         {firstLiveboard ? (
           <DemoEmbed liveboardId={firstLiveboard.id} />
         ) : (
