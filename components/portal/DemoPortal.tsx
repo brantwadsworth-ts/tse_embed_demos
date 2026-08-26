@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Demo } from "@/lib/demos";
 import { init, AuthType } from "@thoughtspot/visual-embed-sdk";
-import { initPortalTS, ensurePortalSession } from "@/lib/thoughtspot-portal";
 import DemoLogin from "./DemoLogin";
 import DemoEmbed from "./DemoEmbed";
 import DphHsHeader from "./DphHsHeader";
@@ -66,8 +65,18 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
   }
 
   async function handleLogin(username: string, password: string) {
-    initPortalTS(demo.tsInstance, username, password);
-    await ensurePortalSession(demo.tsInstance, username, password);
+    // Proxy through server-side to avoid CORS on direct ThoughtSpot requests
+    const res = await fetch(`/api/demo/${demo.id}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+      credentials: "include",
+    });
+    const data = await res.json().catch(() => ({})) as { ok?: boolean; error?: string };
+    if (!res.ok) {
+      throw new Error(data.error ?? `Login failed (${res.status})`);
+    }
+    init({ thoughtSpotHost: demo.tsInstance, authType: AuthType.None });
     setIsLoggedIn(true);
   }
 
