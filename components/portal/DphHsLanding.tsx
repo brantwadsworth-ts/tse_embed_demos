@@ -25,9 +25,13 @@ export default function DphHsLanding({ onLogin }: DphHsLandingProps) {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5a3 3 0 0 0-2.1 2.1C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.8 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg>
             </a>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <input type="text" placeholder="SEARCH" style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", padding: "3px 10px", fontSize: 11, borderRadius: 2, outline: "none", width: 140 }} />
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <button onClick={onLogin}
+              style={{ background: "#fff", color: "#112F60", border: "none", padding: "4px 14px", borderRadius: 3, fontSize: 11, fontWeight: 700, cursor: "pointer", letterSpacing: "0.06em", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+              LOGIN →
+            </button>
           </div>
         </div>
       </div>
@@ -56,11 +60,6 @@ export default function DphHsLanding({ onLogin }: DphHsLandingProps) {
               </a>
             ))}
           </div>
-          {/* Login button */}
-          <button onClick={onLogin}
-            style={{ background: "#fff", color: "#112F60", border: "none", padding: "8px 20px", borderRadius: 3, fontSize: 13, fontWeight: 700, cursor: "pointer", letterSpacing: "0.05em", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-            LOGIN →
-          </button>
         </div>
       </nav>
 
