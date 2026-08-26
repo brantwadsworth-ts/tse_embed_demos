@@ -226,6 +226,9 @@ function DetailPanel({
   const [building, setBuilding] = useState(false);
   const [buildError, setBuildError] = useState("");
   const [promptExpanded, setPromptExpanded] = useState(false);
+  const [scaffolding, setScaffolding] = useState(false);
+  const [scaffoldResult, setScaffoldResult] = useState<{ repoUrl: string; repoName: string } | null>(null);
+  const [scaffoldError, setScaffoldError] = useState("");
 
   const status = STATUS_STYLES[demo.status];
   const instanceName = demo.tsInstance ? tsDisplayName(demo.tsInstance) : null;
@@ -248,6 +251,24 @@ function DetailPanel({
       setBuildError((body as { error?: string }).error ?? "Build trigger failed.");
       setBuilding(false);
     }
+  }
+
+  async function scaffoldRepo() {
+    setScaffolding(true);
+    setScaffoldError("");
+    setScaffoldResult(null);
+    const res = await fetch("/api/admin/scaffold", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ demoId: demo.id }),
+    });
+    const body = await res.json().catch(() => ({})) as { ok?: boolean; repoUrl?: string; repoName?: string; error?: string; warnings?: string[] };
+    if (body.ok && body.repoUrl) {
+      setScaffoldResult({ repoUrl: body.repoUrl, repoName: body.repoName ?? "" });
+    } else {
+      setScaffoldError(body.error ?? "Scaffold failed — check GITHUB_ADMIN_TOKEN scopes.");
+    }
+    setScaffolding(false);
   }
 
   return (
@@ -460,6 +481,20 @@ function DetailPanel({
         )}
       </div>
 
+      {/* Scaffold result / error */}
+      {(scaffoldResult || scaffoldError) && (
+        <div className={`mx-4 mb-3 rounded-xl px-4 py-3 text-sm ${scaffoldResult ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
+          {scaffoldResult ? (
+            <>
+              Repo created:{" "}
+              <a href={scaffoldResult.repoUrl} target="_blank" rel="noopener noreferrer" className="font-semibold underline">
+                {scaffoldResult.repoName} ↗
+              </a>
+            </>
+          ) : scaffoldError}
+        </div>
+      )}
+
       {/* Action buttons */}
       <div className="border-t border-gray-100 p-4 flex flex-wrap gap-2">
         {canEdit && (
@@ -475,6 +510,14 @@ function DetailPanel({
               className="flex-1 min-w-[72px] rounded-xl border border-gray-200 px-3 py-2 text-center text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Fork
+            </button>
+            <button
+              onClick={scaffoldRepo}
+              disabled={scaffolding}
+              title="Create a standalone GitHub repo for this demo"
+              className="flex-1 min-w-[72px] rounded-xl border border-gray-200 px-3 py-2 text-center text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            >
+              {scaffolding ? "Creating…" : "GitHub ↗"}
             </button>
           </>
         )}
