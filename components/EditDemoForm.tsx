@@ -79,6 +79,7 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
   const [embedType, setEmbedType] = useState<string>(demo.embedType ?? "liveboard");
   const [useSpotter, setUseSpotter] = useState(demo.useSpotter);
   const [spotterName, setSpotterName] = useState(demo.spotterName ?? "");
+  const [worksheetId, setWorksheetId] = useState(demo.worksheetId ?? "");
   const [reportDesigner, setReportDesigner] = useState(demo.reportDesigner);
 
   // Data & Security
@@ -202,6 +203,7 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
       embedType: embedType as Demo["embedType"],
       useSpotter,
       spotterName: spotterName || undefined,
+      worksheetId: worksheetId || undefined,
       reportDesigner,
       rlsRequired,
       rlsRules: rlsRules || undefined,
@@ -415,14 +417,24 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
         <div className="space-y-4 rounded-xl bg-gray-50 p-4">
           <Toggle label="Use Spotter?" checked={useSpotter} onChange={setUseSpotter} />
           {useSpotter && (
-            <Field label="Spotter Name">
-              <input
-                className={inputClass}
-                value={spotterName}
-                onChange={(e) => setSpotterName(e.target.value)}
-                placeholder="e.g. Acme Insights"
-              />
-            </Field>
+            <>
+              <Field label="Spotter Name">
+                <input
+                  className={inputClass}
+                  value={spotterName}
+                  onChange={(e) => setSpotterName(e.target.value)}
+                  placeholder="e.g. Acme Insights"
+                />
+              </Field>
+              <Field label="Worksheet / Model ID" hint="GUID of the ThoughtSpot model Spotter queries. Find it in the URL when viewing the model.">
+                <input
+                  className={inputClass}
+                  value={worksheetId}
+                  onChange={(e) => setWorksheetId(e.target.value)}
+                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                />
+              </Field>
+            </>
           )}
         </div>
         <div className="rounded-xl bg-gray-50 p-4">

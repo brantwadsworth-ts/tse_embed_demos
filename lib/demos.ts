@@ -57,6 +57,7 @@ export interface Demo {
   trustedAuthEnabled?: boolean;
   credentialsHint?: string;
   demoUsers?: DemoUser[];
+  worksheetId?: string;
 }
 
 export async function getAllDemos(): Promise<Demo[]> {

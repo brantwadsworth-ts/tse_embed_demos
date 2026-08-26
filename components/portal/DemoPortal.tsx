@@ -174,7 +174,13 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
 
       <main style={{ flex: 1 }}>
         {firstLiveboard ? (
-          <DemoEmbed liveboardId={firstLiveboard.id} />
+          <DemoEmbed
+            liveboardId={firstLiveboard.id}
+            useSpotter={demo.useSpotter}
+            spotterName={demo.spotterName}
+            worksheetId={demo.worksheetId}
+            reportDesigner={demo.reportDesigner}
+          />
         ) : (
           <div
             style={{
