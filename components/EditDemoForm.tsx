@@ -114,6 +114,47 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
     demo.theme?.liveboards ?? [],
   );
 
+  // Liveboard picker state
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerUsername, setPickerUsername] = useState(
+    demo.demoUsers?.[0]?.tsUsername ?? "",
+  );
+  const [pickerLoading, setPickerLoading] = useState(false);
+  const [pickerError, setPickerError] = useState("");
+  const [pickerResults, setPickerResults] = useState<DemoLiveboard[]>([]);
+  const [pickerSearch, setPickerSearch] = useState("");
+  const [pickerSelected, setPickerSelected] = useState<Set<string>>(new Set());
+
+  async function fetchLiveboards() {
+    if (!tsInstance || !pickerUsername.trim()) return;
+    setPickerLoading(true);
+    setPickerError("");
+    setPickerResults([]);
+    setPickerSelected(new Set());
+    const params = new URLSearchParams({ instance: tsInstance, username: pickerUsername.trim() });
+    const res = await fetch(`/api/admin/ts-liveboards?${params}`);
+    const data = await res.json().catch(() => ({})) as
+      | DemoLiveboard[]
+      | { error: string };
+    setPickerLoading(false);
+    if (!res.ok || "error" in data) {
+      setPickerError((data as { error: string }).error ?? "Fetch failed");
+    } else {
+      setPickerResults(data as DemoLiveboard[]);
+    }
+  }
+
+  function addSelectedLiveboards() {
+    const toAdd = pickerResults.filter((lb) => pickerSelected.has(lb.id));
+    // Avoid duplicates
+    const existingIds = new Set(liveboards.map((lb) => lb.id));
+    const fresh = toAdd.filter((lb) => !existingIds.has(lb.id));
+    setLiveboards((prev) => [...prev, ...fresh]);
+    setPickerSelected(new Set());
+    setPickerSearch("");
+    setPickerOpen(false);
+  }
+
   // Sample Questions
   const [sampleQuestions, setSampleQuestions] = useState(
     (demo.sampleQuestions ?? []).join("\n"),
@@ -642,17 +683,8 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
       {/* ── Liveboards ── */}
       <Section title="Liveboards">
         <div>
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">Liveboard list</span>
-            <button
-              type="button"
-              onClick={() => setLiveboards((prev) => [...prev, { id: "", name: "" }])}
-              className="rounded-lg bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors"
-            >
-              + Add Liveboard
-            </button>
-          </div>
-          <div className="space-y-3">
+          {/* Current liveboard list */}
+          <div className="space-y-3 mb-4">
             {liveboards.map((lb, i) => (
               <div key={i} className="flex items-center gap-3">
                 <input
@@ -669,21 +701,152 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
                 />
                 <button
                   type="button"
-                  onClick={() =>
-                    setLiveboards((prev) => prev.filter((_, idx) => idx !== i))
-                  }
+                  onClick={() => setLiveboards((prev) => prev.filter((_, idx) => idx !== i))}
                   className="shrink-0 text-sm text-red-400 hover:text-red-600"
                 >
-                  Remove
+                  ×
                 </button>
               </div>
             ))}
-            {liveboards.length === 0 && (
+            {liveboards.length === 0 && !pickerOpen && (
               <p className="text-sm text-gray-400">
-                No liveboards yet. Click + Add Liveboard to start.
+                No liveboards yet. Browse from ThoughtSpot or add manually.
               </p>
             )}
           </div>
+
+          {/* Action buttons */}
+          {!pickerOpen && (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => { setPickerOpen(true); setPickerError(""); setPickerResults([]); setPickerSearch(""); }}
+                disabled={!tsInstance}
+                className="rounded-lg border border-[#2770ef] px-3 py-1.5 text-xs font-semibold text-[#2770ef] hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Browse from ThoughtSpot ↓
+              </button>
+              <button
+                type="button"
+                onClick={() => setLiveboards((prev) => [...prev, { id: "", name: "" }])}
+                className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+              >
+                + Add Manually
+              </button>
+            </div>
+          )}
+
+          {/* Liveboard picker panel */}
+          {pickerOpen && (
+            <div className="rounded-xl border border-[#2770ef]/30 bg-blue-50/30 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-gray-700">Browse liveboards on {new URL(tsInstance).hostname.split(".")[0]}</span>
+                <button
+                  type="button"
+                  onClick={() => { setPickerOpen(false); setPickerResults([]); setPickerError(""); }}
+                  className="text-gray-400 hover:text-gray-600 text-lg leading-none"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Username + Fetch */}
+              <div className="flex gap-2">
+                <input
+                  className={`${inputClass} flex-1`}
+                  placeholder="Your ThoughtSpot username"
+                  value={pickerUsername}
+                  onChange={(e) => setPickerUsername(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void fetchLiveboards(); } }}
+                />
+                <button
+                  type="button"
+                  onClick={() => void fetchLiveboards()}
+                  disabled={pickerLoading || !pickerUsername.trim()}
+                  className="rounded-lg bg-[#2770ef] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a56c4] disabled:opacity-50 transition-colors whitespace-nowrap"
+                >
+                  {pickerLoading ? "Fetching…" : "Fetch ↓"}
+                </button>
+              </div>
+
+              {pickerError && (
+                <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{pickerError}</p>
+              )}
+
+              {pickerResults.length > 0 && (
+                <>
+                  {/* Search filter */}
+                  <input
+                    className={inputClass}
+                    placeholder="Search liveboards…"
+                    value={pickerSearch}
+                    onChange={(e) => setPickerSearch(e.target.value)}
+                    autoFocus
+                  />
+
+                  {/* Results list */}
+                  <div className="max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+                    {pickerResults
+                      .filter((lb) =>
+                        lb.name.toLowerCase().includes(pickerSearch.toLowerCase()),
+                      )
+                      .map((lb) => (
+                        <label
+                          key={lb.id}
+                          className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-blue-50 transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={pickerSelected.has(lb.id)}
+                            onChange={(e) => {
+                              setPickerSelected((prev) => {
+                                const next = new Set(prev);
+                                if (e.target.checked) next.add(lb.id);
+                                else next.delete(lb.id);
+                                return next;
+                              });
+                            }}
+                            className="h-4 w-4 rounded border-gray-300 text-[#2770ef]"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-gray-800">{lb.name}</p>
+                            <p className="truncate text-xs text-gray-400 font-mono">{lb.id}</p>
+                          </div>
+                        </label>
+                      ))}
+                    {pickerResults.filter((lb) =>
+                      lb.name.toLowerCase().includes(pickerSearch.toLowerCase()),
+                    ).length === 0 && (
+                      <p className="px-3 py-4 text-sm text-gray-400 text-center">No results for &ldquo;{pickerSearch}&rdquo;</p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-xs text-gray-400">
+                      {pickerSelected.size} selected · {pickerResults.length} total
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPickerSelected(new Set())}
+                        className="text-xs text-gray-400 hover:text-gray-600"
+                      >
+                        Clear
+                      </button>
+                      <button
+                        type="button"
+                        disabled={pickerSelected.size === 0}
+                        onClick={addSelectedLiveboards}
+                        className="rounded-lg bg-[#2770ef] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#1a56c4] disabled:opacity-40 transition-colors"
+                      >
+                        Add {pickerSelected.size > 0 ? `(${pickerSelected.size})` : ""} →
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </Section>
 
