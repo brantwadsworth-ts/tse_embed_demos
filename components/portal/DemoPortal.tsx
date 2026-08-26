@@ -191,13 +191,19 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
 
       {hasDphhs && (
         <div style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
+          background: "#112F60",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 12,
+          padding: "6px 24px",
+          flexShrink: 0,
         }}>
-          <DphHsFooter />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="https://dphhs.mt.gov/_images/logo/DPHHS-Logo-Circle-Color-White-Border.svg" alt="Montana DPHHS" style={{ height: 36, width: 36 }} />
+          <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 11, letterSpacing: "0.08em" }}>
+            MONTANA DEPARTMENT OF PUBLIC HEALTH &amp; HUMAN SERVICES
+          </span>
         </div>
       )}
     </div>
