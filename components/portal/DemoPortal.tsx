@@ -8,6 +8,7 @@ import DemoLogin from "./DemoLogin";
 import DemoEmbed from "./DemoEmbed";
 import DphHsHeader from "./DphHsHeader";
 import DphHsFooter from "./DphHsFooter";
+import DphHsLanding from "./DphHsLanding";
 import GenericHeader from "./GenericHeader";
 import RolePicker from "./RolePicker";
 
@@ -16,6 +17,7 @@ interface DemoPortalProps {
 }
 
 export default function DemoPortal({ demo }: DemoPortalProps) {
+  const [showLanding, setShowLanding] = useState(theme?.custom === "dphhs");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   // For trusted auth: null = not yet selected, string = chosen username
   const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
@@ -78,6 +80,11 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
     } catch (err) {
       setAuthError(err instanceof Error ? err.message : "Authentication failed.");
     }
+  }
+
+  // DPHHS landing page — shown before login/role selection
+  if (showLanding) {
+    return <DphHsLanding onLogin={() => setShowLanding(false)} />;
   }
 
   // Trusted auth: show role picker if needed and no role chosen yet
