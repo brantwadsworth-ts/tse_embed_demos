@@ -180,6 +180,7 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
             spotterName={demo.spotterName}
             worksheetId={demo.worksheetId}
             reportDesigner={demo.reportDesigner}
+            embedOptions={demo.embedOptions}
           />
         ) : (
           <div

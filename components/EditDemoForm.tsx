@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Demo, DemoLiveboard, DemoUser } from "@/lib/demos";
+import { Demo, DemoLiveboard, DemoUser, EmbedOptions } from "@/lib/demos";
 import { instanceSlug } from "@/lib/tsSecrets";
 import tsInstances from "@/data/ts-instances.json";
 
@@ -155,6 +155,45 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
     setPickerOpen(false);
   }
 
+  // Embed options
+  const [hiddenActions, setHiddenActions] = useState<Set<string>>(
+    new Set(demo.embedOptions?.hiddenActions ?? []),
+  );
+  const [hideLiveboardHeader, setHideLiveboardHeader] = useState(
+    demo.embedOptions?.hideLiveboardHeader ?? false,
+  );
+  const [hideTabPanel, setHideTabPanel] = useState(
+    demo.embedOptions?.hideTabPanel ?? false,
+  );
+  const [showPrimaryNavbar, setShowPrimaryNavbar] = useState(
+    demo.embedOptions?.showPrimaryNavbar ?? false,
+  );
+
+  function toggleAction(action: string) {
+    setHiddenActions((prev) => {
+      const next = new Set(prev);
+      if (next.has(action)) next.delete(action);
+      else next.add(action);
+      return next;
+    });
+  }
+
+  function buildEmbedOptions(): EmbedOptions | undefined {
+    const hidden = Array.from(hiddenActions);
+    const hasOptions =
+      hidden.length > 0 ||
+      hideLiveboardHeader ||
+      hideTabPanel ||
+      showPrimaryNavbar;
+    if (!hasOptions) return undefined;
+    return {
+      hiddenActions: hidden.length > 0 ? hidden : undefined,
+      hideLiveboardHeader: hideLiveboardHeader || undefined,
+      hideTabPanel: hideTabPanel || undefined,
+      showPrimaryNavbar: showPrimaryNavbar || undefined,
+    };
+  }
+
   // Sample Questions
   const [sampleQuestions, setSampleQuestions] = useState(
     (demo.sampleQuestions ?? []).join("\n"),
@@ -272,6 +311,7 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
       trustedAuthEnabled,
       credentialsHint: credentialsHint || undefined,
       demoUsers: demoUsers.filter((u) => u.label.trim() && u.tsUsername.trim()),
+      embedOptions: buildEmbedOptions(),
     };
 
     const res = await fetch(`/api/demos/${demo.id}`, {
@@ -848,6 +888,84 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
             </div>
           )}
         </div>
+      </Section>
+
+      {/* ── Embed Options ── */}
+      <Section title="Embed Options">
+        {/* Hidden actions grid */}
+        <div>
+          <p className="mb-3 text-sm font-medium text-gray-700">
+            Hidden Actions
+            <span className="ml-1.5 text-xs font-normal text-gray-400">
+              — remove these buttons from the ThoughtSpot toolbar
+            </span>
+          </p>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
+            {([
+              { id: "share",            label: "Share" },
+              { id: "edit",             label: "Edit" },
+              { id: "pin",              label: "Pin" },
+              { id: "addToFavorites",   label: "Add to Favorites" },
+              { id: "download",         label: "Download (all)" },
+              { id: "downloadAsCSV",    label: "Download CSV" },
+              { id: "downloadAsPDF",    label: "Download PDF" },
+              { id: "downloadAsXLSX",   label: "Download XLSX" },
+              { id: "spotIQAnalyze",    label: "SpotIQ Analyze" },
+              { id: "explore",          label: "Explore" },
+              { id: "schedule",         label: "Schedule" },
+              { id: "reportError",      label: "Report Error" },
+              { id: "requestAccess",    label: "Request Access" },
+              { id: "shareWithSlack",   label: "Share via Slack" },
+              { id: "presentationMode", label: "Presentation Mode" },
+            ] as const).map(({ id, label }) => (
+              <label key={id} className="flex cursor-pointer items-center gap-2 py-0.5">
+                <input
+                  type="checkbox"
+                  checked={hiddenActions.has(id)}
+                  onChange={() => toggleAction(id)}
+                  className="h-4 w-4 rounded border-gray-300 text-[#2770ef]"
+                />
+                <span className="text-sm text-gray-700">{label}</span>
+              </label>
+            ))}
+          </div>
+          {hiddenActions.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setHiddenActions(new Set())}
+              className="mt-3 text-xs text-gray-400 hover:text-gray-600 underline"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+
+        {/* Display toggles */}
+        <div className="space-y-3 rounded-xl bg-gray-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Display</p>
+          <Toggle label="Hide liveboard header" checked={hideLiveboardHeader} onChange={setHideLiveboardHeader} />
+          <Toggle label="Hide tab panel" checked={hideTabPanel} onChange={setHideTabPanel} />
+          <Toggle
+            label="Show ThoughtSpot primary navbar (full-app mode)"
+            checked={showPrimaryNavbar}
+            onChange={setShowPrimaryNavbar}
+          />
+        </div>
+
+        {/* Live preview summary */}
+        {(hiddenActions.size > 0 || hideLiveboardHeader || hideTabPanel || showPrimaryNavbar) && (
+          <div className="rounded-xl bg-blue-50 px-4 py-3 text-xs text-blue-700 space-y-1">
+            {hiddenActions.size > 0 && (
+              <p>
+                <span className="font-semibold">Hidden:</span>{" "}
+                {Array.from(hiddenActions).join(", ")}
+              </p>
+            )}
+            {hideLiveboardHeader && <p>Liveboard header hidden</p>}
+            {hideTabPanel && <p>Tab panel hidden</p>}
+            {showPrimaryNavbar && <p>Primary navbar visible (full-app mode)</p>}
+          </div>
+        )}
       </Section>
 
       {/* ── Save button ── */}

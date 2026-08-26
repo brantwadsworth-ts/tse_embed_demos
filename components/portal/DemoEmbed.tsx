@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { LiveboardEmbed } from "@thoughtspot/visual-embed-sdk/react";
+import type { EmbedOptions } from "@/lib/demos";
 
 // SpotterEmbed is in the full bundle
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,6 +25,7 @@ interface DemoEmbedProps {
   spotterName?: string;
   worksheetId?: string;
   reportDesigner?: boolean;
+  embedOptions?: EmbedOptions;
 }
 
 export default function DemoEmbed({
@@ -32,6 +34,7 @@ export default function DemoEmbed({
   spotterName = "Ask Spotter",
   worksheetId,
   reportDesigner: _reportDesigner,
+  embedOptions,
 }: DemoEmbedProps) {
   const [spotterOpen, setSpotterOpen] = useState(false);
 
@@ -43,6 +46,15 @@ export default function DemoEmbed({
           liveboardId={liveboardId}
           fullHeight
           frameParams={{ width: "100%" }}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          hiddenActions={embedOptions?.hiddenActions as any}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          visibleActions={embedOptions?.visibleActions?.length ? embedOptions.visibleActions as any : undefined}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          disabledActions={embedOptions?.disabledActions as any}
+          disabledActionReason={embedOptions?.disabledActionReason}
+          hideLiveboardHeader={embedOptions?.hideLiveboardHeader}
+          hideTabPanel={embedOptions?.hideTabPanel}
         />
       </div>
 

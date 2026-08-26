@@ -30,6 +30,16 @@ export interface DemoUser {
   tsUsername: string;
 }
 
+export interface EmbedOptions {
+  hiddenActions?: string[];
+  visibleActions?: string[];
+  hideLiveboardHeader?: boolean;
+  hideTabPanel?: boolean;
+  showPrimaryNavbar?: boolean;
+  disabledActions?: string[];
+  disabledActionReason?: string;
+}
+
 export interface Demo {
   id: string;
   companyName: string;
@@ -58,6 +68,7 @@ export interface Demo {
   credentialsHint?: string;
   demoUsers?: DemoUser[];
   worksheetId?: string;
+  embedOptions?: EmbedOptions;
 }
 
 export async function getAllDemos(): Promise<Demo[]> {
