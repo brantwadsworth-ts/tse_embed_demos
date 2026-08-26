@@ -8,10 +8,11 @@ interface DemoEmbedProps {
 
 export default function DemoEmbed({ liveboardId }: DemoEmbedProps) {
   return (
-    <div style={{ height: "100%", width: "100%", overflow: "hidden" }}>
+    <div style={{ width: "100%" }}>
       <LiveboardEmbed
         liveboardId={liveboardId}
-        frameParams={{ width: "100%", height: "100%" }}
+        fullHeight
+        frameParams={{ width: "100%" }}
       />
     </div>
   );
