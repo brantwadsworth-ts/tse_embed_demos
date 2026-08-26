@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Demo, DemoLiveboard, DemoUser } from "@/lib/demos";
 import { instanceSlug } from "@/lib/tsSecrets";
+import tsInstances from "@/data/ts-instances.json";
 
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-[#2770ef] focus:outline-none focus:ring-2 focus:ring-[#2770ef]/20";
@@ -373,14 +374,33 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
 
       {/* ── ThoughtSpot Config ── */}
       <Section title="ThoughtSpot Config">
-        <Field label="TS Instance URL">
-          <input
+        <Field label="ThoughtSpot Cluster">
+          <select
             className={inputClass}
-            value={tsInstance}
-            onChange={(e) => setTsInstance(e.target.value)}
-            placeholder="https://your-instance.thoughtspot.cloud"
-          />
+            value={tsInstances.some((i) => i.url === tsInstance) ? tsInstance : "__custom__"}
+            onChange={(e) => {
+              if (e.target.value !== "__custom__") setTsInstance(e.target.value);
+            }}
+          >
+            {tsInstances.map((inst) => (
+              <option key={inst.url} value={inst.url}>
+                {inst.name}
+              </option>
+            ))}
+            <option value="__custom__">Custom URL…</option>
+          </select>
         </Field>
+        {!tsInstances.some((i) => i.url === tsInstance) && (
+          <Field label="Custom Instance URL">
+            <input
+              className={inputClass}
+              value={tsInstance}
+              onChange={(e) => setTsInstance(e.target.value)}
+              placeholder="https://your-instance.thoughtspot.cloud"
+            />
+          </Field>
+        )}
+
         <Field label="Embed Type">
           <select
             className={inputClass}

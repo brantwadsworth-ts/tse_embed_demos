@@ -1,0 +1,17 @@
+[
+  {
+    "name": "SE Demo (se-thoughtspot-cloud)",
+    "url": "https://se-thoughtspot-cloud.thoughtspot.cloud",
+    "notes": "Primary SE demo environment"
+  },
+  {
+    "name": "PM Staging AWS v1 (pm-aws-v1)",
+    "url": "https://pm-aws-v1.thoughtspotstaging.cloud",
+    "notes": "PM staging — AWS"
+  },
+  {
+    "name": "SEBE Staging (sebe)",
+    "url": "https://sebe.thoughtspotstaging.cloud",
+    "notes": "SEBE staging environment"
+  }
+]
