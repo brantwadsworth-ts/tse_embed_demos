@@ -1,4 +1,5 @@
 import { readDemos, writeDemos } from "./store";
+import type { PortalThemeConfig } from "./portal-themes";
 
 export interface DemoLiveboard {
   id: string;
@@ -69,7 +70,10 @@ export interface Demo {
   demoUsers?: DemoUser[];
   worksheetId?: string;
   embedOptions?: EmbedOptions;
+  themeConfig?: PortalThemeConfig;
 }
+
+export type { PortalThemeConfig };
 
 export async function getAllDemos(): Promise<Demo[]> {
   return readDemos();

@@ -9,7 +9,6 @@ interface RolePickerProps {
   demoUsers: DemoUser[];
   companyName: string;
   logoUrl?: string;
-  primaryColor: string;
   onSelect: (username: string) => void;
 }
 
@@ -17,7 +16,6 @@ export default function RolePicker({
   demoUsers,
   companyName,
   logoUrl,
-  primaryColor,
   onSelect,
 }: RolePickerProps) {
   return (
@@ -30,15 +28,16 @@ export default function RolePicker({
         alignItems: "center",
         justifyContent: "center",
         zIndex: 1000,
-        fontFamily: "'Segoe UI', Arial, sans-serif",
+        fontFamily: "var(--portal-font)",
         padding: "24px",
       }}
     >
       <div
         style={{
-          background: "#ffffff",
-          borderRadius: "16px",
-          boxShadow: "0 8px 40px rgba(0,0,0,0.22)",
+          background: "var(--portal-surface)",
+          borderRadius: "var(--portal-radius-lg)",
+          boxShadow: "var(--portal-shadow-lg)",
+          border: "1px solid var(--portal-border)",
           padding: "40px 36px",
           width: "100%",
           maxWidth: "540px",
@@ -63,13 +62,13 @@ export default function RolePicker({
             style={{
               fontSize: "20px",
               fontWeight: 800,
-              color: "#212529",
+              color: "var(--portal-text)",
               margin: "0 0 6px",
             }}
           >
             {companyName}
           </p>
-          <p style={{ fontSize: "14px", color: "#6c757d", margin: 0 }}>
+          <p style={{ fontSize: "14px", color: "var(--portal-text-muted)", margin: 0 }}>
             Select your role to continue
           </p>
         </div>
@@ -88,24 +87,25 @@ export default function RolePicker({
               type="button"
               onClick={() => onSelect(user.tsUsername)}
               style={{
-                border: `2px solid #e9ecef`,
-                borderRadius: "12px",
-                background: "#f8f9fa",
+                border: "2px solid var(--portal-border)",
+                borderRadius: "var(--portal-radius)",
+                background: "var(--portal-surface-2)",
                 padding: "20px 16px",
                 cursor: "pointer",
                 textAlign: "center",
                 transition: "border-color 0.15s, background 0.15s, transform 0.1s",
+                fontFamily: "var(--portal-font)",
               }}
               onMouseEnter={(e) => {
                 const el = e.currentTarget;
-                el.style.borderColor = primaryColor;
-                el.style.background = "#fff";
+                el.style.borderColor = "var(--portal-accent)";
+                el.style.background = "var(--portal-surface)";
                 el.style.transform = "translateY(-2px)";
               }}
               onMouseLeave={(e) => {
                 const el = e.currentTarget;
-                el.style.borderColor = "#e9ecef";
-                el.style.background = "#f8f9fa";
+                el.style.borderColor = "var(--portal-border)";
+                el.style.background = "var(--portal-surface-2)";
                 el.style.transform = "translateY(0)";
               }}
             >
@@ -113,13 +113,13 @@ export default function RolePicker({
                 style={{
                   fontSize: "16px",
                   fontWeight: 700,
-                  color: "#212529",
+                  color: "var(--portal-text)",
                   margin: "0 0 4px",
                 }}
               >
                 {user.label}
               </p>
-              <p style={{ fontSize: "12px", color: "#6c757d", margin: 0 }}>
+              <p style={{ fontSize: "12px", color: "var(--portal-text-muted)", margin: 0 }}>
                 Sign in as this user
               </p>
             </button>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Demo, DemoLiveboard, DemoUser, EmbedOptions } from "@/lib/demos";
 import { instanceSlug } from "@/lib/tsSecrets";
+import { ThemePreset, THEME_META, THEMES, CustomThemeVars, PortalThemeConfig } from "@/lib/portal-themes";
 import tsInstances from "@/data/ts-instances.json";
 
 const inputClass =
@@ -169,6 +170,26 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
     demo.embedOptions?.showPrimaryNavbar ?? false,
   );
 
+  // Portal theme
+  const [themePreset, setThemePreset] = useState<ThemePreset>(
+    demo.themeConfig?.preset ?? "light",
+  );
+  const defaultCustom = demo.themeConfig?.preset === "custom"
+    ? (demo.themeConfig.custom ?? {})
+    : {};
+  const [themeCustom, setThemeCustom] = useState<Partial<CustomThemeVars>>(defaultCustom);
+
+  function updateCustomVar(key: keyof CustomThemeVars, value: string) {
+    setThemeCustom((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function buildThemeConfig(): PortalThemeConfig {
+    if (themePreset === "custom") {
+      return { preset: "custom", custom: themeCustom };
+    }
+    return { preset: themePreset };
+  }
+
   function toggleAction(action: string) {
     setHiddenActions((prev) => {
       const next = new Set(prev);
@@ -312,6 +333,7 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
       credentialsHint: credentialsHint || undefined,
       demoUsers: demoUsers.filter((u) => u.label.trim() && u.tsUsername.trim()),
       embedOptions: buildEmbedOptions(),
+      themeConfig: buildThemeConfig(),
     };
 
     const res = await fetch(`/api/demos/${demo.id}`, {
@@ -333,6 +355,21 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
     setSaving(false);
   }
 
+  type SectionKey = "basic" | "ts" | "access" | "security" | "data" | "liveboards" | "embed" | "theme" | "danger";
+  const [activeSection, setActiveSection] = useState<SectionKey>("basic");
+
+  const NAV_ITEMS: { key: SectionKey; emoji: string; label: string }[] = [
+    { key: "basic",     emoji: "🏢", label: "Basic Info" },
+    { key: "ts",        emoji: "⚡", label: "ThoughtSpot" },
+    { key: "access",    emoji: "🔐", label: "Access & Auth" },
+    { key: "security",  emoji: "🛡️", label: "Data & Security" },
+    { key: "data",      emoji: "🗄️", label: "Data Model" },
+    { key: "liveboards",emoji: "📊", label: "Liveboards" },
+    { key: "embed",     emoji: "⚙️", label: "Embed Options" },
+    { key: "theme",     emoji: "🎨", label: "Portal Theme" },
+    { key: "danger",    emoji: "⚠️", label: "Danger Zone" },
+  ];
+
   async function handleDelete() {
     if (
       !window.confirm(
@@ -352,10 +389,11 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
   }
 
   return (
-    <div className="space-y-5">
+    <div>
+      {/* Toast banners */}
       {(saveStatus === "saved" || saveStatus === "fading") && (
         <div
-          className={`rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700 transition-opacity duration-500 ${
+          className={`mb-4 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700 transition-opacity duration-500 ${
             saveStatus === "fading" ? "opacity-0" : "opacity-100"
           }`}
         >
@@ -363,13 +401,49 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
         </div>
       )}
       {saveStatus === "error" && (
-        <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
+        <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
           {errorMsg}
         </div>
       )}
 
+      <div className="flex gap-6 items-start">
+        {/* ── Left sidebar nav ── */}
+        <nav className="w-48 shrink-0 sticky top-6 flex flex-col gap-1">
+          {NAV_ITEMS.map(({ key, emoji, label }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveSection(key)}
+              className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-left transition-colors ${
+                activeSection === key
+                  ? "bg-[#2770ef] text-white shadow-sm"
+                  : key === "danger"
+                  ? "text-red-500 hover:bg-red-50"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              <span className="text-base">{emoji}</span>
+              {label}
+            </button>
+          ))}
+
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full rounded-xl bg-[#2770ef] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1a56c4] disabled:opacity-50 transition-colors"
+            >
+              {saving ? "Saving…" : "Save Changes"}
+            </button>
+          </div>
+        </nav>
+
+        {/* ── Right panel ── */}
+        <div className="flex-1 min-w-0">
+
       {/* ── Basic Info ── */}
-      <Section title="Basic Info">
+      {activeSection === "basic" && <Section title="Basic Info">
         <div className="flex items-center justify-between">
           <span className="text-xs text-gray-400">Fill in Company Name, Website, and Use Case, then click AI Assist to auto-populate suggestions.</span>
           <button
@@ -453,10 +527,10 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
             <option value="live">Live</option>
           </select>
         </Field>
-      </Section>
+      </Section>}
 
       {/* ── ThoughtSpot Config ── */}
-      <Section title="ThoughtSpot Config">
+      {activeSection === "ts" && <Section title="ThoughtSpot Config">
         <Field label="ThoughtSpot Cluster">
           <select
             className={inputClass}
@@ -525,10 +599,10 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
             onChange={setReportDesigner}
           />
         </div>
-      </Section>
+      </Section>}
 
       {/* ── Access & Authentication ── */}
-      <Section title="Access &amp; Authentication">
+      {activeSection === "access" && <Section title="Access &amp; Authentication">
         <div className="space-y-4 rounded-xl bg-gray-50 p-4">
           <Toggle
             label="Enable Trusted Authentication (no login page for visitors)"
@@ -615,10 +689,10 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
             )}
           </div>
         </div>
-      </Section>
+      </Section>}
 
       {/* ── Data & Security ── */}
-      <Section title="Data &amp; Security">
+      {activeSection === "security" && <Section title="Data &amp; Security">
         <div className="space-y-4 rounded-xl bg-gray-50 p-4">
           <Toggle label="RLS Required?" checked={rlsRequired} onChange={setRlsRequired} />
           {rlsRequired && (
@@ -635,10 +709,10 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
             </Field>
           )}
         </div>
-      </Section>
+      </Section>}
 
       {/* ── Data Model ── */}
-      <Section title="Data Model">
+      {activeSection === "data" && <Section title="Data Model">
         <div className="grid grid-cols-2 gap-4">
           <Field label="Warehouse">
             <input
@@ -718,10 +792,10 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
             )}
           </div>
         </div>
-      </Section>
+      </Section>}
 
       {/* ── Liveboards ── */}
-      <Section title="Liveboards">
+      {activeSection === "liveboards" && <Section title="Liveboards">
         <div>
           {/* Current liveboard list */}
           <div className="space-y-3 mb-4">
@@ -888,10 +962,10 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
             </div>
           )}
         </div>
-      </Section>
+      </Section>}
 
       {/* ── Embed Options ── */}
-      <Section title="Embed Options">
+      {activeSection === "embed" && <Section title="Embed Options">
         {/* Hidden actions grid */}
         <div>
           <p className="mb-3 text-sm font-medium text-gray-700">
@@ -966,41 +1040,207 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
             {showPrimaryNavbar && <p>Primary navbar visible (full-app mode)</p>}
           </div>
         )}
-      </Section>
+      </Section>}
 
-      {/* ── Save button ── */}
-      <div className="flex justify-end pt-2">
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving}
-          className="rounded-xl bg-[#2770ef] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#1a56c4] disabled:opacity-50 transition-colors"
-        >
-          {saving ? "Saving…" : "Save Changes"}
-        </button>
-      </div>
+      {/* ── Portal Theme ── */}
+      {activeSection === "theme" && <Section title="Portal Theme">
+        <p className="text-sm text-gray-500">
+          Choose how your public demo portal looks. The theme applies to the login page, header, and surrounding chrome — and is also passed to the ThoughtSpot embed so the liveboard matches.
+        </p>
+
+        {/* Preset card grid */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {(Object.keys(THEME_META) as ThemePreset[]).map((preset) => {
+            const meta = THEME_META[preset];
+            const isSelected = themePreset === preset;
+            const baseVars = preset !== "custom" ? THEMES[preset] : null;
+
+            return (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => setThemePreset(preset)}
+                className={`rounded-xl border-2 p-4 text-left transition-all ${
+                  isSelected
+                    ? "border-[#2770ef] bg-blue-50 shadow-md"
+                    : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
+                }`}
+              >
+                {/* Color swatch strip */}
+                {baseVars && (
+                  <div className="mb-3 flex gap-1 rounded-lg overflow-hidden h-8">
+                    <div style={{ flex: 1, background: baseVars.bg.startsWith("linear") ? "#1a1a2e" : baseVars.bg }} />
+                    <div style={{ flex: 1, background: baseVars.surface }} />
+                    <div style={{ flex: 1, background: baseVars.accent }} />
+                    <div style={{ flex: 1, background: baseVars.headerBg }} />
+                  </div>
+                )}
+                {!baseVars && (
+                  <div className="mb-3 h-8 rounded-lg bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400" />
+                )}
+
+                <div className="flex items-start gap-2">
+                  <span className="text-xl">{meta.emoji}</span>
+                  <div className="min-w-0">
+                    <p className={`text-sm font-bold ${isSelected ? "text-[#2770ef]" : "text-gray-800"}`}>
+                      {meta.label}
+                    </p>
+                    <p className="mt-0.5 text-xs text-gray-400 leading-tight">{meta.description}</p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Custom theme editor */}
+        {themePreset === "custom" && (
+          <div className="rounded-xl border border-dashed border-purple-200 bg-purple-50/40 p-5 space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-purple-500">
+              Custom Theme — CSS Variables
+            </p>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+              {([
+                { key: "bg",        label: "Background",     type: "color" },
+                { key: "surface",   label: "Card Surface",   type: "color" },
+                { key: "accent",    label: "Accent Color",   type: "color" },
+                { key: "accentFg",  label: "Accent Text",    type: "color" },
+                { key: "headerBg",  label: "Header BG",      type: "color" },
+                { key: "headerText",label: "Header Text",    type: "color" },
+                { key: "text",      label: "Body Text",      type: "color" },
+                { key: "textMuted", label: "Muted Text",     type: "color" },
+                { key: "border",    label: "Border Color",   type: "color" },
+                { key: "inputBg",   label: "Input BG",       type: "color" },
+              ] as { key: keyof CustomThemeVars; label: string; type: string }[]).map(({ key, label, type }) => {
+                const current = themeCustom[key] ?? THEMES.light[key];
+                const isColor = type === "color";
+                return (
+                  <div key={key} className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-gray-600">{label}</label>
+                    <div className="flex items-center gap-2">
+                      {isColor && (
+                        <input
+                          type="color"
+                          value={current.startsWith("#") ? current : "#2770ef"}
+                          onChange={(e) => updateCustomVar(key, e.target.value)}
+                          className="h-9 w-9 cursor-pointer rounded-lg border border-gray-200 p-0.5"
+                        />
+                      )}
+                      <input
+                        type="text"
+                        className={`${inputClass} font-mono text-xs`}
+                        value={current}
+                        onChange={(e) => updateCustomVar(key, e.target.value)}
+                        placeholder={THEMES.light[key]}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Typography */}
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-600">Font Family</label>
+              <input
+                type="text"
+                className={`${inputClass} font-mono text-xs`}
+                value={themeCustom.font ?? THEMES.light.font}
+                onChange={(e) => updateCustomVar("font", e.target.value)}
+                placeholder={THEMES.light.font}
+              />
+            </div>
+
+            {/* Border-radius row */}
+            <div className="grid grid-cols-3 gap-3">
+              {(["radiusSm", "radius", "radiusLg"] as const).map((key) => (
+                <div key={key} className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-gray-600">
+                    {key === "radiusSm" ? "Radius SM" : key === "radius" ? "Radius" : "Radius LG"}
+                  </label>
+                  <input
+                    type="text"
+                    className={`${inputClass} font-mono text-xs`}
+                    value={themeCustom[key] ?? THEMES.light[key]}
+                    onChange={(e) => updateCustomVar(key, e.target.value)}
+                    placeholder={THEMES.light[key]}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Live theme preview */}
+        <div className="rounded-xl overflow-hidden border border-gray-200">
+          <div
+            className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold"
+            style={(() => {
+              const base = themePreset === "custom" ? null : THEMES[themePreset];
+              return {
+                background: themePreset === "custom"
+                  ? (themeCustom.headerBg ?? THEMES.light.headerBg)
+                  : (base?.headerBg ?? THEMES.light.headerBg),
+                color: themePreset === "custom"
+                  ? (themeCustom.headerText ?? THEMES.light.headerText)
+                  : (base?.headerText ?? THEMES.light.headerText),
+              };
+            })()}
+          >
+            <div
+              className="h-5 w-5 rounded-full"
+              style={{
+                background: themePreset === "custom"
+                  ? (themeCustom.accent ?? THEMES.light.accent)
+                  : (THEMES[themePreset]?.accent ?? THEMES.light.accent),
+              }}
+            />
+            {THEME_META[themePreset].emoji} {THEME_META[themePreset].label} — Portal Header Preview
+          </div>
+          <div
+            className="flex items-center justify-center px-4 py-8 text-sm"
+            style={(() => {
+              const base = themePreset === "custom" ? null : THEMES[themePreset];
+              const rawBg = themePreset === "custom" ? (themeCustom.bg ?? THEMES.light.bg) : (base?.bg ?? THEMES.light.bg);
+              return {
+                background: rawBg.startsWith("linear") ? "#1a1a2e" : rawBg,
+                color: themePreset === "custom"
+                  ? (themeCustom.textMuted ?? THEMES.light.textMuted)
+                  : (base?.textMuted ?? THEMES.light.textMuted),
+              };
+            })()}
+          >
+            ▤ Liveboard embed area
+          </div>
+        </div>
+      </Section>}
 
       {/* ── Danger Zone ── */}
-      <div className="rounded-2xl border border-red-200 bg-white p-6">
-        <h2 className="mb-5 text-sm font-semibold uppercase tracking-widest text-red-400">
-          Danger Zone
-        </h2>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-700">Delete this demo</p>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Permanently removes this demo. This action cannot be undone.
-            </p>
+      {activeSection === "danger" && (
+        <div className="rounded-2xl border border-red-200 bg-white p-6">
+          <h2 className="mb-5 text-sm font-semibold uppercase tracking-widest text-red-400">
+            Danger Zone
+          </h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-700">Delete this demo</p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Permanently removes this demo. This action cannot be undone.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors"
+            >
+              Delete Demo
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors"
-          >
-            Delete Demo
-          </button>
         </div>
-      </div>
+      )}
+
+        </div>{/* end right panel */}
+      </div>{/* end flex grid */}
     </div>
   );
 }

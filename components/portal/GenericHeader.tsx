@@ -1,24 +1,20 @@
 interface GenericHeaderProps {
   companyName: string;
   logoUrl?: string;
-  primaryColor: string;
 }
 
-export default function GenericHeader({
-  companyName,
-  logoUrl,
-  primaryColor,
-}: GenericHeaderProps) {
+export default function GenericHeader({ companyName, logoUrl }: GenericHeaderProps) {
   return (
     <header
       style={{
-        background: primaryColor,
+        background: "var(--portal-header-bg)",
+        borderBottom: "1px solid var(--portal-border)",
         display: "flex",
         alignItems: "center",
         gap: "12px",
         padding: "0 24px",
         height: "60px",
-        color: "#ffffff",
+        flexShrink: 0,
       }}
     >
       {logoUrl && (
@@ -31,13 +27,16 @@ export default function GenericHeader({
       )}
       <span
         style={{
-          fontSize: "18px",
+          fontSize: "17px",
           fontWeight: 700,
-          letterSpacing: "0.02em",
-          color: "#ffffff",
+          letterSpacing: "0.01em",
+          color: "var(--portal-header-text)",
         }}
       >
         {companyName}
+      </span>
+      <span style={{ marginLeft: "auto", fontSize: "11px", color: "var(--portal-text-muted)", letterSpacing: "0.04em" }}>
+        Powered by ThoughtSpot
       </span>
     </header>
   );
