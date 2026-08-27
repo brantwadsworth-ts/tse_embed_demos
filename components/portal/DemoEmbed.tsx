@@ -26,6 +26,7 @@ interface DemoEmbedProps {
   worksheetId?: string;
   reportDesigner?: boolean;
   embedOptions?: EmbedOptions;
+  hideSpotterFab?: boolean;
 }
 
 export default function DemoEmbed({
@@ -35,6 +36,7 @@ export default function DemoEmbed({
   worksheetId,
   reportDesigner: _reportDesigner,
   embedOptions,
+  hideSpotterFab = false,
 }: DemoEmbedProps) {
   const [spotterOpen, setSpotterOpen] = useState(false);
 
@@ -59,7 +61,7 @@ export default function DemoEmbed({
       </div>
 
       {/* ── Spotter drawer ── */}
-      {useSpotter && (
+      {useSpotter && !hideSpotterFab && (
         <>
           {/* Slide-in panel */}
           <div
