@@ -547,7 +547,7 @@ export default function DemoLibrary({
   userRole: Role;
   currentLogin: string;
 }) {
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const [view, setView] = useState<"grid" | "list">("list");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const gridSelectedDemo = demos.find((d) => d.id === selectedId) ?? null;

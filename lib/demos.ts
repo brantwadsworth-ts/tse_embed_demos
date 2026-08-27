@@ -6,6 +6,19 @@ export interface DemoLiveboard {
   name: string;
 }
 
+export interface RlsRuleRow {
+  table: string;
+  column: string;
+  operator: string;
+  value: string;
+}
+
+export interface McpConnectorConfig {
+  id: string;
+  enabled: boolean;
+  config?: Record<string, string>;
+}
+
 export interface DemoTheme {
   custom: "dphhs" | "salesloft" | null;
   primaryColor: string;
@@ -71,6 +84,8 @@ export interface Demo {
   worksheetId?: string;
   embedOptions?: EmbedOptions;
   themeConfig?: PortalThemeConfig;
+  rlsRuleRows?: RlsRuleRow[];
+  mcpConnectors?: McpConnectorConfig[];
 }
 
 export type { PortalThemeConfig };
