@@ -184,6 +184,8 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
   const [tables, setTables] = useState<{ name: string; columns: string[] }[]>(
     (demo.dataModel?.tables ?? []).map((t) => ({ name: t.name, columns: t.columns })),
   );
+  // Once a data model exists, prevent deletion — user must fork to rebuild
+  const dataModelLocked = (demo.dataModel?.tables?.length ?? 0) > 0;
 
   const [mcpConnectors, setMcpConnectors] = useState<McpConnectorConfig[]>(demo.mcpConnectors ?? []);
 
@@ -565,18 +567,28 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <Field label="Status">
+              <Field label="Status" hint="Controls visibility in the Demo Library.">
                 <select className={inputClass} value={status} onChange={(e) => setStatus(e.target.value as Demo["status"])}>
-                  <option value="draft">Draft</option>
-                  <option value="pending">Pending</option>
-                  <option value="building">Building</option>
-                  <option value="live">Live</option>
+                  <option value="draft">Draft — In development, not shared</option>
+                  <option value="pending">Pending — Waiting for approval</option>
+                  <option value="building">Building — Being configured</option>
+                  <option value="live">Live — Active &amp; shared with customers</option>
                 </select>
               </Field>
             </div>
 
-            {/* Screenshot upload */}
-            <Field label="Demo Screenshot / Preview Image" hint="Shown as the hero image on the demo card and detail page. Max 5 MB.">
+            <Field label="Use Case">
+              <textarea rows={3} className={inputClass} value={useCase} onChange={(e) => setUseCase(e.target.value)} />
+            </Field>
+            <Field label="AI Prompt" hint="System prompt for the embedded Spotter AI persona.">
+              <textarea rows={3} className={inputClass} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="System prompt for AI persona…" />
+            </Field>
+            <Field label="Sample Questions" hint="One per line. Shown as conversation starters in the demo.">
+              <textarea rows={4} className={inputClass} value={sampleQuestions} onChange={(e) => setSampleQuestions(e.target.value)} placeholder={"Which reps have the highest connect rates?\nShow pipeline by stage."} />
+            </Field>
+
+            {/* ── Screenshots (last in section) ───────────────────────────────── */}
+            <Field label="App Screenshots" hint="Upload screenshots showing what the logged-in application looks like. First image is used as the hero card image. PNG, JPG, GIF — max 5 MB each.">
               <input
                 ref={screenshotInputRef}
                 type="file"
@@ -589,67 +601,53 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
                 }}
               />
 
-              {screenshotUrls.length > 0 ? (
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              {screenshotUrls.length > 0 && (
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
                   {screenshotUrls.map((url, i) => (
-                    <div key={url} style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "1px solid #e5e7eb", width: 180, height: 100, flexShrink: 0 }}>
+                    <div key={url} style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "1px solid #e5e7eb", width: 200, height: 112, flexShrink: 0, background: "#f3f4f6" }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={url} alt={`screenshot ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
                       {i === 0 && (
                         <span style={{ position: "absolute", top: 6, left: 6, background: "#2770ef", color: "#fff", fontSize: 9, fontWeight: 700, borderRadius: 4, padding: "2px 6px", letterSpacing: "0.05em" }}>PRIMARY</span>
                       )}
+                      <span style={{ position: "absolute", bottom: 6, left: 6, background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 9, borderRadius: 4, padding: "2px 6px" }}>{i + 1} of {screenshotUrls.length}</span>
                       <button
                         type="button"
+                        title="Delete this screenshot"
                         onClick={() => handleScreenshotDelete(url)}
-                        style={{ position: "absolute", top: 4, right: 4, background: "rgba(0,0,0,0.55)", color: "#fff", border: "none", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, lineHeight: 1 }}
+                        style={{ position: "absolute", top: 5, right: 5, background: "rgba(0,0,0,0.6)", color: "#fff", border: "none", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, lineHeight: 1 }}
+                        className="hover:bg-red-600"
                       >×</button>
                     </div>
                   ))}
-                  <button
-                    type="button"
-                    onClick={() => screenshotInputRef.current?.click()}
-                    disabled={screenshotUploading}
-                    style={{ width: 180, height: 100, borderRadius: 10, border: "2px dashed #d1d5db", background: "#f9fafb", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: "#9ca3af", fontSize: 12, fontWeight: 500, flexShrink: 0 }}
-                    className="hover:border-[#2770ef] hover:text-[#2770ef] transition-colors"
-                  >
-                    {screenshotUploading ? <span>Uploading…</span> : <><span style={{ fontSize: 22 }}>+</span><span>Add image</span></>}
-                  </button>
                 </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => screenshotInputRef.current?.click()}
-                  disabled={screenshotUploading}
-                  style={{ width: "100%", borderRadius: 12, border: "2px dashed #d1d5db", background: "#f9fafb", cursor: "pointer", padding: "28px 16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, color: "#9ca3af" }}
-                  className="hover:border-[#2770ef] hover:text-[#2770ef] transition-colors"
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    const file = e.dataTransfer.files?.[0];
-                    if (file) handleScreenshotUpload(file);
-                  }}
-                >
-                  {screenshotUploading ? (
-                    <span style={{ fontSize: 13 }}>Uploading…</span>
-                  ) : (
-                    <>
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                      <span style={{ fontSize: 13, fontWeight: 500 }}>Click to upload or drag &amp; drop</span>
-                      <span style={{ fontSize: 11 }}>PNG, JPG, GIF up to 5 MB</span>
-                    </>
-                  )}
-                </button>
               )}
-            </Field>
 
-            <Field label="Use Case">
-              <textarea rows={3} className={inputClass} value={useCase} onChange={(e) => setUseCase(e.target.value)} />
-            </Field>
-            <Field label="AI Prompt" hint="System prompt for the embedded Spotter AI persona.">
-              <textarea rows={3} className={inputClass} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="System prompt for AI persona…" />
-            </Field>
-            <Field label="Sample Questions" hint="One per line. Shown as conversation starters in the demo.">
-              <textarea rows={4} className={inputClass} value={sampleQuestions} onChange={(e) => setSampleQuestions(e.target.value)} placeholder={"Which reps have the highest connect rates?\nShow pipeline by stage."} />
+              <button
+                type="button"
+                onClick={() => screenshotInputRef.current?.click()}
+                disabled={screenshotUploading}
+                style={{ width: "100%", borderRadius: 12, border: "2px dashed #d1d5db", background: "#f9fafb", cursor: "pointer", padding: screenshotUrls.length > 0 ? "14px 16px" : "28px 16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: "#9ca3af" }}
+                className="hover:border-[#2770ef] hover:text-[#2770ef] transition-colors"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const file = e.dataTransfer.files?.[0];
+                  if (file) handleScreenshotUpload(file);
+                }}
+              >
+                {screenshotUploading ? (
+                  <span style={{ fontSize: 13 }}>Uploading…</span>
+                ) : (
+                  <>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span style={{ fontSize: 13, fontWeight: 500 }}>
+                      {screenshotUrls.length > 0 ? "Add another screenshot" : "Click to upload or drag & drop"}
+                    </span>
+                    {screenshotUrls.length === 0 && <span style={{ fontSize: 11 }}>PNG, JPG, GIF up to 5 MB</span>}
+                  </>
+                )}
+              </button>
             </Field>
           </SectionCard>
 
@@ -995,6 +993,16 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
 
             {/* Tables */}
             <div>
+              {dataModelLocked && (
+                <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "flex-start", gap: 10, fontSize: 12, color: "#92400e" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginTop: 1, color: "#d97706" }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <div>
+                    <strong style={{ display: "block", marginBottom: 2 }}>Data model is locked</strong>
+                    Existing tables and columns cannot be deleted — removing them would break connected liveboards and searches.
+                    You can still add new tables and columns. To rebuild from scratch, <strong>Fork this demo</strong>.
+                  </div>
+                </div>
+              )}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#6b7280" }}>Tables</label>
                 <button
@@ -1028,7 +1036,9 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
                         onBlur={(e) => (e.target.style.border = "1px solid transparent")}
                       />
                       <span style={{ fontSize: 11, color: "#9ca3af", flexShrink: 0 }}>{table.columns.filter(Boolean).length} cols</span>
-                      <button type="button" onClick={() => removeTable(tableIdx)} style={{ color: "#f87171", background: "none", border: "none", cursor: "pointer", fontSize: 16, flexShrink: 0 }}>×</button>
+                      {!dataModelLocked && (
+                        <button type="button" onClick={() => removeTable(tableIdx)} style={{ color: "#f87171", background: "none", border: "none", cursor: "pointer", fontSize: 16, flexShrink: 0 }}>×</button>
+                      )}
                     </div>
 
                     {/* Columns table */}
@@ -1054,7 +1064,9 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
                               />
                             </td>
                             <td style={{ padding: "4px 4px" }}>
-                              <button type="button" onClick={() => removeTableColumn(tableIdx, colIdx)} style={{ color: "#d1d5db", background: "none", border: "none", cursor: "pointer", fontSize: 14 }} className="hover:text-red-400">×</button>
+                              {!dataModelLocked && (
+                                <button type="button" onClick={() => removeTableColumn(tableIdx, colIdx)} style={{ color: "#d1d5db", background: "none", border: "none", cursor: "pointer", fontSize: 14 }} className="hover:text-red-400">×</button>
+                              )}
                             </td>
                           </tr>
                         ))}
