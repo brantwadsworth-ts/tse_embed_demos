@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Demo } from "@/lib/demos";
 import { Role } from "@/lib/roles";
@@ -186,17 +186,46 @@ function DetailPanel({
 
       {/* ── Name + meta ── */}
       <div style={{ padding: "14px 18px 12px", borderBottom: "1px solid #f3f4f6", flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
           <h2 style={{ fontSize: 18, fontWeight: 800, color: "#111827", margin: 0, lineHeight: 1.2 }}>{demo.companyName}</h2>
-          <a
-            href={`/demo/${demo.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ flexShrink: 0, background: "#2770ef", color: "#fff", borderRadius: 10, padding: "7px 14px", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}
-            className="hover:bg-[#1a56c4] transition-colors"
-          >
-            Open Demo ↗
-          </a>
+          <div style={{ display: "flex", gap: 5, flexShrink: 0, flexWrap: "wrap" }}>
+            {canEdit && (
+              <>
+                <button
+                  onClick={() => router.push(`/demos/${demo.id}/edit`)}
+                  style={{ borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", padding: "5px 11px", fontSize: 11, fontWeight: 700, color: "#374151", cursor: "pointer", whiteSpace: "nowrap" }}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  Edit →
+                </button>
+                <button
+                  onClick={() => router.push(`/demos/${demo.id}/fork`)}
+                  style={{ borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", padding: "5px 11px", fontSize: 11, fontWeight: 700, color: "#374151", cursor: "pointer" }}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  Fork
+                </button>
+                <button
+                  onClick={scaffoldRepo}
+                  disabled={scaffolding}
+                  title="Create standalone GitHub repo"
+                  style={{ borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", padding: "5px 11px", fontSize: 11, fontWeight: 700, color: "#374151", cursor: scaffolding ? "not-allowed" : "pointer", opacity: scaffolding ? 0.5 : 1 }}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  {scaffolding ? "…" : "GitHub ↗"}
+                </button>
+              </>
+            )}
+            <a
+              href={`/demo/${demo.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ flexShrink: 0, background: "#2770ef", color: "#fff", borderRadius: 8, padding: "5px 13px", fontSize: 11, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}
+              className="hover:bg-[#1a56c4] transition-colors"
+            >
+              Open Demo ↗
+            </a>
+          </div>
         </div>
         {demo.website && (
           <a href={demo.website} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "#2770ef", textDecoration: "none", marginTop: 4, display: "block" }} className="hover:underline">
@@ -301,32 +330,174 @@ function DetailPanel({
         )}
       </div>
 
-      {/* ── Action footer ── */}
-      {canEdit && (
-        <div style={{ borderTop: "1px solid #f3f4f6", padding: "10px 14px", display: "flex", gap: 6, flexShrink: 0, background: "#fafafa" }}>
-          <button
-            onClick={() => router.push(`/demos/${demo.id}/edit`)}
-            style={{ flex: 1, borderRadius: 9, border: "1px solid #e5e7eb", background: "#fff", padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#374151", cursor: "pointer" }}
-            className="hover:bg-gray-50 transition-colors"
-          >
-            Edit →
-          </button>
-          <button
-            onClick={() => router.push(`/demos/${demo.id}/fork`)}
-            style={{ flex: 1, borderRadius: 9, border: "1px solid #e5e7eb", background: "#fff", padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#374151", cursor: "pointer" }}
-            className="hover:bg-gray-50 transition-colors"
-          >
-            Fork
-          </button>
-          <button
-            onClick={scaffoldRepo}
-            disabled={scaffolding}
-            title="Create standalone GitHub repo"
-            style={{ flex: 1, borderRadius: 9, border: "1px solid #e5e7eb", background: "#fff", padding: "8px 12px", fontSize: 12, fontWeight: 700, color: "#374151", cursor: scaffolding ? "not-allowed" : "pointer", opacity: scaffolding ? 0.5 : 1 }}
-            className="hover:bg-gray-50 transition-colors"
-          >
-            {scaffolding ? "…" : "GitHub ↗"}
-          </button>
+    </div>
+  );
+}
+
+// ── FilterPill — dropdown with checkboxes ─────────────────────────────────
+
+function FilterPill({
+  label,
+  icon,
+  options,
+  selected,
+  onChange,
+}: {
+  label: string;
+  icon: string;
+  options: { value: string; label: string }[];
+  selected: Set<string>;
+  onChange: (v: Set<string>) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const active = selected.size > 0;
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  function toggle(value: string) {
+    const next = new Set(selected);
+    if (next.has(value)) next.delete(value); else next.add(value);
+    onChange(next);
+  }
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 5,
+          padding: "5px 10px",
+          borderRadius: 8,
+          border: active ? "1px solid #2770ef" : "1px solid #e5e7eb",
+          background: active ? "#eff6ff" : "#fff",
+          color: active ? "#1d4ed8" : "#374151",
+          fontSize: 12,
+          fontWeight: active ? 700 : 500,
+          cursor: "pointer",
+          transition: "all 0.12s",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <span>{icon}</span>
+        {label}
+        {active && (
+          <span style={{ background: "#2770ef", color: "#fff", borderRadius: "50%", width: 16, height: 16, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, flexShrink: 0 }}>
+            {selected.size}
+          </span>
+        )}
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5 }}>
+          <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+
+      {open && (
+        <div style={{
+          position: "absolute",
+          top: "calc(100% + 6px)",
+          left: 0,
+          zIndex: 100,
+          minWidth: 180,
+          background: "#fff",
+          border: "1px solid #e5e7eb",
+          borderRadius: 10,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.10)",
+          overflow: "hidden",
+        }}>
+          {active && (
+            <button
+              type="button"
+              onClick={() => { onChange(new Set()); }}
+              style={{ display: "block", width: "100%", textAlign: "left", padding: "7px 12px", fontSize: 11, color: "#9ca3af", background: "none", border: "none", borderBottom: "1px solid #f3f4f6", cursor: "pointer", fontWeight: 600 }}
+              className="hover:bg-gray-50"
+            >
+              Clear filter
+            </button>
+          )}
+          {options.map((opt) => (
+            <label
+              key={opt.value}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", cursor: "pointer", fontSize: 12, color: "#374151" }}
+              className="hover:bg-blue-50"
+            >
+              <input
+                type="checkbox"
+                checked={selected.has(opt.value)}
+                onChange={() => toggle(opt.value)}
+                style={{ width: 14, height: 14, accentColor: "#2770ef", flexShrink: 0 }}
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── SortPill ───────────────────────────────────────────────────────────────
+
+type SortKey = "name-asc" | "name-desc" | "status" | "created-desc" | "created-asc";
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "name-asc",      label: "Name A → Z" },
+  { value: "name-desc",     label: "Name Z → A" },
+  { value: "status",        label: "Status" },
+  { value: "created-desc",  label: "Newest first" },
+  { value: "created-asc",   label: "Oldest first" },
+];
+const STATUS_ORDER: Record<Demo["status"], number> = { live: 0, building: 1, pending: 2, draft: 3 };
+
+function SortPill({ value, onChange }: { value: SortKey; onChange: (v: SortKey) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const label = SORT_OPTIONS.find((o) => o.value === value)?.label ?? "Sort";
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", color: "#374151", fontSize: 12, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap" }}
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ opacity: 0.5 }}>
+          <path d="M3 6h18M7 12h10M11 18h2"/>
+        </svg>
+        {label}
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5 }}>
+          <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {open && (
+        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 100, minWidth: 160, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.10)", overflow: "hidden" }}>
+          {SORT_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => { onChange(opt.value); setOpen(false); }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "8px 12px", fontSize: 12, color: opt.value === value ? "#1d4ed8" : "#374151", background: opt.value === value ? "#eff6ff" : "none", border: "none", cursor: "pointer", fontWeight: opt.value === value ? 700 : 400, textAlign: "left" }}
+              className="hover:bg-blue-50"
+            >
+              {opt.label}
+              {opt.value === value && <span style={{ color: "#2770ef" }}>✓</span>}
+            </button>
+          ))}
         </div>
       )}
     </div>
@@ -404,12 +575,63 @@ export default function DemoLibrary({ demos, userRole, currentLogin }: { demos: 
   const [view, setView] = useState<"grid" | "list">("list");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("name-asc");
+  const [filterInstance, setFilterInstance] = useState<Set<string>>(new Set());
+  const [filterOwner, setFilterOwner] = useState<Set<string>>(new Set());
+  const [filterStatus, setFilterStatus] = useState<Set<string>>(new Set());
+  const [filterFeature, setFilterFeature] = useState<Set<string>>(new Set());
 
-  const filtered = demos.filter((d) =>
-    !search.trim() ||
-    d.companyName.toLowerCase().includes(search.toLowerCase()) ||
-    d.useCase?.toLowerCase().includes(search.toLowerCase()),
-  );
+  // Derive unique filter options from data
+  const instanceOptions = Array.from(new Set(demos.map((d) => d.tsInstance).filter(Boolean) as string[]))
+    .map((url) => ({ value: url, label: tsDisplayName(url) }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  const ownerOptions = Array.from(new Set(demos.map((d) => d.owner).filter(Boolean) as string[]))
+    .map((o) => ({ value: o, label: `@${o}` }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  const statusOptions = (["live", "building", "pending", "draft"] as Demo["status"][])
+    .filter((s) => demos.some((d) => d.status === s))
+    .map((s) => ({ value: s, label: STATUS[s].label }));
+
+  const featureOptions = [
+    { value: "spotter",  label: "🤖 Spotter AI" },
+    { value: "rls",      label: "🔒 Row-Level Security" },
+    { value: "report",   label: "📊 Report Designer" },
+  ];
+
+  const hasActiveFilters = filterInstance.size > 0 || filterOwner.size > 0 || filterStatus.size > 0 || filterFeature.size > 0;
+
+  function clearAllFilters() {
+    setFilterInstance(new Set()); setFilterOwner(new Set());
+    setFilterStatus(new Set()); setFilterFeature(new Set());
+    setSearch("");
+  }
+
+  // Apply search + filters
+  const filtered = demos
+    .filter((d) => {
+      if (search.trim() && !d.companyName.toLowerCase().includes(search.toLowerCase()) && !d.useCase?.toLowerCase().includes(search.toLowerCase())) return false;
+      if (filterInstance.size > 0 && !filterInstance.has(d.tsInstance ?? "")) return false;
+      if (filterOwner.size > 0 && !filterOwner.has(d.owner ?? "")) return false;
+      if (filterStatus.size > 0 && !filterStatus.has(d.status)) return false;
+      if (filterFeature.size > 0) {
+        if (filterFeature.has("spotter") && !d.useSpotter) return false;
+        if (filterFeature.has("rls") && !d.rlsRequired) return false;
+        if (filterFeature.has("report") && !d.reportDesigner) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      switch (sortKey) {
+        case "name-asc":     return a.companyName.localeCompare(b.companyName);
+        case "name-desc":    return b.companyName.localeCompare(a.companyName);
+        case "status":       return STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+        case "created-desc": return (b.createdAt ?? "").localeCompare(a.createdAt ?? "");
+        case "created-asc":  return (a.createdAt ?? "").localeCompare(b.createdAt ?? "");
+        default: return 0;
+      }
+    });
 
   const listEffectiveId = selectedId ?? filtered[0]?.id ?? null;
   const listSelected = filtered.find((d) => d.id === listEffectiveId) ?? null;
@@ -419,8 +641,8 @@ export default function DemoLibrary({ demos, userRole, currentLogin }: { demos: 
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      {/* ── Toolbar ── */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 20 }}>
+      {/* ── Top toolbar row ── */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: "#111827", margin: 0 }}>Demo Library</h1>
           <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 500 }}>{demos.length} demo{demos.length !== 1 ? "s" : ""}</span>
@@ -433,7 +655,7 @@ export default function DemoLibrary({ demos, userRole, currentLogin }: { demos: 
             </svg>
             <input
               type="text"
-              placeholder="Filter demos…"
+              placeholder="Search demos…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setSelectedId(null); }}
               style={{ paddingLeft: 28, paddingRight: 10, paddingTop: 6, paddingBottom: 6, borderRadius: 9, border: "1px solid #e5e7eb", background: "#f9fafb", fontSize: 12, width: 180, outline: "none", color: "#374151" }}
@@ -441,22 +663,42 @@ export default function DemoLibrary({ demos, userRole, currentLogin }: { demos: 
           </div>
           {/* View toggle */}
           <div style={{ display: "flex", borderRadius: 9, border: "1px solid #e5e7eb", overflow: "hidden" }}>
-            <button
-              onClick={() => switchView("grid")}
-              title="Grid view"
-              style={{ padding: "6px 9px", border: "none", cursor: "pointer", background: view === "grid" ? "#2770ef" : "#fff", color: view === "grid" ? "#fff" : "#9ca3af", transition: "background 0.15s" }}
-            >
+            <button onClick={() => switchView("grid")} title="Grid view" style={{ padding: "6px 9px", border: "none", cursor: "pointer", background: view === "grid" ? "#2770ef" : "#fff", color: view === "grid" ? "#fff" : "#9ca3af", transition: "background 0.15s" }}>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor"/><rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor"/></svg>
             </button>
-            <button
-              onClick={() => switchView("list")}
-              title="List view"
-              style={{ padding: "6px 9px", border: "none", borderLeft: "1px solid #e5e7eb", cursor: "pointer", background: view === "list" ? "#2770ef" : "#fff", color: view === "list" ? "#fff" : "#9ca3af", transition: "background 0.15s" }}
-            >
+            <button onClick={() => switchView("list")} title="List view" style={{ padding: "6px 9px", border: "none", borderLeft: "1px solid #e5e7eb", cursor: "pointer", background: view === "list" ? "#2770ef" : "#fff", color: view === "list" ? "#fff" : "#9ca3af", transition: "background 0.15s" }}>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="2.5" width="14" height="2" rx="1" fill="currentColor"/><rect x="1" y="7" width="14" height="2" rx="1" fill="currentColor"/><rect x="1" y="11.5" width="14" height="2" rx="1" fill="currentColor"/></svg>
             </button>
           </div>
         </div>
+      </div>
+
+      {/* ── Filter + sort bar ── */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
+        <SortPill value={sortKey} onChange={(v) => { setSortKey(v); setSelectedId(null); }} />
+        <div style={{ width: 1, height: 18, background: "#e5e7eb", margin: "0 2px" }} />
+        {instanceOptions.length > 0 && (
+          <FilterPill label="Instance" icon="☁" options={instanceOptions} selected={filterInstance} onChange={(v) => { setFilterInstance(v); setSelectedId(null); }} />
+        )}
+        {ownerOptions.length > 0 && (
+          <FilterPill label="Owner" icon="👤" options={ownerOptions} selected={filterOwner} onChange={(v) => { setFilterOwner(v); setSelectedId(null); }} />
+        )}
+        <FilterPill label="Status" icon="●" options={statusOptions} selected={filterStatus} onChange={(v) => { setFilterStatus(v); setSelectedId(null); }} />
+        <FilterPill label="Features" icon="✦" options={featureOptions} selected={filterFeature} onChange={(v) => { setFilterFeature(v); setSelectedId(null); }} />
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={clearAllFilters}
+            style={{ marginLeft: 4, fontSize: 11, color: "#9ca3af", background: "none", border: "none", cursor: "pointer", fontWeight: 600, textDecoration: "underline" }}
+          >
+            Clear all
+          </button>
+        )}
+        {filtered.length !== demos.length && (
+          <span style={{ marginLeft: "auto", fontSize: 11, color: "#6b7280", background: "#f3f4f6", borderRadius: 20, padding: "2px 9px", fontWeight: 600 }}>
+            {filtered.length} of {demos.length}
+          </span>
+        )}
       </div>
 
       {/* ── Empty ── */}
@@ -469,7 +711,7 @@ export default function DemoLibrary({ demos, userRole, currentLogin }: { demos: 
 
       {filtered.length === 0 && demos.length > 0 && (
         <div style={{ padding: "32px 16px", textAlign: "center", color: "#9ca3af", fontSize: 13 }}>
-          No demos match &ldquo;{search}&rdquo;
+          No demos match the current filters.
         </div>
       )}
 
