@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export type DemoView = "liveboard" | "spotter-page" | "report-builder";
+export type DemoView = "liveboard" | "spotter-page" | "report-builder" | "app";
 
 interface DphHsHeaderProps {
   view: DemoView;
@@ -41,10 +41,9 @@ export default function DphHsHeader({
           <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
         </svg>
       ),
-      description: "Open ThoughtSpot directly",
-      action: () => { if (tsInstance) window.open(tsInstance, "_blank"); setAnalysisOpen(false); },
-      active: false,
-      external: true,
+      description: "Full ThoughtSpot application",
+      action: () => { onViewChange("app"); setAnalysisOpen(false); },
+      active: view === "app",
     },
     {
       label: "Report Builder",
@@ -154,12 +153,6 @@ export default function DphHsHeader({
                       <span className="dphhs-analysis-item-text">
                         <span className="dphhs-analysis-item-label">
                           {item.label}
-                          {"external" in item && item.external && (
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: 4, opacity: 0.6 }}>
-                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                              <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                            </svg>
-                          )}
                         </span>
                         <span className="dphhs-analysis-item-desc">{item.description}</span>
                       </span>

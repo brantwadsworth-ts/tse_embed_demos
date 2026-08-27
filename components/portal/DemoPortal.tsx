@@ -10,7 +10,7 @@ import {
   PortalThemeConfig,
 } from "@/lib/portal-themes";
 import { init, AuthType } from "@thoughtspot/visual-embed-sdk";
-import { SearchEmbed } from "@thoughtspot/visual-embed-sdk/react";
+import { SearchEmbed, AppEmbed } from "@thoughtspot/visual-embed-sdk/react";
 import DemoLogin from "./DemoLogin";
 import DemoEmbed from "./DemoEmbed";
 import DphHsLanding from "./DphHsLanding";
@@ -33,6 +33,8 @@ if (typeof window !== "undefined") {
 }
 
 import React from "react";
+
+type GenericView = "liveboard" | "report-builder" | "app" | "spotter-page";
 
 interface DemoPortalProps {
   demo: Demo;
@@ -59,8 +61,17 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
   // DPHHS-specific: spotter slide-in drawer
   const [spotterOpen, setSpotterOpen] = useState(false);
 
+  // Generic portal: view state
+  const [genericView, setGenericView] = useState<GenericView>("liveboard");
+
+  // Auto-resolved worksheetId from the first liveboard
+  const [resolvedWorksheetId, setResolvedWorksheetId] = useState<string | null>(null);
+
   const logoUrl = legacyTheme?.logoUrl;
   const firstLiveboard = legacyTheme?.liveboards?.[0];
+
+  // The effective worksheetId: explicit config wins, then auto-resolved
+  const effectiveWorksheetId = demo.worksheetId ?? resolvedWorksheetId ?? undefined;
 
   const needsRolePicker =
     demo.trustedAuthEnabled &&
@@ -75,6 +86,22 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
     initTrustedAuth(defaultUsername);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo.trustedAuthEnabled, needsRolePicker]);
+
+  // Auto-resolve worksheetId from the first liveboard after login
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    if (demo.worksheetId) return; // already configured, skip
+    if (!firstLiveboard?.id) return;
+
+    fetch(`/api/demo/${demo.id}/liveboard-source?liveboardId=${firstLiveboard.id}`, {
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .then((d: { worksheetId?: string | null }) => {
+        if (d.worksheetId) setResolvedWorksheetId(d.worksheetId);
+      })
+      .catch(() => { /* best-effort — no worksheet auto-detection available */ });
+  }, [isLoggedIn, demo.id, demo.worksheetId, firstLiveboard?.id]);
 
   function initTrustedAuth(username: string) {
     init({
@@ -215,13 +242,13 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
             useSpotter={demo.useSpotter}
           />
 
-          <main style={{ flex: 1 }}>
+          <main style={{ flex: 1, overflow: "hidden" }}>
             {/* Liveboard view */}
             {dphHsView === "liveboard" && firstLiveboard && (
               <DemoEmbed
                 liveboardId={firstLiveboard.id}
                 useSpotter={false}
-                worksheetId={demo.worksheetId}
+                worksheetId={effectiveWorksheetId}
                 reportDesigner={demo.reportDesigner}
                 embedOptions={demo.embedOptions}
                 hideSpotterFab
@@ -235,19 +262,25 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
 
             {/* Report Builder (ad-hoc search) */}
             {dphHsView === "report-builder" && (
-              <div style={{ height: "calc(100vh - 160px)" }}>
-                <SearchEmbed
-                  frameParams={{ width: "100%", height: "100%" }}
-                  dataSources={demo.worksheetId ? [demo.worksheetId] : undefined}
-                  hideDataSources={Boolean(demo.worksheetId)}
-                />
-              </div>
+              <SearchEmbed
+                frameParams={{ width: "100%", height: "calc(100vh - 190px)" }}
+                dataSources={effectiveWorksheetId ? [effectiveWorksheetId] : undefined}
+                hideDataSources={Boolean(effectiveWorksheetId)}
+              />
+            )}
+
+            {/* Full ThoughtSpot app */}
+            {dphHsView === "app" && (
+              <AppEmbed
+                frameParams={{ width: "100%", height: "calc(100vh - 190px)" }}
+                showPrimaryNavbar
+              />
             )}
 
             {/* Spotter full page */}
             {dphHsView === "spotter-page" && (
               <DphHsSpotterPage
-                worksheetId={demo.worksheetId}
+                worksheetId={effectiveWorksheetId}
                 spotterName={demo.spotterName}
               />
             )}
@@ -309,12 +342,12 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
 
               {/* SpotterEmbed inside drawer */}
               <div style={{ flex: 1, overflow: "hidden" }}>
-                {spotterOpen && SpotterEmbed && demo.worksheetId ? (
+                {spotterOpen && SpotterEmbed && effectiveWorksheetId ? (
                   <SpotterEmbed
-                    worksheetId={demo.worksheetId}
+                    worksheetId={effectiveWorksheetId}
                     frameParams={{ width: "100%", height: "100%" }}
                   />
-                ) : spotterOpen && !demo.worksheetId ? (
+                ) : spotterOpen && !effectiveWorksheetId ? (
                   <div style={{ padding: 24, color: "#6b7280", fontSize: 13, textAlign: "center", paddingTop: 48 }}>
                     <p style={{ fontWeight: 600, marginBottom: 8 }}>Worksheet not configured</p>
                     <p>Set a Worksheet / Model ID in the Edit Demo form to enable {demo.spotterName ?? "Ask Clarity"}.</p>
@@ -368,6 +401,33 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
   }
 
   // ── Generic logged-in portal ───────────────────────────────────────────────
+  // Decide which tabs to show
+  const showReportBuilder = Boolean(effectiveWorksheetId || demo.reportDesigner);
+  const showSpotter = Boolean(demo.useSpotter);
+
+  type GenericTab = { key: GenericView; label: string };
+  const genericTabs: GenericTab[] = [
+    { key: "liveboard", label: "Dashboard" },
+    ...(showReportBuilder ? [{ key: "report-builder" as GenericView, label: "Report Builder" }] : []),
+    { key: "app", label: "ThoughtSpot" },
+    ...(showSpotter ? [{ key: "spotter-page" as GenericView, label: demo.spotterName ?? "Ask Spotter" }] : []),
+  ];
+
+  const tabStyle = (active: boolean): React.CSSProperties => ({
+    background: "none",
+    border: "none",
+    borderBottom: active ? "2px solid var(--portal-accent)" : "2px solid transparent",
+    color: active ? "var(--portal-accent)" : "var(--portal-text-muted)",
+    fontWeight: active ? 700 : 500,
+    fontSize: 13,
+    padding: "10px 16px 8px",
+    cursor: "pointer",
+    letterSpacing: "0.02em",
+    whiteSpace: "nowrap",
+    transition: "color 0.15s, border-color 0.15s",
+    fontFamily: "var(--portal-font)",
+  });
+
   return (
     <>
       {themeStyleBlock}
@@ -381,20 +441,72 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
       <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <GenericHeader companyName={demo.companyName} logoUrl={logoUrl} />
 
-        <main style={{ flex: 1 }}>
-          {firstLiveboard ? (
-            <DemoEmbed
-              liveboardId={firstLiveboard.id}
-              useSpotter={demo.useSpotter}
-              spotterName={demo.spotterName}
-              worksheetId={demo.worksheetId}
-              reportDesigner={demo.reportDesigner}
-              embedOptions={demo.embedOptions}
+        {/* Tab navigation — only show if there's more than just the liveboard */}
+        {genericTabs.length > 1 && (
+          <div
+            style={{
+              background: "var(--portal-surface)",
+              borderBottom: "1px solid var(--portal-border)",
+              display: "flex",
+              gap: 0,
+              padding: "0 24px",
+              flexShrink: 0,
+            }}
+          >
+            {genericTabs.map((tab) => (
+              <button
+                key={tab.key}
+                style={tabStyle(genericView === tab.key)}
+                onClick={() => setGenericView(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <main style={{ flex: 1, overflow: "hidden" }}>
+          {/* Liveboard */}
+          {genericView === "liveboard" && (
+            firstLiveboard ? (
+              <DemoEmbed
+                liveboardId={firstLiveboard.id}
+                useSpotter={false}
+                worksheetId={effectiveWorksheetId}
+                reportDesigner={demo.reportDesigner}
+                embedOptions={demo.embedOptions}
+                hideSpotterFab
+              />
+            ) : (
+              <div style={{ padding: "48px 32px", textAlign: "center", color: "var(--portal-text-muted)", fontSize: 15 }}>
+                No liveboard configured for this demo yet.
+              </div>
+            )
+          )}
+
+          {/* Report Builder */}
+          {genericView === "report-builder" && (
+            <SearchEmbed
+              frameParams={{ width: "100%", height: "calc(100vh - 108px)" }}
+              dataSources={effectiveWorksheetId ? [effectiveWorksheetId] : undefined}
+              hideDataSources={Boolean(effectiveWorksheetId)}
             />
-          ) : (
-            <div style={{ padding: "48px 32px", textAlign: "center", color: "var(--portal-text-muted)", fontSize: 15 }}>
-              No liveboard configured for this demo yet.
-            </div>
+          )}
+
+          {/* Full ThoughtSpot app */}
+          {genericView === "app" && (
+            <AppEmbed
+              frameParams={{ width: "100%", height: "calc(100vh - 108px)" }}
+              showPrimaryNavbar
+            />
+          )}
+
+          {/* Spotter full page */}
+          {genericView === "spotter-page" && (
+            <DphHsSpotterPage
+              worksheetId={effectiveWorksheetId}
+              spotterName={demo.spotterName}
+            />
           )}
         </main>
       </div>
