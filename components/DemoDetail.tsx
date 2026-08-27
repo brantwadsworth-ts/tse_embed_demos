@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Nav from "@/components/Nav";
 import { Demo } from "@/lib/demos";
 
 function InitialsHero({ name }: { name: string }) {
@@ -76,9 +75,7 @@ export default function DemoDetail({
   const isOwner = !!demo.owner && demo.owner === currentLogin;
 
   return (
-    <div className="min-h-full">
-      <Nav isAdmin={isAdmin} />
-      <main className="mx-auto max-w-5xl px-6 py-10">
+    <main className="mx-auto max-w-5xl px-6 py-10">
         {/* Back link */}
         <Link
           href="/demos"
@@ -258,7 +255,6 @@ export default function DemoDetail({
           Created {demo.createdAt}
           {demo.owner ? ` · owner: @${demo.owner}` : ""}
         </p>
-      </main>
-    </div>
+    </main>
   );
 }

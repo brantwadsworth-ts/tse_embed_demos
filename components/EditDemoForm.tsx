@@ -186,6 +186,10 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
 
   const [mcpConnectors, setMcpConnectors] = useState<McpConnectorConfig[]>(demo.mcpConnectors ?? []);
 
+  const [screenshotUrls, setScreenshotUrls] = useState<string[]>(demo.screenshotUrls ?? []);
+  const [screenshotUploading, setScreenshotUploading] = useState(false);
+  const screenshotInputRef = useRef<HTMLInputElement>(null);
+
   const [hiddenActions, setHiddenActions] = useState<Set<string>>(new Set(demo.embedOptions?.hiddenActions ?? []));
   const [hideLiveboardHeader, setHideLiveboardHeader] = useState(demo.embedOptions?.hideLiveboardHeader ?? false);
   const [hideTabPanel, setHideTabPanel] = useState(demo.embedOptions?.hideTabPanel ?? false);
@@ -225,6 +229,26 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
   }, []);
 
   // ── Helpers ────────────────────────────────────────────────────────────
+
+  async function handleScreenshotUpload(file: File) {
+    setScreenshotUploading(true);
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`/api/demos/${demo.id}/screenshot`, { method: "POST", body: form });
+    const data = await res.json() as { screenshotUrls?: string[]; error?: string };
+    if (data.screenshotUrls) setScreenshotUrls(data.screenshotUrls);
+    setScreenshotUploading(false);
+  }
+
+  async function handleScreenshotDelete(url: string) {
+    const res = await fetch(`/api/demos/${demo.id}/screenshot`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+    const data = await res.json() as { screenshotUrls?: string[] };
+    if (data.screenshotUrls) setScreenshotUrls(data.screenshotUrls);
+  }
 
   function scrollTo(key: SectionKey) {
     document.getElementById(`section-${key}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -549,6 +573,73 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
                 </select>
               </Field>
             </div>
+
+            {/* Screenshot upload */}
+            <Field label="Demo Screenshot / Preview Image" hint="Shown as the hero image on the demo card and detail page. Max 5 MB.">
+              <input
+                ref={screenshotInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleScreenshotUpload(file);
+                  e.target.value = "";
+                }}
+              />
+
+              {screenshotUrls.length > 0 ? (
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  {screenshotUrls.map((url, i) => (
+                    <div key={url} style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "1px solid #e5e7eb", width: 180, height: 100, flexShrink: 0 }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt={`screenshot ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+                      {i === 0 && (
+                        <span style={{ position: "absolute", top: 6, left: 6, background: "#2770ef", color: "#fff", fontSize: 9, fontWeight: 700, borderRadius: 4, padding: "2px 6px", letterSpacing: "0.05em" }}>PRIMARY</span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleScreenshotDelete(url)}
+                        style={{ position: "absolute", top: 4, right: 4, background: "rgba(0,0,0,0.55)", color: "#fff", border: "none", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14, lineHeight: 1 }}
+                      >×</button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => screenshotInputRef.current?.click()}
+                    disabled={screenshotUploading}
+                    style={{ width: 180, height: 100, borderRadius: 10, border: "2px dashed #d1d5db", background: "#f9fafb", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, color: "#9ca3af", fontSize: 12, fontWeight: 500, flexShrink: 0 }}
+                    className="hover:border-[#2770ef] hover:text-[#2770ef] transition-colors"
+                  >
+                    {screenshotUploading ? <span>Uploading…</span> : <><span style={{ fontSize: 22 }}>+</span><span>Add image</span></>}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => screenshotInputRef.current?.click()}
+                  disabled={screenshotUploading}
+                  style={{ width: "100%", borderRadius: 12, border: "2px dashed #d1d5db", background: "#f9fafb", cursor: "pointer", padding: "28px 16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, color: "#9ca3af" }}
+                  className="hover:border-[#2770ef] hover:text-[#2770ef] transition-colors"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleScreenshotUpload(file);
+                  }}
+                >
+                  {screenshotUploading ? (
+                    <span style={{ fontSize: 13 }}>Uploading…</span>
+                  ) : (
+                    <>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      <span style={{ fontSize: 13, fontWeight: 500 }}>Click to upload or drag &amp; drop</span>
+                      <span style={{ fontSize: 11 }}>PNG, JPG, GIF up to 5 MB</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </Field>
 
             <Field label="Use Case">
               <textarea rows={3} className={inputClass} value={useCase} onChange={(e) => setUseCase(e.target.value)} />
