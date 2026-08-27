@@ -155,6 +155,7 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
   const [embedType, setEmbedType] = useState<string>(demo.embedType ?? "liveboard");
   const [useSpotter, setUseSpotter] = useState(demo.useSpotter);
   const [spotterName, setSpotterName] = useState(demo.spotterName ?? "");
+  const [analystName, setAnalystName] = useState(demo.analystName ?? "");
   const [worksheetId, setWorksheetId] = useState(demo.worksheetId ?? "");
   const [reportDesigner, setReportDesigner] = useState(demo.reportDesigner);
 
@@ -387,7 +388,7 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
       prompt: prompt || undefined,
       sampleQuestions: sampleQuestions.split("\n").map((q) => q.trim()).filter(Boolean),
       status, tsInstance, embedType: embedType as Demo["embedType"],
-      useSpotter, spotterName: spotterName || undefined, worksheetId: worksheetId || undefined,
+      useSpotter, spotterName: spotterName || undefined, analystName: analystName || undefined, worksheetId: worksheetId || undefined,
       reportDesigner, rlsRequired, rlsRules: rlsRules || undefined, rlsRuleRows,
       dataModel: {
         warehouse: warehouse || undefined, cdw: cdw || undefined,
@@ -824,6 +825,9 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
                 <input className={inputClass} value={spotterName} onChange={(e) => setSpotterName(e.target.value)} placeholder="e.g. Ask Clarity" />
               </Field>
             )}
+            <Field label="Analyst Name" hint="Name of the assigned ThoughtSpot Analyst. Enables the 'Analysts' view in the Analysis Menu.">
+              <input className={inputClass} value={analystName} onChange={(e) => setAnalystName(e.target.value)} placeholder="e.g. Alex Chen (leave blank to disable Analysts view)" />
+            </Field>
           </SectionCard>
 
           {/* ── Access & Authentication ───────────────────────────────────────── */}

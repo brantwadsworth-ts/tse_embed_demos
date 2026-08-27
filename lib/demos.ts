@@ -86,6 +86,7 @@ export interface Demo {
   themeConfig?: PortalThemeConfig;
   rlsRuleRows?: RlsRuleRow[];
   mcpConnectors?: McpConnectorConfig[];
+  analystName?: string;
 }
 
 export type { PortalThemeConfig };

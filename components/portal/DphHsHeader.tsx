@@ -2,75 +2,130 @@
 
 import { useState } from "react";
 
-export type DemoView = "liveboard" | "spotter-page" | "report-builder" | "app";
+export type AnalysisView =
+  | "interactive-analysis"
+  | "report-designer"
+  | "my-reports"
+  | "spotter"
+  | "agents"
+  | "analysts";
 
-interface DphHsHeaderProps {
-  view: DemoView;
-  onViewChange: (v: DemoView) => void;
-  tsInstance?: string;
-  spotterName?: string;
-  useSpotter?: boolean;
+// Kept for backward compat with any imports that still use DemoView
+export type DemoView = AnalysisView;
+
+export interface AnalysisMenuItem {
+  key: AnalysisView;
+  label: string;
+  description: string;
+  icon: React.ReactNode;
+  available: boolean;
+  unavailableReason?: string;
 }
 
-export default function DphHsHeader({
-  view,
-  onViewChange,
-  tsInstance,
-  spotterName = "Ask Clarity",
-  useSpotter = false,
-}: DphHsHeaderProps) {
-  const [analysisOpen, setAnalysisOpen] = useState(false);
-
-  const analysisItems = [
+export function buildAnalysisMenu({
+  spotterName,
+  analystName,
+}: {
+  spotterName?: string;
+  analystName?: string;
+}): AnalysisMenuItem[] {
+  return [
     {
-      label: "MIDIS Analysis",
+      key: "interactive-analysis",
+      label: "Interactive Analysis",
+      description: "Explore embedded liveboards & dashboards",
       icon: (
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
           <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
         </svg>
       ),
-      description: "Case reconciliation & ACR reporting",
-      action: () => { onViewChange("liveboard"); setAnalysisOpen(false); },
-      active: view === "liveboard",
+      available: true,
     },
     {
-      label: "ThoughtSpot",
-      icon: (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
-        </svg>
-      ),
-      description: "Full ThoughtSpot application",
-      action: () => { onViewChange("app"); setAnalysisOpen(false); },
-      active: view === "app",
-    },
-    {
-      label: "Report Builder",
+      key: "report-designer",
+      label: "Report Designer",
+      description: "Build ad-hoc reports with drag & drop",
       icon: (
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
           <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
         </svg>
       ),
-      description: "Build ad-hoc reports & queries",
-      action: () => { onViewChange("report-builder"); setAnalysisOpen(false); },
-      active: view === "report-builder",
+      available: true,
     },
-    ...(useSpotter ? [{
-      label: spotterName,
+    {
+      key: "my-reports",
+      label: "My Reports",
+      description: "View & manage your saved analyses",
+      icon: (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+      ),
+      available: true,
+    },
+    {
+      key: "spotter",
+      label: spotterName ?? "Ask AI",
+      description: "Conversational AI for instant data answers",
       icon: (
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          <path d="M8 10h8M8 14h5"/>
         </svg>
       ),
-      description: "AI-powered data exploration",
-      action: () => { onViewChange("spotter-page"); setAnalysisOpen(false); },
-      active: view === "spotter-page",
-      spotter: true,
-    }] : []),
+      available: true,
+    },
+    {
+      key: "agents",
+      label: "Agents",
+      description: "AI-powered agents for automated insights",
+      icon: (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="8" r="4"/><path d="M12 14c-5 0-8 2-8 4v1h16v-1c0-2-3-4-8-4z"/>
+          <path d="M17 5l2 2-2 2M7 5L5 7l2 2"/>
+        </svg>
+      ),
+      available: true,
+    },
+    {
+      key: "analysts",
+      label: analystName ? `Ask ${analystName}` : "Analysts",
+      description: analystName
+        ? `Get analysis from ${analystName}`
+        : "Consult an assigned ThoughtSpot Analyst",
+      icon: (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="7" r="4"/>
+          <path d="M5.5 21a7.5 7.5 0 0 1 13 0"/>
+          <path d="M16 11l1.5 1.5L20 9"/>
+        </svg>
+      ),
+      available: Boolean(analystName),
+      unavailableReason: !analystName ? "Configure an Analyst in the demo settings" : undefined,
+    },
   ];
+}
+
+interface DphHsHeaderProps {
+  view: AnalysisView;
+  onViewChange: (v: AnalysisView) => void;
+  tsInstance?: string;
+  spotterName?: string;
+  analystName?: string;
+}
+
+export default function DphHsHeader({
+  view,
+  onViewChange,
+  tsInstance: _tsInstance,
+  spotterName,
+  analystName,
+}: DphHsHeaderProps) {
+  const [analysisOpen, setAnalysisOpen] = useState(false);
+  const menu = buildAnalysisMenu({ spotterName, analystName });
 
   return (
     <header className="dphhs-header">
@@ -114,7 +169,7 @@ export default function DphHsHeader({
         </div>
       </div>
 
-      {/* Row 3 — main navigation (top links + Analysis dropdown) */}
+      {/* Row 3 — main navigation */}
       <nav className="dphhs-main-nav" aria-label="Main navigation">
         <div className="dphhs-main-nav-inner">
           <div className="dphhs-top-links">
@@ -142,21 +197,31 @@ export default function DphHsHeader({
 
               {analysisOpen && (
                 <div className="dphhs-analysis-dropdown">
-                  {analysisItems.map((item) => (
+                  {menu.map((item) => (
                     <button
-                      key={item.label}
+                      key={item.key}
                       type="button"
-                      onClick={item.action}
-                      className={`dphhs-analysis-item${item.active ? " dphhs-analysis-item--active" : ""}${"spotter" in item && item.spotter ? " dphhs-analysis-item--spotter" : ""}`}
+                      onClick={() => {
+                        if (!item.available) return;
+                        onViewChange(item.key);
+                        setAnalysisOpen(false);
+                      }}
+                      disabled={!item.available}
+                      className={[
+                        "dphhs-analysis-item",
+                        item.key === view ? "dphhs-analysis-item--active" : "",
+                        item.key === "spotter" || item.key === "agents" || item.key === "analysts" ? "dphhs-analysis-item--spotter" : "",
+                        !item.available ? "dphhs-analysis-item--disabled" : "",
+                      ].filter(Boolean).join(" ")}
                     >
                       <span className="dphhs-analysis-item-icon">{item.icon}</span>
                       <span className="dphhs-analysis-item-text">
-                        <span className="dphhs-analysis-item-label">
-                          {item.label}
+                        <span className="dphhs-analysis-item-label">{item.label}</span>
+                        <span className="dphhs-analysis-item-desc">
+                          {item.available ? item.description : item.unavailableReason}
                         </span>
-                        <span className="dphhs-analysis-item-desc">{item.description}</span>
                       </span>
-                      {item.active && (
+                      {item.key === view && item.available && (
                         <span className="dphhs-analysis-item-check">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <polyline points="20 6 9 17 4 12"/>
