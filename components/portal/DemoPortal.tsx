@@ -107,7 +107,7 @@ function AnalysisPane({
     case "analysts":
       return demo.analystName ? (
         effectiveWorksheetId ? (
-          <div style={{ height: embedHeight, display: "flex", flexDirection: "column" }}>
+          <div style={{ height: embedHeight, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ background: "var(--portal-surface)", borderBottom: "1px solid var(--portal-border)", padding: "10px 20px", flexShrink: 0, display: "flex", alignItems: "center", gap: 10 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "var(--portal-accent)" }}>
                 <circle cx="12" cy="7" r="4"/><path d="M5.5 21a7.5 7.5 0 0 1 13 0"/><path d="M16 11l1.5 1.5L20 9"/>
@@ -459,7 +459,7 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
                 </button>
               </div>
-              <div style={{ flex: 1, overflow: "hidden" }}>
+              <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 0 }}>
                 {spotterOpen && effectiveWorksheetId ? (
                   <MidisSpotterChat
                     key={embedKey}

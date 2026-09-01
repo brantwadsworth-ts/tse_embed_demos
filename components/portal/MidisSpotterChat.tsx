@@ -60,7 +60,6 @@ export default function MidisSpotterChat({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasQueried, setHasQueried] = useState(false);
-  const [lastText, setLastText] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryTurn[]>([]);
 
   const spotterReadyRef = useRef(false);
@@ -110,7 +109,6 @@ export default function MidisSpotterChat({
     if (!q || loading) return;
     setInput("");
     setLoading(true);
-    setLastText(null);
 
     try {
       const res = await fetch(`/api/demo/${demoId}/chat`, {
@@ -129,7 +127,6 @@ export default function MidisSpotterChat({
 
       if (data.kind === "analytics" && data.query) {
         setHasQueried(true);
-        if (data.preamble) setLastText(data.preamble);
         setHistory([...newHistory, { role: "assistant", content: data.preamble || data.query }]);
 
         if (spotterReadyRef.current) {
@@ -138,11 +135,18 @@ export default function MidisSpotterChat({
           pendingQueryRef.current = data.query;
         }
       } else if (data.kind === "text" && data.text) {
-        setLastText(data.text);
+        // Text-only answer — show it as a chat bubble via HostEvent.SpotterSearch
+        // so it appears in the native conversation thread
+        setHasQueried(true);
         setHistory([...newHistory, { role: "assistant", content: data.text }]);
+        if (spotterReadyRef.current) {
+          runSpotterQuery(data.text);
+        } else {
+          pendingQueryRef.current = data.text;
+        }
       }
     } catch {
-      setLastText("Unable to process your request. Please try again.");
+      // silently ignore — Spotter is still usable via the native interface
     } finally {
       setLoading(false);
     }
@@ -151,15 +155,17 @@ export default function MidisSpotterChat({
   return (
     <div
       style={{
+        flex: 1,
         display: "flex",
         flexDirection: "column",
-        height: "100%",
+        minHeight: 0,
         background: "#fff",
         overflow: "hidden",
       }}
     >
-      {/* Spotter canvas — always rendered so the embed initialises immediately */}
-      <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+      {/* Spotter canvas — always rendered so the embed initialises immediately.
+          overflow:auto lets ThoughtSpot's iframe scroll its conversation thread. */}
+      <div style={{ flex: 1, position: "relative", overflow: "auto", minHeight: 0 }}>
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <SpotterEmbed
           ref={spotterRef as any}
@@ -283,25 +289,6 @@ export default function MidisSpotterChat({
           </div>
         )}
       </div>
-
-      {/* Text-answer banner (shown for general knowledge responses) */}
-      {lastText && (
-        <div
-          style={{
-            padding: "10px 14px",
-            borderTop: "1px solid #e5e7eb",
-            background: "#f0f4ff",
-            fontSize: 13,
-            color: "#1e3a5f",
-            lineHeight: 1.5,
-            maxHeight: 90,
-            overflow: "auto",
-            flexShrink: 0,
-          }}
-        >
-          {lastText}
-        </div>
-      )}
 
       {/* Custom input bar */}
       <div

@@ -66,6 +66,8 @@ export default function DphHsSpotterPage({
           borderRadius: "16px",
           overflow: "hidden",
           boxShadow: "0 8px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1)",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         {!worksheetId ? (
