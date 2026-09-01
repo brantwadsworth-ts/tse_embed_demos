@@ -9,7 +9,6 @@ export default auth((req) => {
     !isLoggedIn &&
     !pathname.startsWith("/api/auth") &&
     !pathname.startsWith("/api/demo") &&
-    !pathname.startsWith("/api/admin/patch-demo") &&
     !pathname.startsWith("/demo") &&
     pathname !== "/login"
   ) {
