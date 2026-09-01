@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Demo } from "@/lib/demos";
 import {
   resolveTheme,
@@ -217,12 +217,20 @@ interface DemoPortalProps {
 export default function DemoPortal({ demo }: DemoPortalProps) {
   const legacyTheme = demo.theme;
 
-  const [activeThemeConfig, setActiveThemeConfig] = useState<PortalThemeConfig>(
-    demo.themeConfig ?? { preset: "light" },
-  );
+  const [activeThemeConfig, setActiveThemeConfig] = useState<PortalThemeConfig>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(`portal-theme-${demo.id}`);
+      if (saved) return { preset: saved as ThemePreset };
+    }
+    return demo.themeConfig ?? { preset: "light" };
+  });
   const themeVars = resolveTheme(activeThemeConfig);
   const themeCSS = themeToCSS(themeVars);
   const tsCustomizations = themeToTSCustomizations(themeVars);
+
+  // Tracks auth config so we can re-init ThoughtSpot when theme changes
+  const authConfigRef = useRef<{ type: AuthType; username: string } | null>(null);
+  const [embedKey, setEmbedKey] = useState(0);
 
   const [showLanding, setShowLanding] = useState(legacyTheme?.custom === "dphhs");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -266,21 +274,24 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
       .catch(() => {});
   }, [isLoggedIn, demo.id, demo.worksheetId, firstLiveboard?.id]);
 
+  const buildGetAuthToken = useCallback((username: string) => async () => {
+    const res = await fetch(`/api/demo/${demo.id}/auth-token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    });
+    const data = (await res.json()) as { token?: string; error?: string };
+    if (!res.ok || !data.token) throw new Error(data.error ?? "Failed to get auth token.");
+    return data.token;
+  }, [demo.id]);
+
   function initTrustedAuth(username: string) {
+    authConfigRef.current = { type: AuthType.TrustedAuthTokenCookieless, username };
     init({
       thoughtSpotHost: demo.tsInstance,
       authType: AuthType.TrustedAuthTokenCookieless,
       customizations: tsCustomizations,
-      getAuthToken: async () => {
-        const res = await fetch(`/api/demo/${demo.id}/auth-token`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username }),
-        });
-        const data = (await res.json()) as { token?: string; error?: string };
-        if (!res.ok || !data.token) throw new Error(data.error ?? "Failed to get auth token.");
-        return data.token;
-      },
+      getAuthToken: buildGetAuthToken(username),
     });
     setCurrentUser(username);
     setIsLoggedIn(true);
@@ -295,6 +306,7 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
     });
     const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
     if (!res.ok) throw new Error(data.error ?? `Login failed (${res.status})`);
+    authConfigRef.current = { type: AuthType.None, username };
     init({ thoughtSpotHost: demo.tsInstance, authType: AuthType.None, customizations: tsCustomizations });
     setCurrentUser(username);
     setIsLoggedIn(true);
@@ -313,7 +325,26 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
   }
 
   function handleThemeChange(preset: ThemePreset) {
-    setActiveThemeConfig({ preset });
+    const newConfig: PortalThemeConfig = { preset };
+    setActiveThemeConfig(newConfig);
+    localStorage.setItem(`portal-theme-${demo.id}`, preset);
+
+    // Re-init ThoughtSpot with the new customizations so the embed updates
+    const cfg = authConfigRef.current;
+    if (cfg) {
+      const newCustomizations = themeToTSCustomizations(resolveTheme(newConfig));
+      if (cfg.type === AuthType.TrustedAuthTokenCookieless) {
+        init({
+          thoughtSpotHost: demo.tsInstance,
+          authType: AuthType.TrustedAuthTokenCookieless,
+          customizations: newCustomizations,
+          getAuthToken: buildGetAuthToken(cfg.username),
+        });
+      } else {
+        init({ thoughtSpotHost: demo.tsInstance, authType: AuthType.None, customizations: newCustomizations });
+      }
+      setEmbedKey((k) => k + 1);
+    }
   }
 
   const themeStyleBlock = <style dangerouslySetInnerHTML={{ __html: themeCSS }} />;
@@ -400,6 +431,7 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
 
           <main style={{ flex: 1 }}>
             <AnalysisPane
+              key={embedKey}
               view={activeView}
               demo={demo}
               effectiveWorksheetId={effectiveWorksheetId}
@@ -485,6 +517,7 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
         <GenericTabBar view={activeView} onViewChange={setActiveView} demo={demo} />
         <main style={{ flex: 1 }}>
           <AnalysisPane
+            key={embedKey}
             view={activeView}
             demo={demo}
             effectiveWorksheetId={effectiveWorksheetId}

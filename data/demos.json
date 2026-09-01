@@ -31,10 +31,45 @@
       "database": "SALESLOFT_DB",
       "schema": "ANALYTICS",
       "tables": [
-        { "name": "cadences", "columns": ["Cadence Name", "Owner", "Cadence Create Date", "Emails Replied", "Influenced Pipeline"] },
-        { "name": "reps", "columns": ["Rep Name", "Rep Segment", "Region", "Manager"] },
-        { "name": "activities", "columns": ["Activity Date", "Activity Type", "Cadence Name", "Rep Name", "Outcome"] },
-        { "name": "pipeline", "columns": ["Opportunity Name", "Stage", "Amount", "Close Date", "Rep Name"] }
+        {
+          "name": "cadences",
+          "columns": [
+            "Cadence Name",
+            "Owner",
+            "Cadence Create Date",
+            "Emails Replied",
+            "Influenced Pipeline"
+          ]
+        },
+        {
+          "name": "reps",
+          "columns": [
+            "Rep Name",
+            "Rep Segment",
+            "Region",
+            "Manager"
+          ]
+        },
+        {
+          "name": "activities",
+          "columns": [
+            "Activity Date",
+            "Activity Type",
+            "Cadence Name",
+            "Rep Name",
+            "Outcome"
+          ]
+        },
+        {
+          "name": "pipeline",
+          "columns": [
+            "Opportunity Name",
+            "Stage",
+            "Amount",
+            "Close Date",
+            "Rep Name"
+          ]
+        }
       ]
     },
     "theme": {
@@ -42,7 +77,10 @@
       "primaryColor": "#15AE6E",
       "logoUrl": "https://www.salesloft.com/wp-content/uploads/2022/03/Salesloft-Logo-color.svg",
       "liveboards": [
-        { "id": "431cb7d1-7551-48ca-ab04-2261bb40a6e8", "name": "Sales Analytics" }
+        {
+          "id": "431cb7d1-7551-48ca-ab04-2261bb40a6e8",
+          "name": "Sales Analytics"
+        }
       ]
     }
   },
@@ -73,9 +111,18 @@
     "trustedAuthEnabled": false,
     "credentialsHint": "Use your ThoughtSpot credentials",
     "demoUsers": [
-      { "label": "National Admin", "tsUsername": "admin@doordash.com" },
-      { "label": "US Market", "tsUsername": "demo-us@doordash.com" },
-      { "label": "Canada Market", "tsUsername": "demo-canada@doordash.com" }
+      {
+        "label": "National Admin",
+        "tsUsername": "admin@doordash.com"
+      },
+      {
+        "label": "US Market",
+        "tsUsername": "demo-us@doordash.com"
+      },
+      {
+        "label": "Canada Market",
+        "tsUsername": "demo-canada@doordash.com"
+      }
     ],
     "prompt": "You are DD Insights, a brand analytics assistant for DoorDash brand partners. Help brand managers understand sales performance, category trends, and regional comparisons for their products only. Data is scoped by country via RLS.",
     "dataModel": {
@@ -84,10 +131,46 @@
       "database": "DOORDASH_DB",
       "schema": "BRAND_ANALYTICS",
       "tables": [
-        { "name": "orders", "columns": ["Order ID", "Brand", "Item Name", "Country", "Order Date", "Revenue", "Units"] },
-        { "name": "brands", "columns": ["Brand ID", "Brand Name", "Category", "Country"] },
-        { "name": "items", "columns": ["Item ID", "Item Name", "Brand", "Category", "Price"] },
-        { "name": "regions", "columns": ["Region", "Country", "City", "Market Type"] }
+        {
+          "name": "orders",
+          "columns": [
+            "Order ID",
+            "Brand",
+            "Item Name",
+            "Country",
+            "Order Date",
+            "Revenue",
+            "Units"
+          ]
+        },
+        {
+          "name": "brands",
+          "columns": [
+            "Brand ID",
+            "Brand Name",
+            "Category",
+            "Country"
+          ]
+        },
+        {
+          "name": "items",
+          "columns": [
+            "Item ID",
+            "Item Name",
+            "Brand",
+            "Category",
+            "Price"
+          ]
+        },
+        {
+          "name": "regions",
+          "columns": [
+            "Region",
+            "Country",
+            "City",
+            "Market Type"
+          ]
+        }
       ]
     },
     "theme": {
@@ -101,7 +184,7 @@
     "id": "montana",
     "companyName": "Montana DPHHS",
     "website": "https://dphhs.mt.gov",
-    "useCase": "Montana Department of Public Health & Human Services MIDIS Reconciliation Portal — disease surveillance data quality, case reconciliation, and Annual Case Review (ACR) reporting with county-level RLS and AI-powered data exploration.",
+    "useCase": "Montana Department of Public Health & Human Services MIDIS Reconciliation Portal \u2014 disease surveillance data quality, case reconciliation, and Annual Case Review (ACR) reporting with county-level RLS and AI-powered data exploration.",
     "sampleQuestions": [
       "What is the % completeness for DOB fields across all jurisdictions?",
       "Show me case counts by jurisdiction for the current MMWR year.",
@@ -110,7 +193,7 @@
     "screenshotUrls": [],
     "sampleDataUrl": null,
     "rlsRequired": true,
-    "rlsRules": "JURISDICTION_NAME column filtered by ts_groups() — each user is in one county group, admins bypass RLS.",
+    "rlsRules": "JURISDICTION_NAME column filtered by ts_groups() \u2014 each user is in one county group, admins bypass RLS.",
     "useSpotter": true,
     "spotterName": "Ask Clarity",
     "reportDesigner": false,
@@ -124,9 +207,18 @@
     "trustedAuthEnabled": false,
     "credentialsHint": "Use your ThoughtSpot credentials",
     "demoUsers": [
-      { "label": "Statewide Admin", "tsUsername": "admin@dphhs.mt.gov" },
-      { "label": "Yellowstone County", "tsUsername": "demo-yellowstone@dphhs.mt.gov" },
-      { "label": "Cascade County", "tsUsername": "demo-cascade@dphhs.mt.gov" }
+      {
+        "label": "Statewide Admin",
+        "tsUsername": "admin@dphhs.mt.gov"
+      },
+      {
+        "label": "Yellowstone County",
+        "tsUsername": "demo-yellowstone@dphhs.mt.gov"
+      },
+      {
+        "label": "Cascade County",
+        "tsUsername": "demo-cascade@dphhs.mt.gov"
+      }
     ],
     "prompt": "You are Ask Clarity, a public health data assistant for Montana DPHHS. Help epidemiologists understand disease surveillance completeness, reconciliation status, and jurisdiction-level case counts. Reference MIDIS data fields precisely.",
     "dataModel": {
@@ -135,10 +227,47 @@
       "database": "SE_DEMO_DB",
       "schema": "MIDIS",
       "tables": [
-        { "name": "case_records", "columns": ["Case ID", "Jurisdiction Name", "Disease", "Report Date", "DOB", "Completeness Score"] },
-        { "name": "jurisdictions", "columns": ["Jurisdiction Name", "County", "Region", "Population"] },
-        { "name": "acr_deliverables", "columns": ["Deliverable ID", "Jurisdiction", "Status", "Due Date", "Submitted Date"] },
-        { "name": "completeness_metrics", "columns": ["Field Name", "Jurisdiction", "Complete Count", "Total Count", "Pct Complete", "MMWR Year"] }
+        {
+          "name": "case_records",
+          "columns": [
+            "Case ID",
+            "Jurisdiction Name",
+            "Disease",
+            "Report Date",
+            "DOB",
+            "Completeness Score"
+          ]
+        },
+        {
+          "name": "jurisdictions",
+          "columns": [
+            "Jurisdiction Name",
+            "County",
+            "Region",
+            "Population"
+          ]
+        },
+        {
+          "name": "acr_deliverables",
+          "columns": [
+            "Deliverable ID",
+            "Jurisdiction",
+            "Status",
+            "Due Date",
+            "Submitted Date"
+          ]
+        },
+        {
+          "name": "completeness_metrics",
+          "columns": [
+            "Field Name",
+            "Jurisdiction",
+            "Complete Count",
+            "Total Count",
+            "Pct Complete",
+            "MMWR Year"
+          ]
+        }
       ]
     },
     "theme": {
@@ -146,8 +275,12 @@
       "primaryColor": "#112F60",
       "logoUrl": "https://dphhs.mt.gov/_images/logo/DPHHS-Logo-Circle-Color-White-Border.svg",
       "liveboards": [
-        { "id": "403cdd3c-8f81-4a51-80ce-5666a1c35e40", "name": "Annual Case Report" }
+        {
+          "id": "403cdd3c-8f81-4a51-80ce-5666a1c35e40",
+          "name": "Annual Case Report"
+        }
       ]
-    }
+    },
+    "worksheetId": "1480ab38-5900-4b6b-9a50-b3131595c2d6"
   }
 ]
