@@ -16,6 +16,7 @@ import DemoEmbed from "./DemoEmbed";
 import DphHsLanding from "./DphHsLanding";
 import DphHsHeader, { AnalysisView, buildAnalysisMenu } from "./DphHsHeader";
 import DphHsSpotterPage from "./DphHsSpotterPage";
+import MidisSpotterChat from "./MidisSpotterChat";
 import GenericHeader from "./GenericHeader";
 import RolePicker from "./RolePicker";
 import DemoProfileMenu from "./DemoProfileMenu";
@@ -90,6 +91,7 @@ function AnalysisPane({
         <DphHsSpotterPage
           worksheetId={effectiveWorksheetId}
           spotterName={demo.spotterName}
+          demoId={demo.id}
         />
       );
 
@@ -112,9 +114,11 @@ function AnalysisPane({
               </svg>
               <span style={{ fontSize: 13, fontWeight: 600, color: "var(--portal-text)" }}>Analyst: {demo.analystName}</span>
             </div>
-            <SpotterEmbed
+            <MidisSpotterChat
               worksheetId={effectiveWorksheetId}
-              frameParams={{ width: "100%", height: "100%" }}
+              spotterName={demo.spotterName ?? demo.analystName}
+              sampleQuestions={demo.sampleQuestions}
+              demoId={demo.id}
             />
           </div>
         ) : (
@@ -457,7 +461,13 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
               </div>
               <div style={{ flex: 1, overflow: "hidden" }}>
                 {spotterOpen && effectiveWorksheetId ? (
-                  <SpotterEmbed worksheetId={effectiveWorksheetId} frameParams={{ width: "100%", height: "100%" }} />
+                  <MidisSpotterChat
+                    key={embedKey}
+                    worksheetId={effectiveWorksheetId}
+                    spotterName={demo.spotterName ?? "Ask Clarity"}
+                    sampleQuestions={demo.sampleQuestions}
+                    demoId={demo.id}
+                  />
                 ) : spotterOpen ? (
                   <div style={{ padding: 24, color: "#6b7280", fontSize: 13, textAlign: "center", paddingTop: 48 }}>
                     <p style={{ fontWeight: 600, marginBottom: 8 }}>Worksheet not configured</p>

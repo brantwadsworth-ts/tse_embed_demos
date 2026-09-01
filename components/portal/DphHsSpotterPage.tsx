@@ -1,16 +1,18 @@
 "use client";
 
 import React from "react";
-import { SpotterEmbed } from "@thoughtspot/visual-embed-sdk/react";
+import MidisSpotterChat from "./MidisSpotterChat";
 
 interface DphHsSpotterPageProps {
   worksheetId?: string;
   spotterName?: string;
+  demoId: string;
 }
 
 export default function DphHsSpotterPage({
   worksheetId,
   spotterName = "Ask Clarity",
+  demoId,
 }: DphHsSpotterPageProps) {
   return (
     <div
@@ -53,7 +55,7 @@ export default function DphHsSpotterPage({
         </p>
       </div>
 
-      {/* Spotter embed frame */}
+      {/* Chat + Spotter embed frame */}
       <div
         style={{
           width: "100%",
@@ -93,39 +95,13 @@ export default function DphHsSpotterPage({
             </div>
           </div>
         ) : (
-          <SpotterEmbed
+          <MidisSpotterChat
             worksheetId={worksheetId}
-            frameParams={{ width: "100%", height: "100%" }}
-            style={{ minHeight: "560px" }}
+            spotterName={spotterName}
+            demoId={demoId}
           />
         )}
       </div>
-
-      {/* Sample prompts */}
-      {worksheetId && (
-        <div style={{ marginTop: "24px", display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center", maxWidth: "760px" }}>
-          {[
-            "What is the % completeness for DOB fields across all jurisdictions?",
-            "Show case counts by jurisdiction for the current MMWR year",
-            "Which counties are below the 95% completeness target?",
-          ].map((q) => (
-            <div
-              key={q}
-              style={{
-                background: "rgba(255,255,255,0.1)",
-                border: "1px solid rgba(255,255,255,0.2)",
-                borderRadius: "999px",
-                padding: "7px 16px",
-                fontSize: "12px",
-                color: "rgba(255,255,255,0.8)",
-                cursor: "default",
-              }}
-            >
-              {q}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
