@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { Demo } from "@/lib/demos";
 import { readDemos, writeDemos } from "@/lib/store";
+import { addRevision } from "@/lib/revisions";
 
 // PATCH /api/demos/[id]  — owner-only update
 export async function PATCH(
@@ -34,6 +35,9 @@ export async function PATCH(
 
   demos[idx] = updated;
   await writeDemos(demos);
+
+  // Record revision — non-fatal if Blob is unconfigured
+  addRevision(existing, updated, login).catch(() => {});
 
   return NextResponse.json(updated);
 }

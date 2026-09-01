@@ -106,12 +106,20 @@ export default function DemoDetail({
           </div>
           <div className="flex shrink-0 gap-3">
             {isOwner ? (
-              <Link
-                href={`/demos/${demo.id}/edit`}
-                className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                Edit →
-              </Link>
+              <>
+                <Link
+                  href={`/demos/${demo.id}/history`}
+                  className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
+                >
+                  History
+                </Link>
+                <Link
+                  href={`/demos/${demo.id}/edit`}
+                  className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Edit →
+                </Link>
+              </>
             ) : (
               <Link
                 href={`/demos/${demo.id}/fork`}
