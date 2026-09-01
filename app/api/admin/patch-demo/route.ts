@@ -10,7 +10,7 @@ import { readDemos, writeDemos } from "@/lib/store";
 
 export async function POST(request: NextRequest) {
   const secret = request.headers.get("x-admin-secret");
-  const expected = process.env.GITHUB_ADMIN_TOKEN ?? process.env.AUTH_SECRET;
+  const expected = process.env.MIGRATION_TOKEN;
   if (!secret || !expected || secret !== expected) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
