@@ -160,13 +160,22 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
   const [reportDesigner, setReportDesigner] = useState(demo.reportDesigner);
 
   const [liveboards, setLiveboards] = useState<DemoLiveboard[]>(demo.theme?.liveboards ?? []);
-  const [pickerOpen, setPickerOpen] = useState(false);
+  // ts-connect state — credential row always visible below cluster selector
   const [pickerUsername, setPickerUsername] = useState(demo.demoUsers?.[0]?.tsUsername ?? "");
-  const [pickerLoading, setPickerLoading] = useState(false);
-  const [pickerError, setPickerError] = useState("");
+  const [pickerPassword, setPickerPassword] = useState("");
+  const [tsConnecting, setTsConnecting] = useState(false);
+  const [tsConnected, setTsConnected] = useState(false);
+  const [tsConnectError, setTsConnectError] = useState("");
   const [pickerResults, setPickerResults] = useState<DemoLiveboard[]>([]);
   const [pickerSearch, setPickerSearch] = useState("");
   const [pickerSelected, setPickerSelected] = useState<Set<string>>(new Set());
+  const [wsResults, setWsResults] = useState<Array<{ id: string; name: string }>>([]);
+  const [wsPickerOpen, setWsPickerOpen] = useState(false);
+  const [wsSearch, setWsSearch] = useState("");
+  // legacy — keep for any remaining references
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerLoading, setPickerLoading] = useState(false);
+  const [pickerError, setPickerError] = useState("");
 
   const [trustedAuthEnabled, setTrustedAuthEnabled] = useState(demo.trustedAuthEnabled ?? false);
   const [credentialsHint, setCredentialsHint] = useState(demo.credentialsHint ?? "");
@@ -175,6 +184,9 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
   const [rlsRequired, setRlsRequired] = useState(demo.rlsRequired);
   const [rlsRules, setRlsRules] = useState(demo.rlsRules ?? "");
   const [rlsRuleRows, setRlsRuleRows] = useState<RlsRuleRow[]>(demo.rlsRuleRows ?? []);
+  const [rlsPushing, setRlsPushing] = useState(false);
+  const [rlsPushResult, setRlsPushResult] = useState<{ ok: boolean; pushed: number; failed: number; results: { tsUsername: string; label: string; ok: boolean; error?: string }[] } | null>(null);
+  const [rlsAdminPassword, setRlsAdminPassword] = useState("");
 
   const [warehouse, setWarehouse] = useState(demo.dataModel?.warehouse ?? "");
   const [cdw, setCdw] = useState(demo.dataModel?.cdw ?? "");
@@ -339,20 +351,78 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
     setDemoUsers((prev) => { const next = [...prev]; next[idx] = { ...next[idx], [field]: value }; return next; });
   }
 
+  function setUserAttribute(userIdx: number, attrKey: string, attrValue: string) {
+    setDemoUsers((prev) => {
+      const next = [...prev];
+      const attrs = { ...(next[userIdx].attributes ?? {}), [attrKey]: attrValue };
+      next[userIdx] = { ...next[userIdx], attributes: attrs };
+      return next;
+    });
+  }
+
+  function removeUserAttribute(userIdx: number, attrKey: string) {
+    setDemoUsers((prev) => {
+      const next = [...prev];
+      const attrs = { ...(next[userIdx].attributes ?? {}) };
+      delete attrs[attrKey];
+      next[userIdx] = { ...next[userIdx], attributes: Object.keys(attrs).length ? attrs : undefined };
+      return next;
+    });
+  }
+
+  function addUserAttribute(userIdx: number) {
+    setDemoUsers((prev) => {
+      const next = [...prev];
+      const attrs = { ...(next[userIdx].attributes ?? {}), "": "" };
+      next[userIdx] = { ...next[userIdx], attributes: attrs };
+      return next;
+    });
+  }
+
+  async function pushRlsToTS() {
+    setRlsPushing(true);
+    setRlsPushResult(null);
+    try {
+      const res = await fetch("/api/admin/rls-push", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          demoId: demo.id,
+          adminUsername: pickerUsername || undefined,
+          adminPassword: rlsAdminPassword || undefined,
+        }),
+      });
+      const data = await res.json() as typeof rlsPushResult;
+      setRlsPushResult(data);
+    } catch (err) {
+      setRlsPushResult({ ok: false, pushed: 0, failed: 0, results: [{ tsUsername: "", label: "Network error", ok: false, error: String(err) }] });
+    }
+    setRlsPushing(false);
+  }
+
   function updateLiveboard(idx: number, field: keyof DemoLiveboard, value: string) {
     setLiveboards((prev) => { const next = [...prev]; next[idx] = { ...next[idx], [field]: value }; return next; });
   }
 
-  async function fetchLiveboards() {
+  async function connectToTS() {
     if (!tsInstance || !pickerUsername.trim()) return;
-    setPickerLoading(true); setPickerError(""); setPickerResults([]); setPickerSelected(new Set());
-    const params = new URLSearchParams({ instance: tsInstance, username: pickerUsername.trim() });
-    const res = await fetch(`/api/admin/ts-liveboards?${params}`);
-    const data = await res.json().catch(() => ({})) as DemoLiveboard[] | { error: string };
-    setPickerLoading(false);
-    if (!res.ok || "error" in data) setPickerError((data as { error: string }).error ?? "Fetch failed");
-    else setPickerResults(data as DemoLiveboard[]);
+    setTsConnecting(true); setTsConnectError(""); setPickerResults([]); setWsResults([]);
+    setPickerSelected(new Set()); setTsConnected(false);
+    try {
+      const res = await fetch("/api/admin/ts-connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ instance: tsInstance, username: pickerUsername.trim(), password: pickerPassword.trim() || undefined }),
+      });
+      const data = await res.json().catch(() => ({})) as { liveboards?: DemoLiveboard[]; worksheets?: Array<{ id: string; name: string }>; error?: string };
+      if (!res.ok || data.error) { setTsConnectError(data.error ?? "Connection failed"); }
+      else { setPickerResults(data.liveboards ?? []); setWsResults(data.worksheets ?? []); setTsConnected(true); }
+    } catch (e) { setTsConnectError(String(e)); }
+    finally { setTsConnecting(false); }
   }
+
+  // Legacy shim so any remaining callers still work
+  async function fetchLiveboards() { await connectToTS(); }
 
   function addSelectedLiveboards() {
     const toAdd = pickerResults.filter((lb) => pickerSelected.has(lb.id));
@@ -653,12 +723,16 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
 
           {/* ── ThoughtSpot ─────────────────────────────────────────────────── */}
           <SectionCard id="section-ts" title="ThoughtSpot">
+            {/* Row 1: cluster + embed type */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <Field label="Cluster">
                 <select
                   className={inputClass}
                   value={tsInstances.some((i) => i.url === tsInstance) ? tsInstance : "__custom__"}
-                  onChange={(e) => { if (e.target.value !== "__custom__") setTsInstance(e.target.value); }}
+                  onChange={(e) => {
+                    if (e.target.value !== "__custom__") setTsInstance(e.target.value);
+                    setTsConnected(false); setPickerResults([]); setWsResults([]); setTsConnectError("");
+                  }}
                 >
                   {tsInstances.map((inst) => (<option key={inst.url} value={inst.url}>{inst.name}</option>))}
                   <option value="__custom__">Custom URL…</option>
@@ -675,31 +749,70 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
 
             {!tsInstances.some((i) => i.url === tsInstance) && (
               <Field label="Custom Instance URL">
-                <input className={inputClass} value={tsInstance} onChange={(e) => setTsInstance(e.target.value)} placeholder="https://your-instance.thoughtspot.cloud" />
+                <input className={inputClass} value={tsInstance} onChange={(e) => { setTsInstance(e.target.value); setTsConnected(false); setPickerResults([]); setWsResults([]); setTsConnectError(""); }} placeholder="https://your-instance.thoughtspot.cloud" />
               </Field>
+            )}
+
+            {/* Row 2: credential login — always visible once a cluster is set */}
+            {tsInstance && (
+              <div style={{ background: tsConnected ? "#f0fdf4" : "#f8fafc", border: `1px solid ${tsConnected ? "#bbf7d0" : "#e5e7eb"}`, borderRadius: 10, padding: "12px 14px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: tsConnected ? 0 : 10 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: tsConnected ? "#22c55e" : "#d1d5db", flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: tsConnected ? "#15803d" : "#6b7280" }}>
+                    {tsConnected
+                      ? `Connected as ${pickerUsername} · ${pickerResults.length} liveboards · ${wsResults.length} worksheets`
+                      : `Connect to ${new URL(tsInstance).hostname.split(".")[0]}`}
+                  </span>
+                  {tsConnected && (
+                    <button type="button" onClick={() => { setTsConnected(false); setPickerResults([]); setWsResults([]); }} style={{ marginLeft: "auto", fontSize: 11, color: "#6b7280", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+                      Disconnect
+                    </button>
+                  )}
+                </div>
+                {!tsConnected && (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <input
+                      className={inputClass}
+                      style={{ flex: 1 }}
+                      placeholder="ThoughtSpot username"
+                      value={pickerUsername}
+                      onChange={(e) => setPickerUsername(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void connectToTS(); } }}
+                    />
+                    <input
+                      className={inputClass}
+                      style={{ flex: 1 }}
+                      type="password"
+                      placeholder="Password (optional if trusted auth)"
+                      value={pickerPassword}
+                      onChange={(e) => setPickerPassword(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void connectToTS(); } }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void connectToTS()}
+                      disabled={tsConnecting || !pickerUsername.trim()}
+                      className="rounded-lg bg-[#2770ef] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a56c4] disabled:opacity-50 transition-colors whitespace-nowrap"
+                    >
+                      {tsConnecting ? "Connecting…" : "Connect →"}
+                    </button>
+                  </div>
+                )}
+                {tsConnectError && <p style={{ fontSize: 11, color: "#dc2626", background: "#fef2f2", borderRadius: 6, padding: "6px 10px", marginTop: 8 }}>{tsConnectError}</p>}
+              </div>
             )}
 
             {/* Liveboards */}
             <div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#6b7280" }}>Liveboards</label>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button
-                    type="button"
-                    onClick={() => { setPickerOpen(true); setPickerError(""); setPickerResults([]); setPickerSearch(""); }}
-                    disabled={!tsInstance}
-                    className="rounded-lg border border-[#2770ef] px-3 py-1 text-xs font-semibold text-[#2770ef] hover:bg-blue-50 disabled:opacity-40 transition-colors"
-                  >
-                    Browse ↓
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLiveboards((prev) => [...prev, { id: "", name: "" }])}
-                    className="rounded-lg bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors"
-                  >
-                    + Manual
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setLiveboards((prev) => [...prev, { id: "", name: "" }])}
+                  className="rounded-lg bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+                >
+                  + Manual
+                </button>
               </div>
 
               {/* Liveboard table */}
@@ -732,84 +845,84 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
                 </div>
               )}
 
-              {liveboards.length === 0 && !pickerOpen && (
-                <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 8 }}>No liveboards yet. Browse from ThoughtSpot or add manually.</p>
+              {liveboards.length === 0 && !tsConnected && (
+                <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 8 }}>No liveboards yet. Connect to ThoughtSpot above to browse, or add manually.</p>
               )}
 
-              {pickerOpen && (
+              {/* Inline liveboard browser — shown after successful connect */}
+              {tsConnected && pickerResults.length > 0 && (
                 <div className="rounded-xl border border-[#2770ef]/30 bg-blue-50/30 p-4 space-y-3">
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>
-                      Browse liveboards on {new URL(tsInstance).hostname.split(".")[0]}
-                    </span>
-                    <button type="button" onClick={() => { setPickerOpen(false); setPickerResults([]); setPickerError(""); }} style={{ color: "#9ca3af", background: "none", border: "none", cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>Select liveboards to add</span>
                   </div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <input
-                      className={`${inputClass} flex-1`}
-                      placeholder="Your ThoughtSpot username"
-                      value={pickerUsername}
-                      onChange={(e) => setPickerUsername(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void fetchLiveboards(); } }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => void fetchLiveboards()}
-                      disabled={pickerLoading || !pickerUsername.trim()}
-                      className="rounded-lg bg-[#2770ef] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1a56c4] disabled:opacity-50 transition-colors whitespace-nowrap"
-                    >
-                      {pickerLoading ? "Fetching…" : "Fetch ↓"}
-                    </button>
-                  </div>
-                  {pickerError && <p style={{ fontSize: 11, color: "#dc2626", background: "#fef2f2", borderRadius: 6, padding: "6px 10px" }}>{pickerError}</p>}
-                  {pickerResults.length > 0 && (
-                    <>
-                      <input className={inputClass} placeholder="Search liveboards…" value={pickerSearch} onChange={(e) => setPickerSearch(e.target.value)} autoFocus />
-                      <div style={{ maxHeight: 220, overflowY: "auto", border: "1px solid #e5e7eb", borderRadius: 8, background: "#fff" }}>
-                        {pickerResults.filter((lb) => lb.name.toLowerCase().includes(pickerSearch.toLowerCase())).map((lb) => (
-                          <label key={lb.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", cursor: "pointer", borderBottom: "1px solid #f3f4f6" }} className="hover:bg-blue-50">
-                            <input
-                              type="checkbox"
-                              checked={pickerSelected.has(lb.id)}
-                              onChange={(e) => {
-                                setPickerSelected((prev) => {
-                                  const next = new Set(prev);
-                                  if (e.target.checked) next.add(lb.id); else next.delete(lb.id);
-                                  return next;
-                                });
-                              }}
-                              className="h-4 w-4 rounded border-gray-300 text-[#2770ef]"
-                            />
-                            <div style={{ minWidth: 0 }}>
-                              <p style={{ fontSize: 13, fontWeight: 500, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lb.name}</p>
-                              <p style={{ fontSize: 11, color: "#9ca3af", fontFamily: "monospace", margin: 0 }}>{lb.id}</p>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span style={{ fontSize: 11, color: "#9ca3af" }}>{pickerSelected.size} selected · {pickerResults.length} total</span>
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <button type="button" onClick={() => setPickerSelected(new Set())} style={{ fontSize: 11, color: "#9ca3af", background: "none", border: "none", cursor: "pointer" }}>Clear</button>
-                          <button
-                            type="button"
-                            disabled={pickerSelected.size === 0}
-                            onClick={addSelectedLiveboards}
-                            className="rounded-lg bg-[#2770ef] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#1a56c4] disabled:opacity-40 transition-colors"
-                          >
-                            Add {pickerSelected.size > 0 ? `(${pickerSelected.size})` : ""} →
-                          </button>
+                  <input className={inputClass} placeholder="Search liveboards…" value={pickerSearch} onChange={(e) => setPickerSearch(e.target.value)} />
+                  <div style={{ maxHeight: 220, overflowY: "auto", border: "1px solid #e5e7eb", borderRadius: 8, background: "#fff" }}>
+                    {pickerResults.filter((lb) => lb.name.toLowerCase().includes(pickerSearch.toLowerCase())).map((lb) => (
+                      <label key={lb.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", cursor: "pointer", borderBottom: "1px solid #f3f4f6" }} className="hover:bg-blue-50">
+                        <input
+                          type="checkbox"
+                          checked={pickerSelected.has(lb.id)}
+                          onChange={(e) => {
+                            setPickerSelected((prev) => {
+                              const next = new Set(prev);
+                              if (e.target.checked) next.add(lb.id); else next.delete(lb.id);
+                              return next;
+                            });
+                          }}
+                          className="h-4 w-4 rounded border-gray-300 text-[#2770ef]"
+                        />
+                        <div style={{ minWidth: 0 }}>
+                          <p style={{ fontSize: 13, fontWeight: 500, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lb.name}</p>
+                          <p style={{ fontSize: 11, color: "#9ca3af", fontFamily: "monospace", margin: 0 }}>{lb.id}</p>
                         </div>
-                      </div>
-                    </>
-                  )}
+                      </label>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 11, color: "#9ca3af" }}>{pickerSelected.size} selected · {pickerResults.length} total</span>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button type="button" onClick={() => setPickerSelected(new Set())} style={{ fontSize: 11, color: "#9ca3af", background: "none", border: "none", cursor: "pointer" }}>Clear</button>
+                      <button
+                        type="button"
+                        disabled={pickerSelected.size === 0}
+                        onClick={addSelectedLiveboards}
+                        className="rounded-lg bg-[#2770ef] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#1a56c4] disabled:opacity-40 transition-colors"
+                      >
+                        Add {pickerSelected.size > 0 ? `(${pickerSelected.size})` : ""} →
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
 
             {/* Worksheet / Model ID */}
             <Field label="Worksheet / Model ID" hint="GUID of the ThoughtSpot worksheet Spotter queries. Auto-resolved from the first liveboard if left blank.">
-              <input className={inputClass} style={{ fontFamily: "monospace" }} value={worksheetId} onChange={(e) => setWorksheetId(e.target.value)} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (optional — auto-resolved)" />
+              <div style={{ display: "flex", gap: 8 }}>
+                <input className={inputClass} style={{ fontFamily: "monospace", flex: 1 }} value={worksheetId} onChange={(e) => setWorksheetId(e.target.value)} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (optional — auto-resolved)" />
+                {tsConnected && wsResults.length > 0 && (
+                  <button type="button" onClick={() => setWsPickerOpen((o) => !o)} className="rounded-lg border border-[#2770ef] px-3 py-1.5 text-xs font-semibold text-[#2770ef] hover:bg-blue-50 transition-colors whitespace-nowrap">
+                    Browse ↓
+                  </button>
+                )}
+              </div>
+              {wsPickerOpen && wsResults.length > 0 && (
+                <div style={{ marginTop: 8, border: "1px solid #e5e7eb", borderRadius: 8, background: "#fff", maxHeight: 200, overflowY: "auto" }}>
+                  <input className={inputClass} style={{ margin: 8, width: "calc(100% - 16px)" }} placeholder="Search worksheets…" value={wsSearch} onChange={(e) => setWsSearch(e.target.value)} autoFocus />
+                  {wsResults.filter((ws) => ws.name.toLowerCase().includes(wsSearch.toLowerCase())).map((ws) => (
+                    <button
+                      key={ws.id}
+                      type="button"
+                      onClick={() => { setWorksheetId(ws.id); setWsPickerOpen(false); setWsSearch(""); }}
+                      style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", background: worksheetId === ws.id ? "#eff6ff" : "none", border: "none", cursor: "pointer", borderBottom: "1px solid #f3f4f6" }}
+                      className="hover:bg-blue-50"
+                    >
+                      <p style={{ fontSize: 13, fontWeight: 500, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ws.name}</p>
+                      <p style={{ fontSize: 11, color: "#9ca3af", fontFamily: "monospace", margin: 0 }}>{ws.id}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
             </Field>
 
             {/* Feature toggles */}
@@ -867,31 +980,84 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
                 </button>
               </div>
               {demoUsers.length > 0 ? (
-                <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, overflow: "hidden" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-                    <thead>
-                      <tr style={{ background: "#f9fafb" }}>
-                        <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6b7280", borderBottom: "1px solid #e5e7eb" }}>Display Label</th>
-                        <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6b7280", borderBottom: "1px solid #e5e7eb" }}>TS Username</th>
-                        <th style={{ padding: "8px 4px", borderBottom: "1px solid #e5e7eb", width: 32 }} />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {demoUsers.map((user, i) => (
-                        <tr key={i} style={{ borderBottom: i < demoUsers.length - 1 ? "1px solid #f3f4f6" : "none" }}>
-                          <td style={{ padding: "6px 12px" }}>
-                            <input className={inputClass} style={{ padding: "4px 8px", fontSize: 12 }} placeholder="County A" value={user.label} onChange={(e) => updateDemoUser(i, "label", e.target.value)} />
-                          </td>
-                          <td style={{ padding: "6px 12px" }}>
-                            <input className={inputClass} style={{ padding: "4px 8px", fontSize: 12, fontFamily: "monospace" }} placeholder="ts_username" value={user.tsUsername} onChange={(e) => updateDemoUser(i, "tsUsername", e.target.value)} />
-                          </td>
-                          <td style={{ padding: "6px 4px" }}>
-                            <button type="button" onClick={() => setDemoUsers((prev) => prev.filter((_, idx) => idx !== i))} style={{ color: "#f87171", background: "none", border: "none", cursor: "pointer", fontSize: 16 }}>×</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {demoUsers.map((user, i) => {
+                    const attrEntries = Object.entries(user.attributes ?? {});
+                    return (
+                      <div key={i} style={{ border: "1px solid #e5e7eb", borderRadius: 10, overflow: "hidden" }}>
+                        {/* User row */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "#f9fafb", borderBottom: attrEntries.length > 0 ? "1px solid #e5e7eb" : "none" }}>
+                          <input
+                            className={inputClass}
+                            style={{ padding: "4px 8px", fontSize: 12, flex: 1 }}
+                            placeholder="Display label (e.g. Northeast Rep)"
+                            value={user.label}
+                            onChange={(e) => updateDemoUser(i, "label", e.target.value)}
+                          />
+                          <input
+                            className={inputClass}
+                            style={{ padding: "4px 8px", fontSize: 12, fontFamily: "monospace", flex: 1 }}
+                            placeholder="ts_username"
+                            value={user.tsUsername}
+                            onChange={(e) => updateDemoUser(i, "tsUsername", e.target.value)}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => addUserAttribute(i)}
+                            title="Add RLS attribute"
+                            style={{ fontSize: 11, color: "#2770ef", background: "none", border: "1px solid #bfdbfe", borderRadius: 6, padding: "3px 8px", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+                          >
+                            + attr
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDemoUsers((prev) => prev.filter((_, idx) => idx !== i))}
+                            style={{ color: "#f87171", background: "none", border: "none", cursor: "pointer", fontSize: 18, lineHeight: 1, flexShrink: 0 }}
+                          >×</button>
+                        </div>
+
+                        {/* Attribute rows */}
+                        {attrEntries.length > 0 && (
+                          <div style={{ padding: "8px 12px", background: "#fafbff", display: "flex", flexDirection: "column", gap: 6 }}>
+                            <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "#93c5fd", margin: "0 0 4px" }}>
+                              RLS Attributes
+                            </p>
+                            {attrEntries.map(([attrKey, attrVal], ai) => (
+                              <div key={ai} style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                <input
+                                  className={inputClass}
+                                  style={{ padding: "3px 8px", fontSize: 11, fontFamily: "monospace", width: 140, flexShrink: 0 }}
+                                  placeholder="attribute_key"
+                                  value={attrKey}
+                                  onChange={(e) => {
+                                    const newAttrs = { ...(user.attributes ?? {}) };
+                                    const oldVal = newAttrs[attrKey];
+                                    delete newAttrs[attrKey];
+                                    newAttrs[e.target.value] = oldVal;
+                                    setDemoUsers((prev) => prev.map((u, idx) => idx === i ? { ...u, attributes: newAttrs } : u));
+                                  }}
+                                />
+                                <span style={{ color: "#9ca3af", fontSize: 12, flexShrink: 0 }}>=</span>
+                                <input
+                                  className={inputClass}
+                                  style={{ padding: "3px 8px", fontSize: 11, fontFamily: "monospace", flex: 1 }}
+                                  placeholder="value"
+                                  value={attrVal}
+                                  onChange={(e) => setUserAttribute(i, attrKey, e.target.value)}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeUserAttribute(i, attrKey)}
+                                  style={{ color: "#d1d5db", background: "none", border: "none", cursor: "pointer", fontSize: 14, flexShrink: 0 }}
+                                  className="hover:text-red-400"
+                                >×</button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <p style={{ fontSize: 12, color: "#9ca3af" }}>No demo users yet. Click + Add User to start.</p>
@@ -962,6 +1128,66 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
                     </div>
                   ) : (
                     <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 12 }}>No rules yet. Click + Add Rule to define column-level filters.</p>
+                  )}
+                </div>
+
+                {/* Push user attributes to TS */}
+                <div style={{ background: "#f0f7ff", border: "1px solid #bfdbfe", borderRadius: 12, padding: 16 }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: "#1d4ed8", margin: "0 0 3px" }}>Push User Attributes to ThoughtSpot</p>
+                      <p style={{ fontSize: 12, color: "#3b82f6", margin: 0 }}>
+                        Applies the RLS attributes from each demo user above directly to ThoughtSpot via REST API.
+                        Save your demo first to persist the attributes, then push.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <input
+                      className={inputClass}
+                      style={{ flex: 1, fontSize: 12 }}
+                      type="password"
+                      placeholder="Admin password (leave blank to use trusted auth)"
+                      value={rlsAdminPassword}
+                      onChange={(e) => setRlsAdminPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void pushRlsToTS()}
+                      disabled={rlsPushing || demoUsers.filter((u) => u.attributes && Object.keys(u.attributes).length > 0).length === 0}
+                      style={{
+                        borderRadius: 9, background: "#2770ef", color: "#fff", border: "none",
+                        padding: "8px 18px", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                        opacity: rlsPushing || demoUsers.filter((u) => u.attributes && Object.keys(u.attributes).length > 0).length === 0 ? 0.5 : 1,
+                        whiteSpace: "nowrap", flexShrink: 0,
+                      }}
+                    >
+                      {rlsPushing ? "Pushing…" : "Push to TS →"}
+                    </button>
+                  </div>
+
+                  {rlsPushResult && (
+                    <div style={{ marginTop: 12, borderRadius: 8, overflow: "hidden", border: "1px solid #e5e7eb" }}>
+                      <div style={{
+                        padding: "8px 12px", fontSize: 12, fontWeight: 600,
+                        background: rlsPushResult.ok ? "#f0fdf4" : "#fef2f2",
+                        color: rlsPushResult.ok ? "#15803d" : "#dc2626",
+                        borderBottom: "1px solid #e5e7eb",
+                      }}>
+                        {rlsPushResult.ok
+                          ? `All ${rlsPushResult.pushed} user(s) updated successfully`
+                          : `${rlsPushResult.pushed} succeeded · ${rlsPushResult.failed} failed`}
+                      </div>
+                      {rlsPushResult.results.map((r, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", background: "#fff", borderBottom: i < rlsPushResult.results.length - 1 ? "1px solid #f3f4f6" : "none", fontSize: 12 }}>
+                          <span style={{ width: 8, height: 8, borderRadius: "50%", background: r.ok ? "#22c55e" : "#ef4444", flexShrink: 0 }} />
+                          <span style={{ fontWeight: 600, color: "#374151" }}>{r.label}</span>
+                          <span style={{ fontFamily: "monospace", color: "#9ca3af", fontSize: 11 }}>{r.tsUsername}</span>
+                          {r.error && <span style={{ marginLeft: "auto", color: "#dc2626", fontSize: 11 }}>{r.error}</span>}
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
 

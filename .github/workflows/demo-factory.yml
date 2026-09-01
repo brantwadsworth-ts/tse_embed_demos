@@ -6,6 +6,12 @@ on:
       submission_json_b64:
         description: "Base64-encoded demo submission JSON"
         required: true
+      demo_id:
+        description: "Demo ID for build-status webhook callback"
+        required: false
+      app_url:
+        description: "Base URL of the demo app (e.g. https://tse-embed-demos.vercel.app)"
+        required: false
 
 jobs:
   build-demo:
@@ -27,6 +33,7 @@ jobs:
         run: pip install "snowflake-connector-python[secure-local-storage]" cryptography requests
 
       - name: Run Demo Factory
+        id: factory
         env:
           SUBMISSION_JSON_B64:                ${{ inputs.submission_json_b64 }}
           SNOWFLAKE_ACCOUNT:                  ${{ secrets.SNOWFLAKE_ACCOUNT }}
@@ -40,3 +47,25 @@ jobs:
           TOKEN_SERVICE_URL:                  ${{ secrets.TOKEN_SERVICE_URL }}
           TOKEN_SERVICE_API_KEY:              ${{ secrets.TOKEN_SERVICE_API_KEY }}
         run: python scripts/build_demo.py
+
+      - name: Notify app — build succeeded
+        if: success() && inputs.demo_id != '' && inputs.app_url != ''
+        run: |
+          BODY=$(printf '{"status":"live","branch":"%s"}' "${GITHUB_REF_NAME}")
+          SIG="sha256=$(echo -n "${BODY}" | openssl dgst -sha256 -hmac "${{ secrets.BUILD_WEBHOOK_SECRET }}" | awk '{print $2}')"
+          curl -sf -X POST \
+            "${{ inputs.app_url }}/api/demos/${{ inputs.demo_id }}/build-status" \
+            -H "Content-Type: application/json" \
+            -H "X-Build-Signature: ${SIG}" \
+            -d "${BODY}"
+
+      - name: Notify app — build failed
+        if: failure() && inputs.demo_id != '' && inputs.app_url != ''
+        run: |
+          BODY='{"status":"failed"}'
+          SIG="sha256=$(echo -n "${BODY}" | openssl dgst -sha256 -hmac "${{ secrets.BUILD_WEBHOOK_SECRET }}" | awk '{print $2}')"
+          curl -sf -X POST \
+            "${{ inputs.app_url }}/api/demos/${{ inputs.demo_id }}/build-status" \
+            -H "Content-Type: application/json" \
+            -H "X-Build-Signature: ${SIG}" \
+            -d "${BODY}" || true

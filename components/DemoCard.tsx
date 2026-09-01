@@ -26,10 +26,11 @@ function Initials({ name }: { name: string }) {
 }
 
 const STATUS_STYLES: Record<Demo["status"], { dot: string; label: string; bg: string }> = {
-  live:     { dot: "bg-emerald-400", label: "Live",     bg: "bg-emerald-50 text-emerald-700" },
-  pending:  { dot: "bg-amber-400",   label: "Pending",  bg: "bg-amber-50 text-amber-700" },
+  live:     { dot: "bg-emerald-400",            label: "Live",      bg: "bg-emerald-50 text-emerald-700" },
+  pending:  { dot: "bg-amber-400",              label: "Pending",   bg: "bg-amber-50 text-amber-700" },
   building: { dot: "bg-blue-400 animate-pulse", label: "Building…", bg: "bg-blue-50 text-blue-700" },
-  draft:    { dot: "bg-gray-300",    label: "Draft",    bg: "bg-gray-50 text-gray-500" },
+  draft:    { dot: "bg-gray-300",               label: "Draft",     bg: "bg-gray-50 text-gray-500" },
+  failed:   { dot: "bg-red-400",                label: "Failed",    bg: "bg-red-50 text-red-700" },
 };
 
 function tsDisplayName(url: string): string {

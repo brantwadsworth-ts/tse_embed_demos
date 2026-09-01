@@ -5,6 +5,8 @@ import { getAllDemos, updateDemoStatus } from "@/lib/demos";
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN_WORKFLOW;
 const GITHUB_REPO  = process.env.GITHUB_REPO;    // e.g. "ts-embed/tse_embed_demos"
 const WORKFLOW_REF = "demo-builder";              // branch that hosts the workflow file
+const APP_URL      = process.env.APP_URL
+  ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
 
 // POST /api/demos/[id]/build
 // Reads the submission, base64-encodes it, and triggers the GitHub Actions
@@ -50,7 +52,11 @@ export async function POST(
       },
       body: JSON.stringify({
         ref: WORKFLOW_REF,
-        inputs: { submission_json_b64: submissionB64 },
+        inputs: {
+          submission_json_b64: submissionB64,
+          demo_id: id,
+          app_url: APP_URL,
+        },
       }),
     },
   );

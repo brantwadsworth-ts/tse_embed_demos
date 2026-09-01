@@ -22,6 +22,7 @@ const STATUS: Record<Demo["status"], { dot: string; label: string; bg: string; t
   pending:  { dot: "bg-amber-400",              label: "Pending",   bg: "bg-amber-50",   text: "text-amber-700",   border: "border-amber-200"   },
   building: { dot: "bg-blue-400 animate-pulse", label: "Building",  bg: "bg-blue-50",    text: "text-blue-700",    border: "border-blue-200"    },
   draft:    { dot: "bg-gray-300",               label: "Draft",     bg: "bg-gray-100",   text: "text-gray-500",    border: "border-gray-200"    },
+  failed:   { dot: "bg-red-400",                label: "Failed",    bg: "bg-red-50",     text: "text-red-700",     border: "border-red-200"     },
 };
 
 const AVATAR_COLORS = ["#3b82f6","#8b5cf6","#10b981","#f97316","#f43f5e","#06b6d4"];
@@ -454,7 +455,7 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "created-desc",  label: "Newest first" },
   { value: "created-asc",   label: "Oldest first" },
 ];
-const STATUS_ORDER: Record<Demo["status"], number> = { live: 0, building: 1, pending: 2, draft: 3 };
+const STATUS_ORDER: Record<Demo["status"], number> = { live: 0, building: 1, pending: 2, draft: 3, failed: 4 };
 
 function SortPill({ value, onChange }: { value: SortKey; onChange: (v: SortKey) => void }) {
   const [open, setOpen] = useState(false);
@@ -590,7 +591,7 @@ export default function DemoLibrary({ demos, userRole, currentLogin }: { demos: 
     .map((o) => ({ value: o, label: `@${o}` }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
-  const statusOptions = (["live", "building", "pending", "draft"] as Demo["status"][])
+  const statusOptions = (["live", "building", "pending", "draft", "failed"] as Demo["status"][])
     .filter((s) => demos.some((d) => d.status === s))
     .map((s) => ({ value: s, label: STATUS[s].label }));
 

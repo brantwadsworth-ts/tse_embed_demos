@@ -42,6 +42,8 @@ export interface DemoDataModel {
 export interface DemoUser {
   label: string;
   tsUsername: string;
+  /** Custom TS user attributes used for parameterized RLS, e.g. { region: "Northeast" } */
+  attributes?: Record<string, string>;
 }
 
 export interface EmbedOptions {
@@ -70,7 +72,7 @@ export interface Demo {
   tsInstance: string;
   branch?: string;
   liveUrl?: string;
-  status: "live" | "pending" | "building" | "draft";
+  status: "live" | "pending" | "building" | "draft" | "failed";
   createdAt: string;
   theme?: DemoTheme;
   owner?: string;
@@ -114,6 +116,18 @@ export async function updateDemoStatus(
   const idx = demos.findIndex((d) => d.id === id);
   if (idx !== -1) {
     demos[idx].status = status;
+    await writeDemos(demos);
+  }
+}
+
+export async function updateDemoFields(
+  id: string,
+  fields: Partial<Pick<Demo, "status" | "branch" | "liveUrl">>,
+): Promise<void> {
+  const demos = await readDemos();
+  const idx = demos.findIndex((d) => d.id === id);
+  if (idx !== -1) {
+    demos[idx] = { ...demos[idx], ...fields };
     await writeDemos(demos);
   }
 }
