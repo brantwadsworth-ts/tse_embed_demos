@@ -231,37 +231,6 @@ export default function DemoLogin({
             </p>
           </div>
 
-          {/* Instance / hint chip */}
-          {(subdomain || credentialsHint) && (
-            <div
-              style={{
-                background: "var(--portal-surface-2)",
-                border: "1px solid var(--portal-border)",
-                borderRadius: "var(--portal-radius)",
-                padding: "10px 14px",
-                marginBottom: "24px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              {subdomain && (
-                <p style={{ fontSize: "12px", color: "var(--portal-text-muted)", margin: 0 }}>
-                  ThoughtSpot Instance:{" "}
-                  <span style={{ fontWeight: 600, color: "var(--portal-text)" }}>
-                    {subdomain}.thoughtspot.cloud
-                  </span>
-                </p>
-              )}
-              {credentialsHint && (
-                <p style={{ fontSize: "12px", color: "var(--portal-text-muted)", margin: 0 }}>
-                  Credentials:{" "}
-                  <span style={{ fontWeight: 600, color: "var(--portal-text)" }}>{credentialsHint}</span>
-                </p>
-              )}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {error && (
               <div
@@ -328,6 +297,22 @@ export default function DemoLogin({
               {loading ? "Signing in…" : "Sign In →"}
             </button>
           </form>
+
+          {/* Subtle metadata footer */}
+          {(subdomain || credentialsHint) && (
+            <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "3px", borderTop: "1px solid var(--portal-border)", paddingTop: "16px" }}>
+              {credentialsHint && (
+                <p style={{ fontSize: "11px", color: "var(--portal-text-muted)", margin: 0, opacity: 0.7 }}>
+                  Hint: <span style={{ fontWeight: 500 }}>{credentialsHint}</span>
+                </p>
+              )}
+              {subdomain && (
+                <p style={{ fontSize: "11px", color: "var(--portal-text-muted)", margin: 0, opacity: 0.55, fontFamily: "monospace" }}>
+                  {subdomain}.thoughtspot.cloud
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
