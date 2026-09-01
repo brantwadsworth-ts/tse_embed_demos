@@ -1,18 +1,7 @@
 "use client";
 
 import React from "react";
-
-// Dynamic load — SpotterEmbed may not exist in older SDK builds
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let SpotterEmbed: React.ComponentType<any> | null = null;
-if (typeof window !== "undefined") {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    SpotterEmbed = require("@thoughtspot/visual-embed-sdk/react").SpotterEmbed ?? null;
-  } catch {
-    SpotterEmbed = null;
-  }
-}
+import { SpotterEmbed } from "@thoughtspot/visual-embed-sdk/react";
 
 interface DphHsSpotterPageProps {
   worksheetId?: string;
@@ -103,26 +92,12 @@ export default function DphHsSpotterPage({
               </p>
             </div>
           </div>
-        ) : SpotterEmbed ? (
+        ) : (
           <SpotterEmbed
             worksheetId={worksheetId}
             frameParams={{ width: "100%", height: "100%" }}
             style={{ minHeight: "560px" }}
           />
-        ) : (
-          <div
-            style={{
-              height: "100%",
-              minHeight: "560px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#6b7280",
-              fontSize: "14px",
-            }}
-          >
-            Spotter is not available in this SDK version.
-          </div>
         )}
       </div>
 

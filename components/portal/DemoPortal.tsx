@@ -10,7 +10,7 @@ import {
   PortalThemeConfig,
 } from "@/lib/portal-themes";
 import { init, AuthType } from "@thoughtspot/visual-embed-sdk";
-import { SearchEmbed, AppEmbed } from "@thoughtspot/visual-embed-sdk/react";
+import { SearchEmbed, AppEmbed, SpotterEmbed } from "@thoughtspot/visual-embed-sdk/react";
 import DemoLogin from "./DemoLogin";
 import DemoEmbed from "./DemoEmbed";
 import DphHsLanding from "./DphHsLanding";
@@ -21,18 +21,6 @@ import RolePicker from "./RolePicker";
 import DemoProfileMenu from "./DemoProfileMenu";
 
 import React from "react";
-
-// Dynamic SpotterEmbed load
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let SpotterEmbed: React.ComponentType<any> | null = null;
-if (typeof window !== "undefined") {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    SpotterEmbed = require("@thoughtspot/visual-embed-sdk/react").SpotterEmbed ?? null;
-  } catch {
-    SpotterEmbed = null;
-  }
-}
 
 // ── Height constants ─────────────────────────────────────────────────────────
 // Subtract header + footer heights so embeds fit within the viewport without
@@ -116,7 +104,7 @@ function AnalysisPane({
 
     case "analysts":
       return demo.analystName ? (
-        SpotterEmbed && effectiveWorksheetId ? (
+        effectiveWorksheetId ? (
           <div style={{ height: embedHeight, display: "flex", flexDirection: "column" }}>
             <div style={{ background: "var(--portal-surface)", borderBottom: "1px solid var(--portal-border)", padding: "10px 20px", flexShrink: 0, display: "flex", alignItems: "center", gap: 10 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "var(--portal-accent)" }}>
@@ -130,9 +118,7 @@ function AnalysisPane({
             />
           </div>
         ) : (
-          unavailableMsg("Analyst View", !effectiveWorksheetId
-            ? "A worksheet must be configured to use the Analyst view."
-            : "SpotterEmbed is not available in this SDK version.")
+          unavailableMsg("Analyst View", "A worksheet must be configured to use the Analyst view.")
         )
       ) : (
         unavailableMsg(
@@ -470,9 +456,9 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
                 </button>
               </div>
               <div style={{ flex: 1, overflow: "hidden" }}>
-                {spotterOpen && SpotterEmbed && effectiveWorksheetId ? (
+                {spotterOpen && effectiveWorksheetId ? (
                   <SpotterEmbed worksheetId={effectiveWorksheetId} frameParams={{ width: "100%", height: "100%" }} />
-                ) : spotterOpen && !effectiveWorksheetId ? (
+                ) : spotterOpen ? (
                   <div style={{ padding: 24, color: "#6b7280", fontSize: 13, textAlign: "center", paddingTop: 48 }}>
                     <p style={{ fontWeight: 600, marginBottom: 8 }}>Worksheet not configured</p>
                     <p>Set a Worksheet / Model ID in the Edit Demo form.</p>
