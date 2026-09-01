@@ -34,8 +34,12 @@ if (typeof window !== "undefined") {
   }
 }
 
-// ── Height constants ────────────────────────────────────────────────────────
-const DPHHS_EMBED_HEIGHT = "calc(100vh - 190px)";
+// ── Height constants ─────────────────────────────────────────────────────────
+// Subtract header + footer heights so embeds fit within the viewport without
+// clipping and the footer always sits below the content.
+// DPHHS:   utility-bar(30) + brand-row(96) + nav-row(40) + footer-bar(52) ≈ 220px
+// Generic: header(60) + tab-bar(44) ≈ 108px (no persistent footer there)
+const DPHHS_EMBED_HEIGHT = "calc(100vh - 220px)";
 const GENERIC_EMBED_HEIGHT = "calc(100vh - 108px)";
 
 // ── The embed renderer shared by both portal types ──────────────────────────
@@ -394,7 +398,7 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
             analystName={demo.analystName}
           />
 
-          <main style={{ flex: 1, overflow: "hidden" }}>
+          <main style={{ flex: 1 }}>
             <AnalysisPane
               view={activeView}
               demo={demo}
@@ -479,7 +483,7 @@ export default function DemoPortal({ demo }: DemoPortalProps) {
       <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <GenericHeader companyName={demo.companyName} logoUrl={logoUrl} />
         <GenericTabBar view={activeView} onViewChange={setActiveView} demo={demo} />
-        <main style={{ flex: 1, overflow: "hidden" }}>
+        <main style={{ flex: 1 }}>
           <AnalysisPane
             view={activeView}
             demo={demo}
