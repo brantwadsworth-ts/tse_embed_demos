@@ -10,6 +10,7 @@ export default auth((req) => {
     !pathname.startsWith("/api/auth") &&
     !pathname.startsWith("/api/demo") &&
     !pathname.startsWith("/demo") &&
+    !pathname.startsWith("/gallery") &&
     pathname !== "/login"
   ) {
     return NextResponse.redirect(new URL("/login", req.url));

@@ -1517,27 +1517,113 @@ export default function EditDemoForm({ demo }: { demo: Demo }) {
               </div>
             )}
 
-            {/* Theme preview */}
-            <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden" }}>
-              <div style={{
-                display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", fontSize: 13, fontWeight: 600,
-                background: themePreset === "custom" ? (themeCustom.headerBg ?? THEMES.light.headerBg) : (THEMES[themePreset]?.headerBg ?? THEMES.light.headerBg),
-                color: themePreset === "custom" ? (themeCustom.headerText ?? THEMES.light.headerText) : (THEMES[themePreset]?.headerText ?? THEMES.light.headerText),
-              }}>
-                <div style={{ width: 18, height: 18, borderRadius: "50%", background: themePreset === "custom" ? (themeCustom.accent ?? THEMES.light.accent) : (THEMES[themePreset]?.accent ?? THEMES.light.accent) }} />
-                {THEME_META[themePreset].emoji} {THEME_META[themePreset].label} — Portal Header Preview
-              </div>
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "center", padding: "28px", fontSize: 12,
-                background: (() => {
-                  const bg = themePreset === "custom" ? (themeCustom.bg ?? THEMES.light.bg) : (THEMES[themePreset]?.bg ?? THEMES.light.bg);
-                  return bg.startsWith("linear") ? "#1a1a2e" : bg;
-                })(),
-                color: themePreset === "custom" ? (themeCustom.textMuted ?? THEMES.light.textMuted) : (THEMES[themePreset]?.textMuted ?? THEMES.light.textMuted),
-              }}>
-                ▤ Liveboard embed area
-              </div>
-            </div>
+            {/* Theme preview — split portal + TS embed mockup */}
+            {(() => {
+              const tv = themePreset === "custom"
+                ? { ...THEMES.light, ...themeCustom }
+                : (THEMES[themePreset] ?? THEMES.light);
+              const bgIsDark = tv.bg.startsWith("linear") || tv.bg.startsWith("rgba") || ["#0", "#1", "#0d", "#07"].some(p => tv.bg.startsWith(p));
+              const solidBg = tv.bg.startsWith("linear") || tv.bg.startsWith("rgba") ? (bgIsDark ? "#0f1628" : "#f5f7fa") : tv.bg;
+
+              return (
+                <div>
+                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "#9ca3af", marginBottom: 12 }}>Live Preview</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+
+                    {/* Left — Portal chrome */}
+                    <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden" }}>
+                      <div style={{ padding: "4px 6px", background: "#f1f5f9", borderBottom: "1px solid #e5e7eb", display: "flex", gap: 4 }}>
+                        {["#ef4444","#f59e0b","#22c55e"].map(c => <div key={c} style={{ width: 8, height: 8, borderRadius: "50%", background: c }} />)}
+                        <span style={{ fontSize: 9, color: "#9ca3af", marginLeft: 4 }}>Portal Chrome</span>
+                      </div>
+                      {/* Portal header */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: tv.headerBg }}>
+                        <div style={{ width: 14, height: 14, borderRadius: 3, background: tv.accent, flexShrink: 0 }} />
+                        <div style={{ height: 5, width: 80, borderRadius: 2, background: tv.headerText, opacity: 0.7 }} />
+                        <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+                          {[50, 60, 40].map((w, i) => <div key={i} style={{ height: 5, width: w, borderRadius: 2, background: tv.headerText, opacity: 0.3 }} />)}
+                        </div>
+                      </div>
+                      {/* Portal body */}
+                      <div style={{ padding: 12, background: tv.bg.startsWith("linear") ? solidBg : tv.bg, display: "flex", flexDirection: "column", gap: 8 }}>
+                        {/* Nav tabs */}
+                        <div style={{ display: "flex", gap: 6 }}>
+                          {["Analysis","Reports","Spotter"].map((t, i) => (
+                            <div key={t} style={{ fontSize: 9, fontWeight: i === 0 ? 700 : 500, padding: "3px 10px", borderRadius: 999, background: i === 0 ? tv.accent : tv.surface2, color: i === 0 ? tv.accentFg : tv.textMuted }}>
+                              {t}
+                            </div>
+                          ))}
+                        </div>
+                        {/* Embed placeholder with accent border */}
+                        <div style={{ height: 80, borderRadius: tv.radius, border: `1px solid ${tv.border}`, background: tv.surface, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 44 }}>
+                            {[55, 80, 45, 90, 60, 75, 50].map((h, i) => (
+                              <div key={i} style={{ width: 8, background: tv.accent, opacity: 0.6 + (i % 3) * 0.15, borderRadius: "2px 2px 0 0", height: `${h}%` }} />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right — TS Embed mockup */}
+                    <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden" }}>
+                      <div style={{ padding: "4px 6px", background: "#f1f5f9", borderBottom: "1px solid #e5e7eb", display: "flex", gap: 4 }}>
+                        {["#ef4444","#f59e0b","#22c55e"].map(c => <div key={c} style={{ width: 8, height: 8, borderRadius: "50%", background: c }} />)}
+                        <span style={{ fontSize: 9, color: "#9ca3af", marginLeft: 4 }}>ThoughtSpot Embed</span>
+                      </div>
+                      {/* TS nav */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", background: tv.headerBg }}>
+                        <div style={{ width: 12, height: 12, borderRadius: "50%", background: tv.accent, flexShrink: 0 }} />
+                        <div style={{ height: 4, width: 60, borderRadius: 2, background: tv.headerText, opacity: 0.5 }} />
+                        <div style={{ marginLeft: "auto", height: 20, width: 60, borderRadius: 4, background: tv.accent, opacity: 0.9, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <div style={{ height: 3, width: 30, borderRadius: 2, background: tv.accentFg, opacity: 0.8 }} />
+                        </div>
+                      </div>
+                      {/* TS body */}
+                      <div style={{ padding: 10, background: bgIsDark ? solidBg : tv.bg, display: "flex", flexDirection: "column", gap: 7 }}>
+                        {/* Search chip */}
+                        <div style={{ display: "flex", gap: 5 }}>
+                          <div style={{ height: 18, flex: 1, borderRadius: 999, border: `1px solid ${tv.border}`, background: tv.surface, display: "flex", alignItems: "center", padding: "0 8px", gap: 4 }}>
+                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: tv.accent, opacity: 0.6 }} />
+                            <div style={{ height: 3, width: 60, borderRadius: 2, background: tv.textMuted, opacity: 0.5 }} />
+                          </div>
+                          {[tv.accent, tv.surface2].map((bg, i) => (
+                            <div key={i} style={{ height: 18, width: 30, borderRadius: 999, background: bg, border: `1px solid ${tv.border}`, opacity: 0.8 }} />
+                          ))}
+                        </div>
+                        {/* Viz tiles */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                          {[0, 1].map((tile) => (
+                            <div key={tile} style={{ borderRadius: 6, background: tv.surface, border: `1px solid ${tv.border}`, padding: 7 }}>
+                              <div style={{ height: 3, width: "70%", borderRadius: 2, background: tv.textMuted, opacity: 0.4, marginBottom: 6 }} />
+                              <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 30 }}>
+                                {[60, 85, 50, 70].map((h, i) => (
+                                  <div key={i} style={{ flex: 1, background: tv.accent, opacity: tile === 0 ? 0.6 + i * 0.1 : 0.8 - i * 0.1, borderRadius: "2px 2px 0 0", height: `${h}%` }} />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {/* TS CSS var legend */}
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 2 }}>
+                          {[
+                            { label: "root-bg", color: bgIsDark ? solidBg : tv.bg },
+                            { label: "nav-bg",  color: tv.headerBg },
+                            { label: "btn",     color: tv.accent },
+                            { label: "chip-bg", color: tv.surface2 },
+                          ].map(({ label, color }) => (
+                            <div key={label} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 8, color: "#9ca3af" }}>
+                              <div style={{ width: 8, height: 8, borderRadius: 2, background: color, border: "1px solid rgba(0,0,0,0.08)", flexShrink: 0 }} />
+                              <span style={{ fontFamily: "monospace" }}>--ts-var-{label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </SectionCard>
 
           {/* ── Danger Zone ──────────────────────────────────────────────────── */}

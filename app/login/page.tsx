@@ -1,5 +1,6 @@
 import { auth, signIn } from "@/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function LoginPage({
   searchParams,
@@ -53,6 +54,13 @@ export default async function LoginPage({
             </button>
           </form>
         </div>
+
+        <p className="mt-6 text-center text-sm text-gray-400">
+          Just want to browse?{" "}
+          <Link href="/gallery" className="font-semibold text-[#2770ef] hover:underline">
+            View public demo gallery →
+          </Link>
+        </p>
       </div>
     </div>
   );

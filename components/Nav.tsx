@@ -390,6 +390,28 @@ export default function Nav({
                 Team
               </Link>
             )}
+            {isAdmin && (
+              <Link
+                href="/admin/workshop"
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  pathname === "/admin/workshop"
+                    ? "bg-gray-100 text-gray-900"
+                    : "text-gray-500 hover:text-gray-900"
+                }`}
+              >
+                Workshop
+              </Link>
+            )}
+            <Link
+              href="/gallery"
+              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                pathname === "/gallery"
+                  ? "bg-gray-100 text-gray-900"
+                  : "text-gray-500 hover:text-gray-900"
+              }`}
+            >
+              Gallery
+            </Link>
           </nav>
         </div>
 
