@@ -21,11 +21,11 @@ export default async function NewDemoPage() {
           <p className="mt-2 text-gray-500">Choose how you want to get started.</p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-3">
           {/* Quick Start with AI */}
           <Link
             href="/demos/new/ai"
-            className="group flex flex-col rounded-2xl border-2 border-gray-200 bg-white p-8 hover:border-[#2770ef] hover:shadow-lg transition-all"
+            className="group flex flex-col rounded-2xl border-2 border-gray-200 bg-white p-6 hover:border-[#2770ef] hover:shadow-lg transition-all"
           >
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#2770ef]/10 text-2xl">
               ✨
@@ -44,7 +44,7 @@ export default async function NewDemoPage() {
           {/* Step-by-Step Wizard */}
           <Link
             href="/demos/new/wizard"
-            className="group flex flex-col rounded-2xl border-2 border-gray-200 bg-white p-8 hover:border-[#2770ef] hover:shadow-lg transition-all"
+            className="group flex flex-col rounded-2xl border-2 border-gray-200 bg-white p-6 hover:border-[#2770ef] hover:shadow-lg transition-all"
           >
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 text-2xl">
               🧭
@@ -63,7 +63,7 @@ export default async function NewDemoPage() {
           {/* Portal Builder */}
           <Link
             href="/demos/new/portal"
-            className="group flex flex-col rounded-2xl border-2 border-emerald-200 bg-white p-8 hover:border-emerald-500 hover:shadow-lg transition-all"
+            className="group flex flex-col rounded-2xl border-2 border-emerald-200 bg-white p-6 hover:border-emerald-500 hover:shadow-lg transition-all"
           >
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-2xl">
               🏗️
