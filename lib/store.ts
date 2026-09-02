@@ -24,9 +24,19 @@ export async function readDemos(): Promise<Demo[]> {
 }
 
 export async function writeDemos(demos: Demo[]): Promise<void> {
-  await put(BLOB_KEY, JSON.stringify(demos, null, 2), {
-    access: "public",
-    contentType: "application/json",
-    addRandomSuffix: false,
-  });
+  try {
+    await put(BLOB_KEY, JSON.stringify(demos, null, 2), {
+      access: "public",
+      contentType: "application/json",
+      addRandomSuffix: false,
+    });
+  } catch (err) {
+    const msg = String(err);
+    if (msg.includes("BLOB_READ_WRITE_TOKEN") || msg.includes("token") || msg.includes("unauthorized")) {
+      throw new Error(
+        "Vercel Blob storage is not configured. Add a Blob store to this project in the Vercel dashboard (Storage → Create → Blob) to enable demo creation.",
+      );
+    }
+    throw err;
+  }
 }
