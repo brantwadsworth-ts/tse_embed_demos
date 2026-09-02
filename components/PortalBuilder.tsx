@@ -9,6 +9,7 @@ import {
   parseGuid,
   parseHost,
 } from "@/lib/spec-builder";
+import DatasetStep, { DatasetResult } from "@/components/DatasetStep";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -16,6 +17,7 @@ type StepKey =
   | "scope"
   | "brand"
   | "data"
+  | "dataset"
   | "auth"
   | "inline"
   | "custom"
@@ -28,6 +30,7 @@ const STEP_LABELS: Record<StepKey, string> = {
   scope: "Build scope",
   brand: "Brand",
   data: "Data & IDs",
+  dataset: "Upload dataset",
   auth: "Auth & nav",
   inline: "Inline insights",
   custom: "Custom action",
@@ -39,7 +42,7 @@ const STEP_LABELS: Record<StepKey, string> = {
 
 const ADVANCED_ONLY: StepKey[] = ["inline", "custom", "add-report"];
 const ALL_STEPS: StepKey[] = [
-  "scope", "brand", "data", "auth", "inline", "custom",
+  "scope", "brand", "data", "dataset", "auth", "inline", "custom",
   "ai-tiers", "add-report", "theme", "review",
 ];
 
@@ -997,11 +1000,26 @@ export default function PortalBuilder() {
     }
   }
 
+  function handleDatasetComplete(result: DatasetResult) {
+    set({
+      tsHost: result.tsHost || state.tsHost,
+      analyticsLiveboardInput: result.liveboardId ?? state.analyticsLiveboardInput,
+      worksheetInput: result.dataModelId || state.worksheetInput,
+    });
+    setStepIdx((i) => i + 1);
+  }
+
   function renderStep() {
     switch (currentStep) {
       case "scope": return <StepScope s={state} set={set} />;
       case "brand": return <StepBrand s={state} set={set} />;
       case "data": return <StepData s={state} set={set} />;
+      case "dataset": return (
+        <DatasetStep
+          onComplete={handleDatasetComplete}
+          defaultTsHost={state.tsHost}
+        />
+      );
       case "auth": return <StepAuth s={state} set={set} />;
       case "inline": return <StepInline s={state} set={set} />;
       case "custom": return <StepCustom s={state} set={set} />;

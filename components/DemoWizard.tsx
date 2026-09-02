@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Demo, DemoDataModel } from "@/lib/demos";
+import DatasetStep, { DatasetResult } from "@/components/DatasetStep";
 
 // ─── Shared primitives ────────────────────────────────────────────────────────
 
@@ -130,7 +131,7 @@ function demoToFormData(d: Partial<Demo>): Partial<FormData> {
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
 
-const STEP_LABELS = ["Company", "ThoughtSpot", "Data", "AI Polish", "Review"];
+const STEP_LABELS = ["Company", "ThoughtSpot", "Dataset", "Data", "AI Polish", "Review"];
 
 function StepIndicator({ current, total }: { current: number; total: number }) {
   return (
@@ -192,7 +193,8 @@ interface DemoWizardProps {
 
 export default function DemoWizard({ prefillData, hasPrefill }: DemoWizardProps) {
   const router = useRouter();
-  const [step, setStep] = useState(hasPrefill ? 4 : 1);
+  const [step, setStep] = useState(hasPrefill ? 5 : 1);
+  const [datasetResult, setDatasetResult] = useState<DatasetResult | null>(null);
   const [formData, setFormData] = useState<FormData>(() => ({
     ...EMPTY_FORM,
     ...(prefillData ? demoToFormData(prefillData) : {}),
@@ -226,6 +228,20 @@ export default function DemoWizard({ prefillData, hasPrefill }: DemoWizardProps)
       qs[idx] = value;
       return { ...prev, sampleQuestions: qs };
     });
+  }
+
+  // ── Dataset complete callback ───────────────────────────────────────────
+  function handleDatasetComplete(result: DatasetResult) {
+    setDatasetResult(result);
+    if (result.tsHost && !formData.tsInstance) {
+      set("tsInstance", result.tsHost.startsWith("http") ? result.tsHost : `https://${result.tsHost}`);
+    }
+    if (result.database) setDataModel("database", result.database);
+    if (result.schema) setDataModel("schema", result.schema);
+    if (result.tableName) {
+      set("tables", result.tableName);
+    }
+    setStep((s) => s + 1);
   }
 
   // ── AI assist (structured) ──────────────────────────────────────────────
@@ -436,8 +452,17 @@ export default function DemoWizard({ prefillData, hasPrefill }: DemoWizardProps)
           </div>
         );
 
-      // ── Step 3: Data ─────────────────────────────────────────────────
+      // ── Step 3: Dataset upload ───────────────────────────────────────
       case 3:
+        return (
+          <DatasetStep
+            onComplete={handleDatasetComplete}
+            defaultTsHost={formData.tsInstance}
+          />
+        );
+
+      // ── Step 4: Data ─────────────────────────────────────────────────
+      case 4:
         return (
           <div className="space-y-5">
             <div className="space-y-4 rounded-xl bg-gray-50 p-4">
@@ -515,8 +540,8 @@ export default function DemoWizard({ prefillData, hasPrefill }: DemoWizardProps)
           </div>
         );
 
-      // ── Step 4: AI Polish ─────────────────────────────────────────────
-      case 4:
+      // ── Step 5: AI Polish ─────────────────────────────────────────────
+      case 5:
         return (
           <div className="space-y-5">
             <div className="rounded-2xl border border-[#2770ef]/20 bg-[#2770ef]/5 p-5">
@@ -577,8 +602,8 @@ export default function DemoWizard({ prefillData, hasPrefill }: DemoWizardProps)
           </div>
         );
 
-      // ── Step 5: Review ────────────────────────────────────────────────
-      case 5:
+      // ── Step 6: Review ────────────────────────────────────────────────
+      case 6:
         return (
           <div className="space-y-4">
             <div className="rounded-2xl border border-gray-200 bg-white p-5">
@@ -654,7 +679,7 @@ export default function DemoWizard({ prefillData, hasPrefill }: DemoWizardProps)
         <p className="mt-1 text-sm text-gray-500">Fill in each section to configure your demo.</p>
       </div>
 
-      <StepIndicator current={step} total={5} />
+      <StepIndicator current={step} total={6} />
 
       <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 mb-6">
         {stepContent()}
@@ -670,7 +695,7 @@ export default function DemoWizard({ prefillData, hasPrefill }: DemoWizardProps)
           {step === 1 ? "← Cancel" : "← Back"}
         </button>
 
-        {step < 5 ? (
+        {step < 6 && step !== 3 ? (
           <button
             type="button"
             onClick={() => setStep((s) => s + 1)}
@@ -679,6 +704,24 @@ export default function DemoWizard({ prefillData, hasPrefill }: DemoWizardProps)
           >
             Next →
           </button>
+        ) : step === 3 ? (
+          datasetResult ? (
+            <button
+              type="button"
+              onClick={() => setStep((s) => s + 1)}
+              className="rounded-xl bg-[#2770ef] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1a56c4] transition-colors"
+            >
+              Next →
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setStep((s) => s + 1)}
+              className="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              Skip →
+            </button>
+          )
         ) : (
           <button
             type="button"
