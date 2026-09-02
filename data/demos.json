@@ -422,5 +422,63 @@
       ]
     },
     "worksheetId": "1480ab38-5900-4b6b-9a50-b3131595c2d6"
+  },
+  {
+    "id": "kearney",
+    "companyName": "Kearney",
+    "website": "https://www.kearney.com",
+    "useCase": "Kearney SpendPro — procurement spend analytics portal embedding ThoughtSpot into a Kearney-branded SpendPro experience. Category hierarchy drill-down (L0–L3), supplier analysis, regional spend, and AI-powered procurement insights via Merlin.",
+    "sampleQuestions": [
+      "What is our total spend by category L0 this year?",
+      "Which suppliers represent the top 20% of spend?",
+      "Show me spend trends by region over the last 12 months."
+    ],
+    "screenshotUrls": [],
+    "sampleDataUrl": null,
+    "rlsRequired": false,
+    "useSpotter": true,
+    "spotterName": "Merlin",
+    "reportDesigner": false,
+    "tsInstance": "https://kearney.thoughtspot.cloud",
+    "branch": "kearney",
+    "liveUrl": "https://kearney.ts-embed.vercel.app",
+    "status": "building",
+    "createdAt": "2026-09-02",
+    "owner": "brantwadsworth-ts",
+    "embedType": "liveboard",
+    "trustedAuthEnabled": false,
+    "credentialsHint": "Use your ThoughtSpot credentials",
+    "prompt": "You are Merlin, a procurement analytics assistant for Kearney SpendPro. Help procurement leaders and analysts understand spend by category, supplier concentration, regional distribution, and cost-saving opportunities. Reference specific supplier names, category levels, and spend values from the data.",
+    "dataModel": {
+      "warehouse": "Snowflake",
+      "cdw": "SE_DEMO_WH",
+      "database": "BW_ANALYTICS",
+      "schema": "ATK",
+      "tables": [
+        {
+          "name": "ATK_SAMPLE_DATA",
+          "columns": [
+            "Document No", "Source System", "Material Code", "Material Description",
+            "Category L0", "Category L1", "Category L2", "Category L3",
+            "Plant ID", "Plant Name", "Sub Region", "Region", "Business Unit",
+            "Supplier ID", "Supplier Name", "Buyer Name", "Transaction Currency",
+            "Ordered Date", "Quantity", "Basic Price", "Net Price", "Spend",
+            "OEM Brand", "GL Account", "Cost Centre", "Scope 3 Category"
+          ]
+        }
+      ]
+    },
+    "theme": {
+      "custom": "kearney",
+      "primaryColor": "#00A0DC",
+      "logoUrl": "https://www.kearney.com/o/kearney-theme/images/kearney-logo.svg",
+      "liveboards": [
+        {
+          "id": "630a97bb-7cf9-4bbe-9d48-506a5781beae",
+          "name": "Kearney SpendPro — Procurement Analytics"
+        }
+      ]
+    },
+    "worksheetId": "655683cf-b98b-457b-a936-bd446f3ab401"
   }
 ]
