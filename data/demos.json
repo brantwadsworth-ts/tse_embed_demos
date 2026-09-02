@@ -198,7 +198,7 @@
     "reportDesigner": false,
     "tsInstance": "https://thoughtspotpmm.thoughtspot.cloud",
     "branch": "main",
-    "sourceRepo": "https://github.com/brantwadsworth-ts/tse_demos",
+    "sourceRepo": "https://github.com/brantwadsworth-ts/tse_portal_template",
     "upstreamRepo": "https://github.com/thoughtspot/tse_demos",
     "liveUrl": "https://getsalesspot.vercel.app",
     "coolifyUrl": "https://tse_demos.coolify.thoughtspot.com",

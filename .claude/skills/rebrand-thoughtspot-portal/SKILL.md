@@ -17,9 +17,10 @@ inline-insights list tab, custom-action viz tab, standalone Spotter tab, "fancy"
 chat, monetization paywall, Premium/Basic tiers, host filters, light+dark theme. You keep
 what the answers ask for and strip the rest.
 
-Clone from: `https://github.com/brantwadsworth-ts/tse_demos`
+Clone from: `https://github.com/brantwadsworth-ts/tse_portal_template`
+(upstream: `https://github.com/thoughtspot/tse_demos` — use upstream if the fork doesn't exist yet)
 
-The codemod (`scripts/apply-spec.mjs`) is bundled in the upstream repo at
+The codemod (`scripts/apply-spec.mjs`) is bundled in the template repo at
 `.claude/skills/rebrand-thoughtspot-portal/scripts/apply-spec.mjs`. Run it from a local
 clone of that repo. It detects a missing `node_modules` and runs `npm install` once.
 
@@ -198,13 +199,15 @@ Once all rounds are complete:
 
 1. Summarize the spec in a concise table and ask "Does this look right? Any changes before I build?"
 2. After confirmation, write `spec.json` (use `references/spec.example.json` as the template — edit every value, never hand-write from scratch).
-3. Clone `brantwadsworth-ts/tse_demos` if not already present:
+3. Clone the portal template if not already present:
    ```bash
-   git clone https://github.com/brantwadsworth-ts/tse_demos tse_demos_template
+   # Use the fork if it exists, fall back to upstream
+   git clone https://github.com/brantwadsworth-ts/tse_portal_template tse_portal_template \
+     || git clone https://github.com/thoughtspot/tse_demos tse_portal_template
    ```
 4. Run the codemod:
    ```bash
-   node tse_demos_template/.claude/skills/rebrand-thoughtspot-portal/scripts/apply-spec.mjs spec.json
+   node tse_portal_template/.claude/skills/rebrand-thoughtspot-portal/scripts/apply-spec.mjs spec.json
    ```
 5. Fix any TypeScript errors: `npm run build` from `<slug>-tse/`
 6. If a custom-action workflow was described, rebuild the modal: rename `BidModal.tsx` → `<ActionName>Modal.tsx`, rebuild the form to match the described workflow exactly.
