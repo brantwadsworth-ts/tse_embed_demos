@@ -21,7 +21,7 @@ export default async function NewDemoPage() {
           <p className="mt-2 text-gray-500">Choose how you want to get started.</p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {/* Quick Start with AI */}
           <Link
             href="/demos/new/ai"
@@ -57,6 +57,25 @@ export default async function NewDemoPage() {
             </p>
             <div className="mt-6 text-sm font-medium text-[#2770ef]">
               Open wizard →
+            </div>
+          </Link>
+
+          {/* Portal Builder */}
+          <Link
+            href="/demos/new/portal"
+            className="group flex flex-col rounded-2xl border-2 border-emerald-200 bg-white p-8 hover:border-emerald-500 hover:shadow-lg transition-all"
+          >
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-2xl">
+              🏗️
+            </div>
+            <h2 className="mb-2 text-lg font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">
+              Build a Portal
+            </h2>
+            <p className="text-sm text-gray-500 leading-relaxed">
+              Guided 8-round interview generates a <code className="font-mono text-xs">spec.json</code> and runs the codemod to build a full branded Vite + React portal.
+            </p>
+            <div className="mt-6 text-sm font-medium text-emerald-600">
+              Start building →
             </div>
           </Link>
         </div>

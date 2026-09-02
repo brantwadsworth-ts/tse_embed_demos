@@ -239,4 +239,10 @@ Then:
 vercel alias set <deploy-url> <slug>.ts-embed.vercel.app
 ```
 
-After deploy, register the demo in the TSE Demo Builder at `/demos/new`.
+After deploy, if this demo was registered via the Portal Builder wizard, call go-live:
+```bash
+curl -s -X POST https://tse-embed-demos.vercel.app/api/demos/<DEMO_ID>/go-live \
+  -H "Content-Type: application/json" \
+  -d "{\"liveUrl\":\"https://<slug>.ts-embed.vercel.app\",\"branch\":\"main\"}"
+```
+Otherwise, register the demo manually at `/demos/new/portal`.
