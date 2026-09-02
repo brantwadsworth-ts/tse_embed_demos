@@ -16,10 +16,11 @@ interface PushResult {
 // Body: { demoId: string; adminPassword?: string }
 export async function POST(request: NextRequest) {
   const session = await auth();
-  if (!session?.user?.name) {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
-  const role = await getRole(session.user.name);
+  const login = (session.user as { login?: string }).login ?? "";
+  const role = await getRole(login);
   if (role !== "admin" && role !== "create") {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
