@@ -15,7 +15,7 @@
     "useSpotter": true,
     "spotterName": "Ask Salesloft",
     "reportDesigner": false,
-    "tsInstance": "https://salesloft-clari.thoughtspot.cloud",
+    "tsInstance": "https://se-thoughtspot-cloud.thoughtspot.cloud",
     "branch": "salesloft",
     "liveUrl": "https://salesloft.ts-embed.vercel.app",
     "status": "live",
@@ -178,6 +178,99 @@
       "primaryColor": "#FF3008",
       "logoUrl": "https://consumer-web-assets.doordash.com/assets/img/logo/doordash-logo.svg",
       "liveboards": []
+    }
+  },
+  {
+    "id": "manis-demo",
+    "companyName": "Mani's Demo — SalesSpot",
+    "website": "https://getsalesspot.vercel.app",
+    "useCase": "SalesSpot is a bespoke sales analytics portal built by Mani Uppala (koushik426) on the ThoughtSpot Embed SDK. It showcases cadence analytics, per-rep performance, inline liveboard drill-in with runtime filters, Spotter AI chat, custom CSS theming, and a branded home landing experience. Includes multiple rebrand skins (Acme, Sinai) built from the same codebase using a Claude rebrand skill. Reference demo for portal architecture patterns.",
+    "sampleQuestions": [
+      "Which cadences are driving the most influenced pipeline?",
+      "Show me rep activity trends for the last 30 days.",
+      "What is the email reply rate by cadence this quarter?"
+    ],
+    "screenshotUrls": [],
+    "sampleDataUrl": null,
+    "rlsRequired": false,
+    "useSpotter": true,
+    "spotterName": "Ask SalesSpot",
+    "reportDesigner": false,
+    "tsInstance": "https://thoughtspotpmm.thoughtspot.cloud",
+    "branch": "main",
+    "sourceRepo": "https://github.com/brantwadsworth-ts/tse_demos",
+    "upstreamRepo": "https://github.com/thoughtspot/tse_demos",
+    "liveUrl": "https://getsalesspot.vercel.app",
+    "coolifyUrl": "https://tse_demos.coolify.thoughtspot.com",
+    "status": "live",
+    "createdAt": "2026-09-02",
+    "owner": "brantwadsworth-ts",
+    "embedType": "liveboard",
+    "trustedAuthEnabled": false,
+    "credentialsHint": "Contact Mani Uppala (koushik426) for demo credentials",
+    "techStack": "Vite + React (standalone SPA, not Next.js factory)",
+    "notableFeatures": [
+      "Inline liveboard with runtime column filter per cadence",
+      "Custom action: Re-engage cadence",
+      "SpotterEmbed in chatbot + modal modes",
+      "Animated home landing tab",
+      "Claude rebrand skill for one-command portal reskins",
+      "Acme and Sinai reskin variants in same repo"
+    ],
+    "liveboards": [
+      {
+        "id": "431cb7d1-7551-48ca-ab04-2261bb40a6e8",
+        "name": "Sales Analytics (main)"
+      },
+      {
+        "id": "d57c9aeb-2c50-4afe-857a-327fad94c7cc",
+        "name": "Inline Insights (per-cadence)"
+      }
+    ],
+    "worksheetId": "06f92f41-00e5-4d81-8213-8a6616f83f49",
+    "prompt": "You are Ask SalesSpot, a sales analytics assistant. Help reps and managers understand cadence performance, email engagement, influenced pipeline, and rep activity trends. All data is sourced from the embedded ThoughtSpot liveboards. Reference specific cadence names and metric values from the data.",
+    "dataModel": {
+      "warehouse": "ThoughtSpot PMM cluster",
+      "tables": [
+        {
+          "name": "cadences",
+          "columns": [
+            "Cadence Name",
+            "Cadence Owner",
+            "Cadence Create Date",
+            "Emails Replied",
+            "Influenced Pipeline"
+          ]
+        },
+        {
+          "name": "activities",
+          "columns": [
+            "Activity Date",
+            "Activity Type",
+            "Cadence Name",
+            "Rep Name",
+            "Outcome"
+          ]
+        }
+      ]
+    },
+    "theme": {
+      "custom": "salesspot",
+      "primaryColor": "#0C6E6C",
+      "accentColor": "#15AE6E",
+      "backgroundColor": "#FDFEFE",
+      "textColor": "#073B3A",
+      "tsVarOverrides": {
+        "--ts-var-root-background": "#FDFEFE",
+        "--ts-var-root-color": "#073B3A",
+        "--ts-var-button--primary-background": "#0C6E6C",
+        "--ts-var-button--primary-color": "#FFFFFF",
+        "--ts-var-viz-border-radius": "18px",
+        "--ts-var-liveboard-tab-active-border-color": "#15AE6E",
+        "--ts-var-chip-background": "#E8F4F3",
+        "--ts-var-chip-color": "#0A4A4A"
+      },
+      "logoUrl": "https://getsalesspot.vercel.app/salesspot-logo.svg"
     }
   },
   {
