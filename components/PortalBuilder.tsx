@@ -10,6 +10,7 @@ import {
   parseHost,
 } from "@/lib/spec-builder";
 import DatasetStep, { DatasetResult } from "@/components/DatasetStep";
+import UsersStep from "@/components/UsersStep";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -24,6 +25,7 @@ type StepKey =
   | "ai-tiers"
   | "add-report"
   | "theme"
+  | "users"
   | "review";
 
 const STEP_LABELS: Record<StepKey, string> = {
@@ -37,13 +39,14 @@ const STEP_LABELS: Record<StepKey, string> = {
   "ai-tiers": "AI & tiers",
   "add-report": "Add Report",
   theme: "Theme",
+  users: "Provision users",
   review: "Review & launch",
 };
 
 const ADVANCED_ONLY: StepKey[] = ["inline", "custom", "add-report"];
 const ALL_STEPS: StepKey[] = [
   "scope", "brand", "data", "dataset", "auth", "inline", "custom",
-  "ai-tiers", "add-report", "theme", "review",
+  "ai-tiers", "add-report", "theme", "users", "review",
 ];
 
 // ── Shared primitives ─────────────────────────────────────────────────────────
@@ -1026,6 +1029,13 @@ export default function PortalBuilder() {
       case "ai-tiers": return <StepAiTiers s={state} set={set} />;
       case "add-report": return <StepAddReport s={state} set={set} />;
       case "theme": return <StepTheme s={state} set={set} />;
+      case "users":
+        return (
+          <UsersStep
+            defaultTsHost={state.tsHost}
+            onComplete={() => setStepIdx((i) => i + 1)}
+          />
+        );
       case "review":
         return (
           <StepReview
