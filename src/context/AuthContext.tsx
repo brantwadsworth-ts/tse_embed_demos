@@ -17,7 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [password, setPassword] = useState('');
 
   const login = async (user: string, pass: string) => {
-    initThoughtSpot(user);
+    initThoughtSpot(user, pass);
     setUsername(user);
     setPassword(pass);
     setIsAuthenticated(true);

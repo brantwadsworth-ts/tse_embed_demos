@@ -9,14 +9,18 @@ import {
 
 let isInitialized = false;
 
-export function initThoughtSpot(username: string) {
+export function initThoughtSpot(username: string, password: string) {
   if (isInitialized) return;
   init({
     thoughtSpotHost: THOUGHTSPOT_HOST,
     authType: AuthType.TrustedAuthTokenCookieless,
     username,
     getAuthToken: async () => {
-      const res = await fetch(`/api/auth-token?username=${encodeURIComponent(username)}`);
+      const res = await fetch('/api/auth-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
       if (!res.ok) throw new Error('Failed to get auth token');
       const data = await res.json();
       return data.token;
