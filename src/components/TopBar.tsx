@@ -1,54 +1,56 @@
-import {
-  BarChart3,
-  LayoutGrid,
-  Sparkles,
-  Workflow,
-  Activity,
-  ChevronDown,
-  LogOut,
-  Sun,
-  Moon,
-} from 'lucide-react';
+import { BarChart3, LayoutGrid, Sparkles, ChevronDown, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
-import SalesloftLogo from './SalesloftLogo';
 
-export type TabId = 'my-analytics' | 'analytics' | 'cadences' | 'signals' | 'ask';
+export type TabId = 'analytics' | 'ask' | 'my-reports';
 
 const TABS: { id: TabId; label: string; icon: typeof BarChart3 }[] = [
-  { id: 'my-analytics', label: 'My Reports', icon: LayoutGrid },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'cadences', label: 'Cadences', icon: Workflow },
-  { id: 'signals', label: 'Signals', icon: Activity },
-  { id: 'ask', label: 'Ask Salesloft', icon: Sparkles },
+  { id: 'analytics', label: 'Spend Analytics', icon: BarChart3 },
+  { id: 'ask', label: 'Ask Merlin', icon: Sparkles },
+  { id: 'my-reports', label: 'My Reports', icon: LayoutGrid },
 ];
-
-// Decorative Salesloft platform nav (sets product context, non-interactive).
-const PLATFORM_NAV = ['People', 'Deals', 'Conversations'];
 
 interface Props {
   active: TabId;
   onChange: (tab: TabId) => void;
 }
 
+function KearneyLogo({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 140 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="Kearney"
+    >
+      <text
+        x="0"
+        y="24"
+        fontFamily="Inter, Helvetica Neue, sans-serif"
+        fontSize="22"
+        fontWeight="700"
+        fill="#ffffff"
+        letterSpacing="-0.5"
+      >
+        Kearney
+      </text>
+    </svg>
+  );
+}
+
 export default function TopBar({ active, onChange }: Props) {
   const { username, logout } = useAuth();
-  const { theme, toggle } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const initials = (username || 'U').slice(0, 2).toUpperCase();
 
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <SalesloftLogo className="topbar-logo" />
-        <nav className="topbar-platform-nav">
-          {PLATFORM_NAV.map((item) => (
-            <span key={item} className="topbar-platform-link">
-              {item}
-            </span>
-          ))}
-        </nav>
+        <div className="topbar-brand">
+          <KearneyLogo className="topbar-logo" />
+          <span className="topbar-product">SpendPro</span>
+        </div>
       </div>
 
       <nav className="topbar-tabs">
@@ -68,14 +70,6 @@ export default function TopBar({ active, onChange }: Props) {
       </nav>
 
       <div className="topbar-right">
-        <button
-          className="topbar-theme-toggle"
-          onClick={toggle}
-          title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
-          aria-label="Toggle theme"
-        >
-          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
         <div className="topbar-user" onClick={() => setMenuOpen((o) => !o)}>
           <span className="topbar-avatar">{initials}</span>
           <span className="topbar-username">{username || 'User'}</span>

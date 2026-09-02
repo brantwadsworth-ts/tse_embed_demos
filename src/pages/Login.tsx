@@ -1,7 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
-import SalesloftLogo from '../components/SalesloftLogo';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -32,27 +31,30 @@ export default function Login() {
   return (
     <div className="login-page">
       <div className="login-left">
-        <SalesloftLogo className="login-logo" size={34} />
+        <div className="login-brand">
+          <span className="login-brand-name">Kearney</span>
+          <span className="login-brand-product">SpendPro</span>
+        </div>
         <div className="login-hero-content">
           <h1 className="login-hero-title">
-            A new story<br />about sales.
+            Smarter spend.<br />Faster decisions.
           </h1>
           <p className="login-hero-subtitle">
-            Pipeline performance, team activity, and AI-powered answers — all in
-            one place, powered by ThoughtSpot.
+            Procurement analytics, supplier insights, and AI-powered answers —
+            all in one place, powered by ThoughtSpot.
           </p>
           <div className="login-stats">
             <div className="login-stat">
-              <span className="login-stat-value">40%</span>
-              <span className="login-stat-label">Higher Win Rates</span>
+              <span className="login-stat-value">90k+</span>
+              <span className="login-stat-label">Transactions</span>
             </div>
             <div className="login-stat">
-              <span className="login-stat-value">3x</span>
-              <span className="login-stat-label">Pipeline Visibility</span>
+              <span className="login-stat-value">4</span>
+              <span className="login-stat-label">Category Levels</span>
             </div>
             <div className="login-stat">
-              <span className="login-stat-value">60%</span>
-              <span className="login-stat-label">Faster Insights</span>
+              <span className="login-stat-value">AI</span>
+              <span className="login-stat-label">Powered by Merlin</span>
             </div>
           </div>
         </div>

@@ -1,72 +1,54 @@
 /* ===========================================================================
-   Salesloft Analytics — theme approximating salesloft.com's 2024 rebrand:
-   tonal greens, warm cream surfaces, a humanist-serif display face (Fraunces,
-   in place of Salesloft's "Nib") + Inter for UI text (in place of "Metric").
+   Kearney SpendPro — dark navy procurement analytics portal
    =========================================================================== */
 
 :root {
-  /* Brand palette */
-  --sl-cream: #f4f2ec;
-  --sl-cream-2: #efece3;
-  --sl-white: #ffffff;
-  --sl-evergreen: #0e3a2c;
-  --sl-evergreen-2: #0a2c21;
-  --sl-green: #15ae6e;
-  --sl-green-dark: #0c5b43;
-  --sl-mint: #e7f3ec;
-  --sl-mint-2: #d9ecdf;
-  --sl-coral: #f26b5e;
-  --sl-ink: #14241e;
-  --sl-muted: #5a6b63;
-  --sl-border: #e4e2d8;
-  --sl-border-soft: #edebe2;
+  /* Kearney dark navy palette — always dark, no light mode */
+  --sl-cream: #0e1520;
+  --sl-cream-2: #0b1118;
+  --sl-white: #131d2b;
+  --sl-evergreen: #e0e8f2;
+  --sl-evergreen-2: #c8d8e8;
+  --sl-green: #0096D6;
+  --sl-green-dark: #007bb5;
+  --sl-mint: #1a2640;
+  --sl-mint-2: #1f3050;
+  --sl-coral: #f87171;
+  --sl-ink: #e0e8f2;
+  --sl-muted: #8aa0bc;
+  --sl-border: #1f3050;
+  --sl-border-soft: #1a2640;
 
-  --font-serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
-  /* Body face — Plus Jakarta Sans (distinctive but professional). Matches the
-     embeds' --ts-var-root-font-family exactly so host UI, chatbot, and embedded
-     ThoughtSpot content share the same typeface + fallbacks. */
-  --font-sans: 'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif;
+  --font-serif: 'Inter', 'Segoe UI', sans-serif;
+  --font-sans: 'Inter', 'Helvetica Neue', 'Segoe UI', sans-serif;
 
   --topbar-h: 66px;
-  --shadow-card: 0 1px 2px rgba(7, 59, 58, 0.05),
-    0 8px 24px rgba(7, 59, 58, 0.07);
-  --shadow-lift: 0 6px 14px rgba(7, 59, 58, 0.08),
-    0 18px 40px rgba(7, 59, 58, 0.12);
+  --shadow-card: 0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.45);
+  --shadow-lift: 0 6px 14px rgba(0,0,0,0.5), 0 18px 40px rgba(0,0,0,0.55);
 }
 
-/* ===========================  Dark theme  =============================== */
-/* Deep-evergreen dark palette. Tokens used purely as background/text flip
-   here; the few places where evergreen/green-dark were a branded *background*
-   get targeted overrides below so their light text stays readable. The
-   embedded ThoughtSpot surfaces are themed separately via per-embed
-   customizations (config TS_VARS_DARK). */
+/* Always dark — force the data-theme attribute at load */
 :root[data-theme='dark'] {
-  --sl-cream: #0c1f1a;
-  --sl-cream-2: #0a1a15;
-  --sl-white: #102a23;
-  --sl-evergreen: #e8f0ec;
-  --sl-evergreen-2: #cfe0d8;
-  --sl-green: #1bb978;
-  --sl-green-dark: #16a06a;
-  --sl-mint: #183a30;
-  --sl-mint-2: #204438;
-  --sl-coral: #f47a6d;
-  --sl-ink: #e8f0ec;
-  --sl-muted: #93a89f;
-  --sl-border: #204438;
-  --sl-border-soft: #1a352c;
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.45);
-  --shadow-lift: 0 6px 14px rgba(0, 0, 0, 0.5), 0 18px 40px rgba(0, 0, 0, 0.55);
-}
-/* Branded-background surfaces where evergreen was the fill (now a light token). */
-:root[data-theme='dark'] .spotter-modal-header,
-:root[data-theme='dark'] .winback-header {
-  background: #0a1a15;
-  color: #e8f0ec;
+  --sl-cream: #0e1520;
+  --sl-cream-2: #0b1118;
+  --sl-white: #131d2b;
+  --sl-evergreen: #e0e8f2;
+  --sl-evergreen-2: #c8d8e8;
+  --sl-green: #0096D6;
+  --sl-green-dark: #007bb5;
+  --sl-mint: #1a2640;
+  --sl-mint-2: #1f3050;
+  --sl-coral: #f87171;
+  --sl-ink: #e0e8f2;
+  --sl-muted: #8aa0bc;
+  --sl-border: #1f3050;
+  --sl-border-soft: #1a2640;
+  --shadow-card: 0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.45);
+  --shadow-lift: 0 6px 14px rgba(0,0,0,0.5), 0 18px 40px rgba(0,0,0,0.55);
 }
 :root[data-theme='dark'] .login-left {
-  background: linear-gradient(155deg, #0e3a2c, #06120e);
-  color: #e8f0ec;
+  background: linear-gradient(155deg, #0d1e32, #060e1a);
+  color: #e0e8f2;
 }
 /* Green host buttons: deeper green + white text so labels stay readable. */
 :root[data-theme='dark'] .sl-hfilter-apply,
@@ -162,6 +144,25 @@ button {
   display: flex;
   align-items: center;
   gap: 28px;
+}
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.topbar-logo {
+  height: 24px;
+  width: auto;
+}
+.topbar-product {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sl-green);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  background: rgba(0, 150, 214, 0.12);
+  border-radius: 4px;
 }
 .topbar-platform-nav {
   display: flex;
@@ -1818,8 +1819,8 @@ button {
   grid-template-columns: 1.1fr 1fr;
 }
 .login-left {
-  background: linear-gradient(155deg, var(--sl-evergreen), var(--sl-evergreen-2));
-  color: var(--sl-cream);
+  background: linear-gradient(155deg, #0d1e32, #060e1a);
+  color: #e0e8f2;
   padding: 44px 56px;
   display: flex;
   flex-direction: column;
@@ -1833,12 +1834,27 @@ button {
   width: 520px;
   height: 520px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(21, 174, 110, 0.35), transparent 70%);
+  background: radial-gradient(circle, rgba(0, 150, 214, 0.2), transparent 70%);
   right: -160px;
   bottom: -160px;
 }
-.login-left .sl-logo-word {
-  color: var(--sl-cream);
+.login-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.login-brand-name {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+.login-brand-product {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0096D6;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .login-hero-content {
   position: relative;

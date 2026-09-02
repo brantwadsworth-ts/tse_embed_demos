@@ -1,35 +1,15 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
 import { ThemeName } from '../config';
 
 interface ThemeContextType {
   theme: ThemeName;
-  toggle: () => void;
-  setTheme: (t: ThemeName) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
-const STORAGE_KEY = 'salesloft-theme';
-
-function initialTheme(): ThemeName {
-  const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-  // Default to dark; only honor an explicit prior choice of light.
-  return saved === 'light' || saved === 'dark' ? saved : 'dark';
-}
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeName>(initialTheme);
-
-  // Reflect the theme on <html> so the host-app CSS variables switch.
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem(STORAGE_KEY, theme);
-  }, [theme]);
-
-  const setTheme = (t: ThemeName) => setThemeState(t);
-  const toggle = () => setThemeState((t) => (t === 'dark' ? 'light' : 'dark'));
-
   return (
-    <ThemeContext.Provider value={{ theme, toggle, setTheme }}>{children}</ThemeContext.Provider>
+    <ThemeContext.Provider value={{ theme: 'dark' }}>{children}</ThemeContext.Provider>
   );
 }
 
