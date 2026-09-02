@@ -182,7 +182,7 @@
   },
   {
     "id": "manis-demo",
-    "companyName": "Mani's Demo — SalesSpot",
+    "companyName": "Mani's Demo \u2014 SalesSpot",
     "website": "https://getsalesspot.vercel.app",
     "useCase": "SalesSpot is a bespoke sales analytics portal built by Mani Uppala (koushik426) on the ThoughtSpot Embed SDK. It showcases cadence analytics, per-rep performance, inline liveboard drill-in with runtime filters, Spotter AI chat, custom CSS theming, and a branded home landing experience. Includes multiple rebrand skins (Acme, Sinai) built from the same codebase using a Claude rebrand skill. Reference demo for portal architecture patterns.",
     "sampleQuestions": [
@@ -271,6 +271,53 @@
         "--ts-var-chip-color": "#0A4A4A"
       },
       "logoUrl": "https://getsalesspot.vercel.app/salesspot-logo.svg"
+    },
+    "embedPatterns": [
+      "inline-runtime-filter",
+      "custom-action",
+      "host-side-filters",
+      "anthropic-chatbot",
+      "tier-gate",
+      "dark-mode",
+      "spotter-standalone",
+      "spotter-chatbot",
+      "report-designer",
+      "my-liveboards"
+    ],
+    "customActions": [
+      {
+        "id": "reengage-cadence",
+        "name": "Re-engage cadence",
+        "tabName": "Signals",
+        "vizId": "ab68d5d8-6cf0-43bc-bccd-4f5caca665a2",
+        "liveboardId": "431cb7d1-7551-48ca-ab04-2261bb40a6e8"
+      }
+    ],
+    "anthropicEnabled": true,
+    "anthropicModel": "claude-sonnet-4-6",
+    "tsVarOverrides": {
+      "--ts-var-root-background": "#FDFEFE",
+      "--ts-var-root-color": "#073B3A",
+      "--ts-var-root-font-family": "\"Plus Jakarta Sans\", \"Avenir Next\", \"Segoe UI\", sans-serif",
+      "--ts-var-button--primary-background": "#0C6E6C",
+      "--ts-var-button--primary-color": "#FFFFFF",
+      "--ts-var-button--primary--hover-background": "#0A5C5A",
+      "--ts-var-button--secondary-background": "#E9F3F2",
+      "--ts-var-button--secondary-color": "#0A4A4A",
+      "--ts-var-viz-border-radius": "18px",
+      "--ts-var-viz-background": "#FFFFFF",
+      "--ts-var-viz-box-shadow": "0 1px 2px rgba(7,59,58,0.06), 0 16px 44px rgba(7,59,58,0.16)",
+      "--ts-var-chip-background": "#E8F4F3",
+      "--ts-var-chip-color": "#0A4A4A",
+      "--ts-var-chip-border-radius": "999px",
+      "--ts-var-chip--active-background": "#0C6E6C",
+      "--ts-var-chip--active-color": "#FFFFFF",
+      "--ts-var-liveboard-tab-active-border-color": "#15AE6E",
+      "--ts-var-liveboard-tile-border-radius": "18px",
+      "--ts-var-liveboard-tile-border-color": "#D7E7E6",
+      "--ts-var-liveboard-layout-background": "#FDFEFE",
+      "--ts-var-kpi-positive-change-color": "#1E8E5A",
+      "--ts-var-kpi-negative-change-color": "#C84B3A"
     }
   },
   {

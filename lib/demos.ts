@@ -19,6 +19,30 @@ export interface McpConnectorConfig {
   config?: Record<string, string>;
 }
 
+/** Patterns this demo demonstrates — used for gallery filtering and documentation */
+export type EmbedPattern =
+  | "inline-runtime-filter"   // Per-row liveboard expand with RuntimeFilterOp column filter
+  | "custom-action"           // Context-menu action with custom modal/workflow
+  | "host-side-filters"       // App-rendered filter dropdowns driving embed via HostEvent
+  | "anthropic-chatbot"       // Floating chatbot backed by Anthropic API + TS tool use
+  | "tier-gate"               // Premium/Basic tier feature gating
+  | "dark-mode"               // Full light + dark theme with --ts-var-* overrides
+  | "spotter-standalone"      // Full-page SpotterEmbed
+  | "spotter-chatbot"         // SpotterEmbed with hidden input (driven by host chatbot)
+  | "report-designer"         // SearchEmbed + PinModal Add Report flow
+  | "my-liveboards"           // REST v2 liveboard list + create-new via TML import
+  | "trusted-auth"            // AuthType.TrustedAuthTokenCookieless
+  | "rls"                     // Row-Level Security via user attributes or ts_groups()
+  | "full-app";               // AppEmbed (full ThoughtSpot shell)
+
+export interface CustomAction {
+  id: string;
+  name: string;
+  tabName?: string;
+  vizId?: string;
+  liveboardId?: string;
+}
+
 export interface DemoTheme {
   custom: "dphhs" | "salesloft" | null;
   primaryColor: string;
@@ -80,6 +104,10 @@ export interface Demo {
   dataModel?: DemoDataModel;
   prompt?: string;
   forkedFrom?: string;
+  /** URL of this demo's GitHub source repo (may be a fork) */
+  sourceRepo?: string;
+  /** URL of the upstream repo this was forked/derived from */
+  upstreamRepo?: string;
   trustedAuthEnabled?: boolean;
   credentialsHint?: string;
   demoUsers?: DemoUser[];
@@ -89,6 +117,23 @@ export interface Demo {
   rlsRuleRows?: RlsRuleRow[];
   mcpConnectors?: McpConnectorConfig[];
   analystName?: string;
+  /** Which embed SDK patterns this demo demonstrates */
+  embedPatterns?: EmbedPattern[];
+  /** Custom context-menu actions wired in this demo */
+  customActions?: CustomAction[];
+  /** Whether this demo uses an Anthropic-API-powered chatbot */
+  anthropicEnabled?: boolean;
+  anthropicModel?: string;
+  /** Full --ts-var-* CSS variable overrides for the embedded TS surface */
+  tsVarOverrides?: Record<string, string>;
+  /** Dark-mode --ts-var-* CSS variable overrides */
+  tsVarOverridesDark?: Record<string, string>;
+  /** Tech stack note (e.g. "Vite + React" vs "Next.js") */
+  techStack?: string;
+  /** Notable feature highlights shown in the gallery */
+  notableFeatures?: string[];
+  /** Additional live URL (e.g. Coolify mirror) */
+  coolifyUrl?: string;
 }
 
 export type { PortalThemeConfig };

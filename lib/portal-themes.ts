@@ -15,6 +15,7 @@ export type ThemePreset =
   | "minimal"
   | "glass"
   | "midnight"
+  | "salesspot"
   | "custom";
 
 export interface CustomThemeVars {
@@ -58,11 +59,41 @@ export interface PortalThemeConfig {
   preset: ThemePreset;
   /** Only used when preset === "custom" */
   custom?: Partial<CustomThemeVars>;
+  /**
+   * Full --ts-var-* CSS variable overrides injected into every ThoughtSpot embed surface.
+   * These take precedence over the vars derived from the preset. Supports the complete
+   * 90+ variable set documented in the ThoughtSpot Visual Embed SDK.
+   */
+  tsVarOverrides?: Record<string, string>;
+  /** Dark-mode variant of tsVarOverrides, applied when the portal is in dark mode. */
+  tsVarOverridesDark?: Record<string, string>;
 }
 
 // ── Built-in theme definitions ────────────────────────────────────────────────
 
 const THEMES: Record<Exclude<ThemePreset, "custom">, CustomThemeVars> = {
+
+  // SalesSpot teal — ported from thoughtspot/tse_demos (Mani Uppala)
+  salesspot: {
+    bg: "#FDFEFE",
+    surface: "#FFFFFF",
+    surface2: "#F6FAFA",
+    border: "#D7E7E6",
+    text: "#073B3A",
+    textMuted: "#1D5A59",
+    accent: "#0C6E6C",
+    accentFg: "#FFFFFF",
+    headerBg: "#FFFFFF",
+    headerText: "#073B3A",
+    inputBg: "#F6FAFA",
+    radiusSm: "10px",
+    radius: "18px",
+    radiusLg: "24px",
+    shadow: "0 1px 2px rgba(7,59,58,0.06), 0 16px 44px rgba(7,59,58,0.16)",
+    shadowLg: "0 4px 8px rgba(7,59,58,0.08), 0 24px 60px rgba(7,59,58,0.20)",
+    font: "'Plus Jakarta Sans', 'Avenir Next', 'Segoe UI', sans-serif",
+  },
+
 
   light: {
     bg: "#f5f7fa",
@@ -176,6 +207,19 @@ export function resolveTheme(config?: PortalThemeConfig): CustomThemeVars {
   return THEMES[config.preset];
 }
 
+/** Convenience: get both the resolved vars and any tsVarOverrides in one call. */
+export function resolveThemeWithOverrides(config?: PortalThemeConfig): {
+  vars: CustomThemeVars;
+  tsVarOverrides?: Record<string, string>;
+  tsVarOverridesDark?: Record<string, string>;
+} {
+  return {
+    vars: resolveTheme(config),
+    tsVarOverrides: config?.tsVarOverrides,
+    tsVarOverridesDark: config?.tsVarOverridesDark,
+  };
+}
+
 /** Generate a <style> block CSS string from a theme. */
 export function themeToCSS(vars: CustomThemeVars): string {
   return `
@@ -206,25 +250,38 @@ html, body { background: var(--portal-bg); color: var(--portal-text); font-famil
 /**
  * ThoughtSpot embed customizations that match each theme.
  * These are passed to the init() call via the `customizations` option.
+ *
+ * If `tsVarOverrides` is provided it fully replaces the derived variable set,
+ * allowing demos to ship the complete 90+ variable map from their config.ts.
  */
-export function themeToTSCustomizations(vars: CustomThemeVars): object {
+export function themeToTSCustomizations(
+  vars: CustomThemeVars,
+  tsVarOverrides?: Record<string, string>,
+): object {
+  const derivedVars: Record<string, string> = {
+    "--ts-var-root-background": vars.bg.startsWith("linear") ? "#0f1628" : vars.bg,
+    "--ts-var-root-color": vars.text,
+    "--ts-var-nav-background": vars.headerBg,
+    "--ts-var-nav-color": vars.headerText,
+    "--ts-var-button--primary-background": vars.accent,
+    "--ts-var-button--primary-color": vars.accentFg,
+    "--ts-var-button--secondary-background": vars.surface2,
+    "--ts-var-button--secondary-color": vars.text,
+    "--ts-var-chip-background": vars.surface2,
+    "--ts-var-chip-color": vars.text,
+    "--ts-var-chip-border-color": vars.border,
+    "--ts-var-segment-title-color": vars.textMuted,
+    "--ts-var-viz-border-radius": vars.radiusLg,
+    "--ts-var-viz-background": vars.surface,
+    "--ts-var-liveboard-tile-background": vars.surface,
+    "--ts-var-liveboard-tile-border-color": vars.border,
+    "--ts-var-liveboard-tile-border-radius": vars.radiusLg,
+    "--ts-var-liveboard-layout-background": vars.bg.startsWith("linear") ? "#0f1628" : vars.bg,
+  };
   return {
     style: {
       customCSS: {
-        variables: {
-          "--ts-var-root-background": vars.bg.startsWith("linear") ? "#0f1628" : vars.bg,
-          "--ts-var-root-color": vars.text,
-          "--ts-var-nav-background": vars.headerBg,
-          "--ts-var-nav-color": vars.headerText,
-          "--ts-var-button--primary-background": vars.accent,
-          "--ts-var-button--primary-color": vars.accentFg,
-          "--ts-var-button--secondary-background": vars.surface2,
-          "--ts-var-button--secondary-color": vars.text,
-          "--ts-var-chip-background": vars.surface2,
-          "--ts-var-chip-color": vars.text,
-          "--ts-var-chip-border-color": vars.border,
-          "--ts-var-segment-title-color": vars.textMuted,
-        },
+        variables: tsVarOverrides ? { ...derivedVars, ...tsVarOverrides } : derivedVars,
       },
     },
   };
@@ -237,7 +294,8 @@ export const THEME_META: Record<ThemePreset, { label: string; description: strin
   minimal:  { label: "Minimal",  description: "Stark white, no shadows, sharp edges",       emoji: "⬜" },
   glass:    { label: "Glass",    description: "Frosted glass on deep navy gradient",         emoji: "🔮" },
   midnight: { label: "Midnight", description: "Deep space with indigo glow",                emoji: "✨" },
-  custom:   { label: "Custom",   description: "Configure every detail yourself",            emoji: "🎨" },
+  salesspot: { label: "SalesSpot", description: "Mani's teal/cream portal theme (ported from tse_demos)", emoji: "🌿" },
+  custom:    { label: "Custom",    description: "Configure every detail yourself",            emoji: "🎨" },
 };
 
 export { THEMES };
