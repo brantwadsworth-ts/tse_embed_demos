@@ -9,13 +9,18 @@ import {
 
 let isInitialized = false;
 
-export function initThoughtSpot(username: string, password: string) {
+export function initThoughtSpot(username: string) {
   if (isInitialized) return;
   init({
     thoughtSpotHost: THOUGHTSPOT_HOST,
-    authType: AuthType.Basic,
+    authType: AuthType.TrustedAuthTokenCookieless,
     username,
-    password,
+    getAuthToken: async () => {
+      const res = await fetch(`/api/auth-token?username=${encodeURIComponent(username)}`);
+      if (!res.ok) throw new Error('Failed to get auth token');
+      const data = await res.json();
+      return data.token;
+    },
     customizations: {
       style: {
         customCSSUrl: TS_FONT_URL,
@@ -53,19 +58,6 @@ export function liveboardCustomizations() {
   return tsCustomizations();
 }
 
-let sessionReady = false;
-
-export async function ensureRestSession(username: string, password: string) {
-  if (sessionReady) return;
-  try {
-    await fetch(`${THOUGHTSPOT_HOST}/api/rest/2.0/auth/session/login`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ username, password, remember_me: true }),
-    });
-    sessionReady = true;
-  } catch {
-    // SDK session may already be valid
-  }
+export async function ensureRestSession(_username: string, _password: string) {
+  // No-op: trusted auth handles session via token
 }

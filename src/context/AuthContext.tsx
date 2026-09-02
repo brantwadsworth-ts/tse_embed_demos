@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { initThoughtSpot, ensureRestSession } from '../lib/thoughtspot';
+import { initThoughtSpot } from '../lib/thoughtspot';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -17,8 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [password, setPassword] = useState('');
 
   const login = async (user: string, pass: string) => {
-    initThoughtSpot(user, pass);
-    await ensureRestSession(user, pass);
+    initThoughtSpot(user);
     setUsername(user);
     setPassword(pass);
     setIsAuthenticated(true);
