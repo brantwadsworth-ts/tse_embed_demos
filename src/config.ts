@@ -137,6 +137,34 @@ export const TS_STRING_IDS: Record<string, string> = {
   'convAssist.landingpage.description2': 'Ask a question about procurement spend.',
 };
 
+// Overrides for table/grid backgrounds that CSS variables can't reach
+export const LIVEBOARD_TABLE_RULES: Record<string, Record<string, string>> = {
+  // AG Grid row backgrounds
+  '.ag-row': { background: '#17151c !important' },
+  '.ag-row-even': { background: '#17151c !important' },
+  '.ag-row-odd': { background: '#1d1a23 !important' },
+  '.ag-row:hover, .ag-row-hover': { background: '#221520 !important' },
+  // Cell borders and text
+  '.ag-cell': { 'border-color': '#2a1a22 !important', color: '#f0eaf0 !important' },
+  '.ag-header-cell, .ag-header-group-cell': {
+    'border-color': '#2a1a22 !important',
+    color: '#f0eaf0 !important',
+  },
+  // Footer / totals row
+  '.ag-footer-row .ag-cell, [class*="summaryRow"] td, [class*="totalRow"] td': {
+    background: '#221520 !important',
+    color: '#f0eaf0 !important',
+  },
+  // The root wrapper and body area
+  '.ag-root-wrapper, .ag-body-viewport, .ag-center-cols-container': {
+    background: '#17151c !important',
+  },
+  // Table tile wrapper inside viz card
+  '[class*="vizBody"], [class*="tableViz"], [class*="tableTile"]': {
+    background: '#17151c !important',
+  },
+};
+
 const HIDE = { display: 'none !important' };
 export const HIDE_SPOTTER_INPUT_RULES: Record<string, Record<string, string>> = {
   '[class*="composer" i]': HIDE,

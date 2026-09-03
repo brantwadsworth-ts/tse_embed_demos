@@ -5,6 +5,7 @@ import {
   TS_STRINGS,
   TS_STRING_IDS,
   TS_FONT_URL,
+  LIVEBOARD_TABLE_RULES,
 } from '../config';
 
 let isInitialized = false;
@@ -59,7 +60,7 @@ export function tsCustomizations(
 }
 
 export function liveboardCustomizations() {
-  return tsCustomizations();
+  return tsCustomizations(LIVEBOARD_TABLE_RULES);
 }
 
 export async function ensureRestSession(_username: string, _password: string) {
