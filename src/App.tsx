@@ -3,6 +3,7 @@ import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
 import { useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import TopBar, { TabId } from './components/TopBar';
+import Sidebar from './components/Sidebar';
 import ChatBot from './components/ChatBot';
 import SpendAnalytics from './tabs/SpendAnalytics';
 import AskMerlin from './tabs/AskMerlin';
@@ -19,12 +20,15 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <TopBar active={tab} onChange={setTab} />
-      <main className="app-main">
-        {tab === 'analytics' && <SpendAnalytics />}
-        {tab === 'ask' && <AskMerlin />}
-        {tab === 'my-reports' && <MyReports />}
-      </main>
+      <Sidebar active={tab} onChange={setTab} />
+      <div className="app-body">
+        <TopBar />
+        <main className="app-main">
+          {tab === 'analytics' && <SpendAnalytics />}
+          {tab === 'ask' && <AskMerlin />}
+          {tab === 'my-reports' && <MyReports />}
+        </main>
+      </div>
       <ChatBot
         worksheetId={WORKSHEET_ID}
         greeting={CHATBOT_WELCOME}
