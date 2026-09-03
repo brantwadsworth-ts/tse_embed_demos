@@ -18,8 +18,8 @@
   --sl-muted: #8a7a88;
   --sl-border: #2a1a22;
   --sl-border-soft: #221520;
-  --k-sidebar-bg: #1a0a12;
-  --sidebar-w: 56px;
+  --k-sidebar-bg: #2c1020;
+  --sidebar-w: 58px;
 
   --font-serif: 'Inter', 'Segoe UI', sans-serif;
   --font-sans: 'Inter', 'Helvetica Neue', 'Segoe UI', sans-serif;
@@ -147,21 +147,41 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border: none;
   border-radius: 10px;
   background: transparent;
   color: rgba(255,255,255,0.35);
   transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
 }
-.sidebar-item:hover {
-  color: rgba(255,255,255,0.75);
-  background: rgba(255,255,255,0.06);
+.sidebar-item:hover:not(:disabled) {
+  color: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.08);
 }
 .sidebar-item.is-active {
   color: var(--sl-green);
-  background: rgba(233,30,140,0.15);
+  background: rgba(233,30,140,0.18);
+}
+.sidebar-hamburger {
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 4px;
+}
+.sidebar-static {
+  color: rgba(255,255,255,0.2);
+  cursor: default;
+}
+.sidebar-static:hover {
+  color: rgba(255,255,255,0.2) !important;
+  background: transparent !important;
+}
+.sidebar-divider {
+  width: 28px;
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  margin: 6px 0;
+  flex-shrink: 0;
 }
 
 /* ===========================  App body (header + main)  =================== */
