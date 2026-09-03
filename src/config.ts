@@ -137,33 +137,58 @@ export const TS_STRING_IDS: Record<string, string> = {
   'convAssist.landingpage.description2': 'Ask a question about procurement spend.',
 };
 
-// Overrides for table/grid backgrounds that CSS variables can't reach
-export const LIVEBOARD_TABLE_RULES: Record<string, Record<string, string>> = {
-  // AG Grid row backgrounds
+// Global dark-theme overrides applied to ALL ThoughtSpot embeds (init + per-embed)
+export const GLOBAL_DARK_RULES: Record<string, Record<string, string>> = {
+  // Force iframe body to dark background
+  'body, html': { background: '#0d0d11 !important' },
+
+  // Viz / answer card containers in Spotter conversation results
+  '[class*="vizCard"], [class*="VizCard"]': {
+    background: '#17151c !important',
+    'border-color': '#2a1a22 !important',
+  },
+  '[class*="answerContainer"], [class*="AnswerContainer"]': {
+    background: '#17151c !important',
+  },
+  '[class*="conversationMessage"], [class*="ConversationMessage"]': {
+    background: '#0d0d11 !important',
+  },
+  '[class*="resultTile"], [class*="ResultTile"], [class*="resultCard"], [class*="ResultCard"]': {
+    background: '#17151c !important',
+    'border-color': '#2a1a22 !important',
+  },
+  // Spotter response wrapper
+  '[class*="spotterEmbed"], [class*="SpotterEmbed"]': {
+    background: '#0d0d11 !important',
+  },
+  '[class*="embedContainer"], [class*="EmbedContainer"]': {
+    background: '#17151c !important',
+  },
+
+  // AG Grid row backgrounds (table viz)
   '.ag-row': { background: '#17151c !important' },
   '.ag-row-even': { background: '#17151c !important' },
   '.ag-row-odd': { background: '#1d1a23 !important' },
   '.ag-row:hover, .ag-row-hover': { background: '#221520 !important' },
-  // Cell borders and text
   '.ag-cell': { 'border-color': '#2a1a22 !important', color: '#f0eaf0 !important' },
   '.ag-header-cell, .ag-header-group-cell': {
     'border-color': '#2a1a22 !important',
     color: '#f0eaf0 !important',
   },
-  // Footer / totals row
-  '.ag-footer-row .ag-cell, [class*="summaryRow"] td, [class*="totalRow"] td': {
+  '.ag-footer-row .ag-cell': {
     background: '#221520 !important',
     color: '#f0eaf0 !important',
   },
-  // The root wrapper and body area
   '.ag-root-wrapper, .ag-body-viewport, .ag-center-cols-container': {
     background: '#17151c !important',
   },
-  // Table tile wrapper inside viz card
   '[class*="vizBody"], [class*="tableViz"], [class*="tableTile"]': {
     background: '#17151c !important',
   },
 };
+
+// Alias kept for existing callers
+export const LIVEBOARD_TABLE_RULES = GLOBAL_DARK_RULES;
 
 const HIDE = { display: 'none !important' };
 export const HIDE_SPOTTER_INPUT_RULES: Record<string, Record<string, string>> = {

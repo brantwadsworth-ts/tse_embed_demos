@@ -6,6 +6,7 @@ import {
   TS_STRING_IDS,
   TS_FONT_URL,
   LIVEBOARD_TABLE_RULES,
+  GLOBAL_DARK_RULES,
 } from '../config';
 
 let isInitialized = false;
@@ -29,7 +30,10 @@ export function initThoughtSpot(username: string, password: string) {
     customizations: {
       style: {
         customCSSUrl: TS_FONT_URL,
-        customCSS: { variables: TS_CSS_VARIABLES },
+        customCSS: {
+          variables: TS_CSS_VARIABLES,
+          rules_UNSTABLE: GLOBAL_DARK_RULES,
+        },
       },
       content: {
         strings: TS_STRINGS,
