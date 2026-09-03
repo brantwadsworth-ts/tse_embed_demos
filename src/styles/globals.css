@@ -760,6 +760,15 @@ button {
   flex: 1 1 100%;
   min-width: 0;
 }
+/* SearchEmbed needs an explicit height — it has no fullHeight prop */
+.search-embed-col .liveboard-wrapper {
+  height: calc(100vh - var(--topbar-h) - 160px);
+  overflow: hidden;
+}
+.search-embed-col .liveboard-wrapper > div,
+.search-embed-col .liveboard-wrapper iframe {
+  height: 100% !important;
+}
 .analytics-split.is-split .analytics-board-col {
   flex: 0 0 40%;
   max-width: 40%;

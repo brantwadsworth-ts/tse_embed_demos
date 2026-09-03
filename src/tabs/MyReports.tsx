@@ -24,11 +24,11 @@ export default function MyReports() {
         </div>
       </div>
       <div className="analytics-split">
-        <div className="analytics-board-col">
+        <div className="analytics-board-col search-embed-col">
           <div className="liveboard-wrapper">
             <Search
               dataSource={WORKSHEET_ID}
-              frameParams={{ width: '100%', height: '100%' }}
+              frameParams={{ width: '100%' }}
               customizations={customizations}
             />
           </div>
