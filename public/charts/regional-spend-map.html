@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regional Spend Map</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      background: #0e1520;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #e0e8f2;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 20px 12px;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    #map-wrap {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+    }
+
+    svg#world {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .region-path { transition: opacity 0.2s; }
+    .region-path:hover { opacity: 0.85; cursor: pointer; }
+    .inactive { fill: #1a2640; }
+
+    /* Legend */
+    #legend {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #131d2b;
+      border: 1px solid #1f3050;
+      border-radius: 10px;
+      padding: 10px 16px;
+      min-width: 180px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .legend-item:hover {
+      border-color: #0096D6;
+      box-shadow: 0 0 0 1px rgba(0,150,214,0.25);
+    }
+
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .legend-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #8aa0bc;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .legend-spend {
+      font-size: 15px;
+      font-weight: 700;
+      color: #e0e8f2;
+      margin-top: 1px;
+    }
+
+    .legend-pct {
+      font-size: 11px;
+      color: #8aa0bc;
+      margin-top: 1px;
+    }
+
+    /* Tooltip */
+    #tooltip {
+      position: fixed;
+      background: #131d2b;
+      border: 1px solid #1f3050;
+      border-radius: 10px;
+      padding: 10px 14px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 100;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    #tooltip.visible { opacity: 1; }
+    .tt-region { font-size: 12px; font-weight: 700; color: #e0e8f2; }
+    .tt-spend { font-size: 11px; color: #8aa0bc; margin-top: 3px; }
+    .tt-pct { font-size: 11px; color: #0096D6; font-weight: 600; margin-top: 1px; }
+
+    #no-data {
+      display: none;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      color: #8aa0bc;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+<div id="container">
+  <div id="map-wrap">
+    <svg id="world"></svg>
+  </div>
+  <div id="legend"></div>
+</div>
+<div id="no-data">No data — add a Region dimension and Spend measure</div>
+<div id="tooltip">
+  <div class="tt-region" id="tt-region"></div>
+  <div class="tt-spend" id="tt-spend"></div>
+  <div class="tt-pct" id="tt-pct"></div>
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script>
+// ---------------------------------------------------------------------------
+// Region → ISO 3-digit numeric code mapping
+// ---------------------------------------------------------------------------
+const REGION_NUMERIC = {
+  AMERICAS: new Set([
+    840,124,484,76,32,170,152,604,862,218,68,600,858,328,740,188,591,340,320,222,
+    558,84,192,214,388,332,780,630,308,52,659,660,28,44,52,780,60,74,92,796,850,
+    136,796,630
+  ]),
+  EMEA: new Set([
+    826,276,250,380,724,528,56,756,40,752,578,208,246,620,616,203,348,642,100,300,
+    792,682,784,634,414,818,710,566,404,231,504,12,788,434,376,400,422,368,364,
+    643,804,112,398,268,31,51,688,191,703,705,233,428,440,372,442,352,807,70,499,
+    8,498,800,860,795,762,417,4,586,860
+  ]),
+  APAC: new Set([
+    156,392,36,356,410,702,344,158,360,458,764,704,608,554,50,144,524,104,116,418,
+    96,598,242,496,408,626,90,548,882,776,376,586,586
+  ])
+};
+
+// Normalise region strings to canonical keys
+function canonicalRegion(raw) {
+  if (!raw) return null;
+  const s = String(raw).toUpperCase().trim();
+  if (s.includes('AMER') || s.includes('NAM') || s.includes('SAM') || s === 'AM') return 'AMERICAS';
+  if (s.includes('EMEA') || s.includes('EUR') || s.includes('AFR') || s.includes('MEA')) return 'EMEA';
+  if (s.includes('APAC') || s.includes('ASIA') || s.includes('PAC') || s.includes('ANZ')) return 'APAC';
+  return null;
+}
+
+const REGION_META = {
+  AMERICAS: { label: 'Americas',     color: '#0096D6', glow: 'rgba(0,150,214,0.35)'  },
+  EMEA:     { label: 'EMEA',         color: '#00C4B4', glow: 'rgba(0,196,180,0.35)'  },
+  APAC:     { label: 'Asia Pacific', color: '#7B6FFF', glow: 'rgba(123,111,255,0.35)' },
+};
+
+function fmt(n) {
+  if (n >= 1e9) return '$' + (n / 1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return '$' + (n / 1e3).toFixed(0) + 'K';
+  return '$' + n.toFixed(0);
+}
+
+// ---------------------------------------------------------------------------
+// Chart state
+// ---------------------------------------------------------------------------
+let spendByRegion = {};   // { AMERICAS: 45000000, EMEA: 38000000, APAC: 22000000 }
+let worldData = null;
+let highlighted = null;
+const tooltip = document.getElementById('tooltip');
+
+// ---------------------------------------------------------------------------
+// Render
+// ---------------------------------------------------------------------------
+function render() {
+  if (!worldData) return;
+
+  const total = Object.values(spendByRegion).reduce((s, v) => s + v, 0);
+  const hasData = total > 0;
+
+  document.getElementById('no-data').style.display = hasData ? 'none' : 'flex';
+  document.getElementById('container').style.display = hasData ? 'flex' : 'none';
+
+  if (!hasData) return;
+
+  renderMap();
+  renderLegend(total);
+}
+
+function renderMap() {
+  const wrap = document.getElementById('map-wrap');
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  const svg = d3.select('#world').attr('viewBox', `0 0 ${W} ${H}`);
+  svg.selectAll('*').remove();
+
+  // Defs: glow filters per region
+  const defs = svg.append('defs');
+  Object.entries(REGION_META).forEach(([key, meta]) => {
+    const f = defs.append('filter').attr('id', `glow-${key}`).attr('x', '-20%').attr('y', '-20%').attr('width', '140%').attr('height', '140%');
+    f.append('feGaussianBlur').attr('stdDeviation', '6').attr('result', 'blur');
+    const merge = f.append('feMerge');
+    merge.append('feMergeNode').attr('in', 'blur');
+    merge.append('feMergeNode').attr('in', 'SourceGraphic');
+  });
+
+  const countries = topojson.feature(worldData, worldData.objects.countries);
+
+  const projection = d3.geoNaturalEarth1()
+    .fitSize([W, H], countries);
+
+  const path = d3.geoPath().projection(projection);
+  const borders = topojson.mesh(worldData, worldData.objects.countries, (a, b) => a !== b);
+
+  // Country fills
+  svg.selectAll('.country')
+    .data(countries.features)
+    .join('path')
+    .attr('class', 'region-path')
+    .attr('d', path)
+    .attr('fill', d => {
+      const id = +d.id;
+      for (const [region, ids] of Object.entries(REGION_NUMERIC)) {
+        if (ids.has(id) && spendByRegion[region] > 0) {
+          return highlighted && highlighted !== region
+            ? d3.color(REGION_META[region].color).copy({ opacity: 0.25 })
+            : REGION_META[region].color;
+        }
+      }
+      return '#1a2640';
+    })
+    .attr('filter', d => {
+      const id = +d.id;
+      for (const [region, ids] of Object.entries(REGION_NUMERIC)) {
+        if (ids.has(id) && spendByRegion[region] > 0) {
+          return (!highlighted || highlighted === region) ? `url(#glow-${region})` : null;
+        }
+      }
+      return null;
+    })
+    .attr('opacity', d => {
+      if (!highlighted) return 1;
+      const id = +d.id;
+      for (const [region, ids] of Object.entries(REGION_NUMERIC)) {
+        if (ids.has(id)) return highlighted === region ? 1 : 0.3;
+      }
+      return 0.3;
+    })
+    .on('mousemove', (event, d) => {
+      const id = +d.id;
+      for (const [region, ids] of Object.entries(REGION_NUMERIC)) {
+        if (ids.has(id) && spendByRegion[region] > 0) {
+          showTooltip(event, region);
+          return;
+        }
+      }
+    })
+    .on('mouseleave', hideTooltip);
+
+  // Borders
+  svg.append('path')
+    .datum(borders)
+    .attr('d', path)
+    .attr('fill', 'none')
+    .attr('stroke', '#0e1520')
+    .attr('stroke-width', 0.4);
+}
+
+function renderLegend(total) {
+  const legend = document.getElementById('legend');
+  legend.innerHTML = '';
+  Object.entries(spendByRegion)
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([region, spend]) => {
+      const meta = REGION_META[region];
+      const pct = ((spend / total) * 100).toFixed(1);
+      const el = document.createElement('div');
+      el.className = 'legend-item';
+      el.innerHTML = `
+        <div class="legend-swatch" style="background:${meta.color}"></div>
+        <div>
+          <div class="legend-label">${meta.label}</div>
+          <div class="legend-spend">${fmt(spend)}</div>
+          <div class="legend-pct">${pct}% of total</div>
+        </div>`;
+      el.addEventListener('mouseenter', () => { highlighted = region; renderMap(); });
+      el.addEventListener('mouseleave', () => { highlighted = null; renderMap(); });
+      legend.appendChild(el);
+    });
+}
+
+function showTooltip(event, region) {
+  const total = Object.values(spendByRegion).reduce((s, v) => s + v, 0);
+  const spend = spendByRegion[region] || 0;
+  document.getElementById('tt-region').textContent = REGION_META[region].label;
+  document.getElementById('tt-spend').textContent = fmt(spend);
+  document.getElementById('tt-pct').textContent = ((spend / total) * 100).toFixed(1) + '% of total spend';
+  const t = document.getElementById('tooltip');
+  t.style.left = (event.clientX + 14) + 'px';
+  t.style.top  = (event.clientY - 20) + 'px';
+  t.classList.add('visible');
+}
+
+function hideTooltip() {
+  document.getElementById('tooltip').classList.remove('visible');
+}
+
+// ---------------------------------------------------------------------------
+// ThoughtSpot Custom Charts SDK
+// ---------------------------------------------------------------------------
+function applyData(rawRows) {
+  // rawRows: array of { region: string, spend: number }
+  spendByRegion = {};
+  rawRows.forEach(row => {
+    const key = canonicalRegion(row.region);
+    if (key) spendByRegion[key] = (spendByRegion[key] || 0) + (Number(row.spend) || 0);
+  });
+  render();
+}
+
+async function initTS() {
+  // Dynamic import of the TS Chart SDK
+  try {
+    const sdk = await import('https://cdn.jsdelivr.net/npm/@thoughtspot/ts-chart-sdk@0.0.1-alpha.27/dist/index.esm.js');
+    const { getChartContext, ColumnType } = sdk;
+
+    const ctx = await getChartContext({
+      getDefaultChartConfig: (chartModel) => {
+        const cols = chartModel.columns;
+        const attr = cols.find(c => c.type === ColumnType.ATTRIBUTE) || cols[0];
+        const measure = cols.find(c => c.type === ColumnType.MEASURE) || cols[1];
+        return [{
+          key: 'dimension',
+          dimensions: [
+            { key: 'region', columns: attr ? [attr] : [] },
+            { key: 'spend',  columns: measure ? [measure] : [] },
+          ],
+        }];
+      },
+      getQueriedData: (query) => query,
+      renderChart: (ctx) => {
+        const model = ctx.getChartModel();
+        const config = model.config?.chartConfig?.[0]?.dimensions ?? [];
+        const regionDim = config.find(d => d.key === 'region');
+        const spendDim  = config.find(d => d.key === 'spend');
+        const regionCol = regionDim?.columns?.[0];
+        const spendCol  = spendDim?.columns?.[0];
+        if (!regionCol || !spendCol) return;
+
+        const rows = model.data?.[0]?.data ?? [];
+        const regionIdx = model.data?.[0]?.columns?.findIndex(c => c.id === regionCol.id) ?? 0;
+        const spendIdx  = model.data?.[0]?.columns?.findIndex(c => c.id === spendCol.id)  ?? 1;
+
+        const parsed = rows.map(r => ({
+          region: r[regionIdx],
+          spend:  r[spendIdx],
+        }));
+        applyData(parsed);
+      },
+    });
+    ctx.initialize();
+  } catch (e) {
+    // Running outside ThoughtSpot — show demo data
+    console.warn('TS Chart SDK not available, using demo data:', e.message);
+    applyData([
+      { region: 'AMERICAS', spend: 45_200_000 },
+      { region: 'EMEA',     spend: 38_700_000 },
+      { region: 'APAC',     spend: 21_100_000 },
+    ]);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Bootstrap
+// ---------------------------------------------------------------------------
+Promise.all([
+  d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'),
+]).then(([world]) => {
+  worldData = world;
+  initTS();
+});
+
+window.addEventListener('resize', () => { if (worldData) render(); });
+</script>
+</body>
+</html>
