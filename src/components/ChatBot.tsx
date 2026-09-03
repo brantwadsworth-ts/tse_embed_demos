@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Wand2, X, ArrowUp } from 'lucide-react';
+import { X, ArrowUp } from 'lucide-react';
 import { BodylessConversation } from '@thoughtspot/visual-embed-sdk';
 import { routeMessage, ChatTurn } from '../lib/chatbot';
 
 interface ChatBotProps {
-  /** Data model the chatbot routes analytics questions to (tab-dependent). */
   worksheetId: string;
-  /** Opening greeting (tab-dependent). */
   greeting: string;
 }
 
@@ -14,7 +12,6 @@ interface Msg {
   id: number;
   role: 'user' | 'assistant';
   text?: string;
-  /** A rendered ThoughtSpot answer (from BodylessConversation). */
   container?: HTMLElement;
   loading?: boolean;
   error?: boolean;
@@ -22,7 +19,32 @@ interface Msg {
 
 let idSeq = 1;
 
-/** Mounts a ThoughtSpot answer DOM node returned by BodylessConversation. */
+function MerlinIcon({ size = 22 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ flexShrink: 0 }}
+    >
+      {/* Wizard hat */}
+      <path
+        d="M12 2L7 16h10L12 2z"
+        fill="currentColor"
+        opacity="0.9"
+      />
+      {/* Hat brim */}
+      <ellipse cx="12" cy="16" rx="6" ry="2" fill="currentColor" opacity="0.7" />
+      {/* Stars */}
+      <circle cx="9" cy="8" r="0.8" fill="white" opacity="0.85" />
+      <circle cx="14" cy="11" r="0.65" fill="white" opacity="0.75" />
+      <circle cx="11" cy="5.5" r="0.5" fill="white" opacity="0.9" />
+    </svg>
+  );
+}
+
 function AnswerEmbed({ container }: { container: HTMLElement }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -50,8 +72,6 @@ export default function ChatBot({ worksheetId, greeting }: ChatBotProps) {
     scrollRef.current?.scrollTo({ top: 1e9, behavior: 'smooth' });
   }, [msgs, open]);
 
-  // When the tab context changes (worksheet/greeting), start a fresh,
-  // context-specific conversation against the new data model.
   useEffect(() => {
     if (firstRun.current) {
       firstRun.current = false;
@@ -90,7 +110,6 @@ export default function ChatBot({ worksheetId, greeting }: ChatBotProps) {
       if (result.kind === 'text') {
         update(reply.id, { text: result.text, loading: false });
       } else {
-        // Show the preamble while Spotter renders the answer.
         update(reply.id, { text: result.preamble, loading: true });
         const { container, error } = await getConversation().sendMessage(result.query);
         if (error || !container) {
@@ -99,7 +118,7 @@ export default function ChatBot({ worksheetId, greeting }: ChatBotProps) {
             error: true,
             text:
               (result.preamble ? result.preamble + '\n\n' : '') +
-              'I couldn’t load that analytics result. Make sure you’re signed in to ThoughtSpot and the data model is reachable.',
+              'I couldn\'t load that analytics result. Make sure you\'re signed in to ThoughtSpot and the data model is reachable.',
           });
         } else {
           update(reply.id, { text: result.preamble, container, loading: false });
@@ -128,9 +147,9 @@ export default function ChatBot({ worksheetId, greeting }: ChatBotProps) {
       <button
         className="chat-fab"
         onClick={() => setOpen(true)}
-        aria-label="Open Salesloft AI"
+        aria-label="Open Merlin AI"
       >
-        <Wand2 size={22} strokeWidth={2.2} />
+        <MerlinIcon size={24} />
       </button>
     );
   }
@@ -139,8 +158,8 @@ export default function ChatBot({ worksheetId, greeting }: ChatBotProps) {
     <div className="chat-panel">
       <div className="chat-header">
         <div className="chat-title">
-          <Wand2 size={18} />
-          <span>Salesloft AI</span>
+          <MerlinIcon size={20} />
+          <span>Merlin</span>
         </div>
         <button className="chat-close" onClick={() => setOpen(false)} aria-label="Close">
           <X size={18} />
@@ -167,7 +186,7 @@ export default function ChatBot({ worksheetId, greeting }: ChatBotProps) {
         <textarea
           className="chat-input"
           rows={1}
-          placeholder="Ask Salesloft AI…"
+          placeholder="Ask Merlin…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={onKeyDown}
