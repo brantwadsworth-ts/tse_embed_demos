@@ -21,8 +21,15 @@ export default function Login() {
     setIsLoading(true);
     try {
       await login(username.trim(), password);
-    } catch {
-      setError('Failed to sign in. Please check your credentials.');
+    } catch (err: any) {
+      const msg = err?.message ?? '';
+      if (msg.includes('TS_AUTH_SECRET_KEARNEY')) {
+        setError('Server configuration error — the ThoughtSpot secret key is not set in Vercel environment variables.');
+      } else if (msg.includes('401') || msg.includes('Invalid credentials')) {
+        setError('Invalid username or password. Check your ThoughtSpot credentials.');
+      } else {
+        setError(msg || 'Sign-in failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }

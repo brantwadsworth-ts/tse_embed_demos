@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { initThoughtSpot } from '../lib/thoughtspot';
+import { initThoughtSpot, resetThoughtSpot } from '../lib/thoughtspot';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -17,6 +17,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [password, setPassword] = useState('');
 
   const login = async (user: string, pass: string) => {
+    // Validate credentials by calling the auth-token endpoint first.
+    // This surfaces config errors (missing secret key, bad credentials)
+    // on the login form instead of silently failing in the embed.
+    const res = await fetch('/api/auth-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      const msg = body.error || `Auth failed (${res.status})`;
+      throw new Error(msg);
+    }
     initThoughtSpot(user, pass);
     setUsername(user);
     setPassword(pass);
@@ -24,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    resetThoughtSpot();
     setIsAuthenticated(false);
     setUsername('');
     setPassword('');

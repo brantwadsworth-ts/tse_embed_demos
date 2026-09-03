@@ -11,6 +11,10 @@ import {
 
 let isInitialized = false;
 
+export function resetThoughtSpot() {
+  isInitialized = false;
+}
+
 export function initThoughtSpot(username: string, password: string) {
   if (isInitialized) return;
   init({
