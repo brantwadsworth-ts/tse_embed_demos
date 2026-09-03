@@ -651,8 +651,6 @@ button {
   border-radius: 22px;
   box-shadow: 0 1px 2px rgba(7, 59, 58, 0.05), 0 26px 70px rgba(7, 59, 58, 0.16);
   padding: 12px;
-  min-height: 70vh;
-  overflow: hidden;
 }
 /* Kearney dark frame — deep well + soft magenta rim glow. */
 :root[data-theme='dark'] .liveboard-wrapper {
@@ -666,8 +664,6 @@ button {
 .liveboard-wrapper > div,
 .liveboard-wrapper iframe {
   width: 100% !important;
-  height: calc(100vh - var(--topbar-h) - 160px) !important;
-  min-height: 500px;
   border: none;
   border-radius: 10px;
 }
