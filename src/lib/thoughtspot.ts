@@ -145,11 +145,18 @@ export function liveboardCustomizations(theme: ThemeName) {
       '[class*="funnel" i] *',
     ].join(',')]: { 'font-family': `${APP_FONT} !important` },
   };
+  const unstickHeaderRules: Record<string, Record<string, string>> = {
+    '[class*="liveboardHeader" i], [class*="liveboard-header" i], [class*="pinboardHeader" i], [class*="pinboard-header" i]': {
+      position: 'relative !important',
+      top: 'unset !important',
+    },
+  };
   return tsCustomizations(theme, false, {
     ...HIDE_FILTER_PILL_RULES,
     ...btnHoverRules,
     ...tabRules,
     ...chartFontRules,
+    ...unstickHeaderRules,
   });
 }
 

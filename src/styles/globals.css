@@ -79,7 +79,7 @@
 html,
 body,
 #root {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
@@ -308,7 +308,6 @@ button {
 
 .app-main {
   flex: 1;
-  overflow-y: auto;
   background: var(--sl-cream);
 }
 
@@ -2875,8 +2874,6 @@ button {
 .acr-report {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - var(--topbar-h));
-  overflow: hidden;
 }
 .acr-header {
   padding: 20px 28px 12px;
@@ -2896,12 +2893,7 @@ button {
   margin: 0;
 }
 .acr-tabs {
-  display: flex;
-  gap: 0;
-  padding: 0 24px;
-  background: #fff;
-  border-bottom: 2px solid #e2e8f0;
-  flex-shrink: 0;
+  display: none;
 }
 .acr-tab {
   padding: 12px 18px;
@@ -2920,10 +2912,8 @@ button {
 .acr-tab.is-active { color: #003865; border-bottom-color: #003865; font-weight: 600; }
 .acr-body {
   flex: 1;
-  overflow: hidden;
   padding: 0;
 }
-.acr-body > div { height: 100%; }
 
 /* =========================================================================
    Deliverable Gauges
