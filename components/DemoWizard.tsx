@@ -324,6 +324,7 @@ export default function DemoWizard({ prefillData, hasPrefill }: DemoWizardProps)
       rlsRules: formData.rlsRules || undefined,
       prompt: formData.prompt || undefined,
       sampleQuestions: formData.sampleQuestions.filter(Boolean),
+      worksheetId: datasetResult?.dataModelId || undefined,
       dataModel: {
         warehouse: formData.dataModel.warehouse,
         cdw: formData.dataModel.cdw,
@@ -331,6 +332,15 @@ export default function DemoWizard({ prefillData, hasPrefill }: DemoWizardProps)
         schema: formData.dataModel.schema,
         tables: tables.length > 0 ? tables : undefined,
       },
+      ...(datasetResult?.liveboardId
+        ? {
+            theme: {
+              custom: null,
+              primaryColor: "#2770ef",
+              liveboards: [{ id: datasetResult.liveboardId, name: datasetResult.liveboardName ?? "Dashboard" }],
+            },
+          }
+        : {}),
     };
 
     try {

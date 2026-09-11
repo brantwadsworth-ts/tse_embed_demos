@@ -14,6 +14,7 @@ export interface DatasetResult {
   columns: TmlColumn[];
   dataModelId: string;
   liveboardId: string | null;
+  liveboardName?: string;
   tsHost: string;
   tsUsername: string;
 }
@@ -24,12 +25,19 @@ interface Props {
   defaultTsUsername?: string;
 }
 
+type Tab = "browse" | "upload";
 type Phase = "upload" | "columns" | "destinations" | "creating" | "done";
+type BrowsePhase = "form" | "loading" | "pick" | "done";
 
 interface Connection {
   id: string;
   name: string;
   type: string;
+}
+
+interface TsAsset {
+  id: string;
+  name: string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -60,9 +68,185 @@ function Field({
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Browse Existing sub-component ────────────────────────────────────────────
+
+function BrowseExisting({ onComplete, defaultTsHost = "", defaultTsUsername = "" }: Props) {
+  const [phase, setPhase] = useState<BrowsePhase>("form");
+  const [error, setError] = useState<string | null>(null);
+
+  const [instance, setInstance] = useState(defaultTsHost);
+  const [username, setUsername] = useState(defaultTsUsername);
+  const [password, setPassword] = useState("");
+
+  const [liveboards, setLiveboards] = useState<TsAsset[]>([]);
+  const [worksheets, setWorksheets] = useState<TsAsset[]>([]);
+  const [authMethod, setAuthMethod] = useState<"trusted" | "password">("password");
+
+  const [selectedLiveboard, setSelectedLiveboard] = useState("");
+  const [selectedWorksheet, setSelectedWorksheet] = useState("");
+
+  async function handleConnect() {
+    if (!instance || !username) { setError("Instance URL and username are required."); return; }
+    setPhase("loading");
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/ts-connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ instance: instance.replace(/\/+$/, ""), username, password: password || undefined }),
+      });
+      const data = await res.json() as { liveboards?: TsAsset[]; worksheets?: TsAsset[]; authMethod?: "trusted" | "password"; error?: string };
+      if (!res.ok) throw new Error(data.error ?? "Connection failed");
+      setLiveboards(data.liveboards ?? []);
+      setWorksheets(data.worksheets ?? []);
+      setAuthMethod(data.authMethod ?? "password");
+      if ((data.liveboards ?? []).length === 1) setSelectedLiveboard(data.liveboards![0].id);
+      if ((data.worksheets ?? []).length === 1) setSelectedWorksheet(data.worksheets![0].id);
+      setPhase("pick");
+    } catch (e) {
+      setError(String(e).replace(/^Error: /, ""));
+      setPhase("form");
+    }
+  }
+
+  function handleUse() {
+    if (!selectedLiveboard && !selectedWorksheet) { setError("Select at least a liveboard or a worksheet."); return; }
+    const lb = liveboards.find((l) => l.id === selectedLiveboard);
+    onComplete({
+      database: "",
+      schema: "",
+      tableName: "",
+      rowCount: 0,
+      columns: [],
+      dataModelId: selectedWorksheet,
+      liveboardId: selectedLiveboard || null,
+      liveboardName: lb?.name,
+      tsHost: instance.replace(/\/+$/, ""),
+      tsUsername: username,
+    });
+    setPhase("done");
+  }
+
+  if (phase === "loading") {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 space-y-3 text-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#2770ef] border-t-transparent" />
+        <p className="text-sm text-gray-600">Connecting to ThoughtSpot…</p>
+      </div>
+    );
+  }
+
+  if (phase === "done") {
+    return (
+      <div className="flex items-center gap-3 rounded-xl bg-emerald-50 p-4">
+        <span className="text-2xl">✅</span>
+        <div>
+          <p className="text-sm font-semibold text-emerald-800">Connected — IDs pre-filled</p>
+          <p className="text-xs text-emerald-600">
+            {authMethod === "trusted" ? "Trusted auth" : "Password auth"} · {instance}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "pick") {
+    return (
+      <div className="space-y-5">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          Connected via <strong>{authMethod === "trusted" ? "trusted auth" : "password"}</strong> to{" "}
+          <code className="font-mono text-xs">{instance}</code>
+          {" · "}
+          <button className="underline text-emerald-700 hover:text-emerald-900" onClick={() => setPhase("form")}>
+            change
+          </button>
+        </div>
+
+        <Field label="Liveboard" hint="The liveboard that will be embedded in the demo.">
+          <select className={inp} value={selectedLiveboard} onChange={(e) => setSelectedLiveboard(e.target.value)}>
+            <option value="">— none / skip —</option>
+            {liveboards.map((l) => (
+              <option key={l.id} value={l.id}>{l.name}</option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Worksheet / Data Model" hint="Used for Spotter AI and search. Skip if not using AI.">
+          <select className={inp} value={selectedWorksheet} onChange={(e) => setSelectedWorksheet(e.target.value)}>
+            <option value="">— none / skip —</option>
+            {worksheets.map((w) => (
+              <option key={w.id} value={w.id}>{w.name}</option>
+            ))}
+          </select>
+        </Field>
+
+        {error && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+
+        <button
+          type="button"
+          onClick={handleUse}
+          disabled={!selectedLiveboard && !selectedWorksheet}
+          className="w-full rounded-xl bg-[#2770ef] py-2.5 text-sm font-semibold text-white hover:bg-[#1d5fd4] disabled:opacity-50"
+        >
+          Use selected content →
+        </button>
+      </div>
+    );
+  }
+
+  // form phase
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-gray-500">
+        Connect to a ThoughtSpot instance and pick an existing liveboard and/or data model.
+      </p>
+
+      <Field label="ThoughtSpot Instance URL" required>
+        <input
+          className={inp}
+          value={instance}
+          onChange={(e) => setInstance(e.target.value)}
+          placeholder="https://your-instance.thoughtspot.cloud"
+        />
+      </Field>
+
+      <Field label="Username" required>
+        <input
+          className={inp}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="admin@company.com"
+        />
+      </Field>
+
+      <Field label="Password" hint="Only used to authenticate — not stored. Leave blank if trusted auth is configured for this cluster.">
+        <input
+          type="password"
+          className={inp}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="(leave blank for trusted auth)"
+        />
+      </Field>
+
+      {error && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+
+      <button
+        type="button"
+        onClick={handleConnect}
+        disabled={!instance || !username}
+        className="w-full rounded-xl bg-[#2770ef] py-2.5 text-sm font-semibold text-white hover:bg-[#1d5fd4] disabled:opacity-50"
+      >
+        Connect and browse →
+      </button>
+    </div>
+  );
+}
+
+// ── Main component (tab switcher) ─────────────────────────────────────────────
 
 export default function DatasetStep({ onComplete, defaultTsHost = "", defaultTsUsername = "" }: Props) {
+  const [activeTab, setActiveTab] = useState<Tab>("browse");
   const [phase, setPhase] = useState<Phase>("upload");
   const [error, setError] = useState<string | null>(null);
 
@@ -216,11 +400,42 @@ export default function DatasetStep({ onComplete, defaultTsHost = "", defaultTsU
     onComplete(finalResult);
   }
 
+  // ── Tab bar + Browse tab ──────────────────────────────────────────────────────
+
+  const tabBar = (
+    <div className="mb-5 flex gap-1 rounded-xl bg-gray-100 p-1">
+      {(["browse", "upload"] as Tab[]).map((t) => (
+        <button
+          key={t}
+          type="button"
+          onClick={() => setActiveTab(t)}
+          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
+            activeTab === t
+              ? "bg-white text-gray-900 shadow-sm"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          {t === "browse" ? "Browse Existing" : "Upload CSV"}
+        </button>
+      ))}
+    </div>
+  );
+
+  if (activeTab === "browse") {
+    return (
+      <div>
+        {tabBar}
+        <BrowseExisting onComplete={onComplete} defaultTsHost={defaultTsHost} defaultTsUsername={defaultTsUsername} />
+      </div>
+    );
+  }
+
   // ── Phase: upload ─────────────────────────────────────────────────────────────
 
   if (phase === "upload") {
     return (
       <div className="space-y-4">
+        {tabBar}
         <p className="text-sm text-gray-500">
           Upload a CSV to create a Snowflake table and ThoughtSpot data model automatically.
           The builder will pre-fill your TS IDs when done.
